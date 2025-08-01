@@ -6,6 +6,8 @@
 #include <span.h>
 #include <crypto/common.h>
 #include <crypto/hmac_sha512.h>
+#include "crypto/sha256.h"
+
 
 #include <bit>
 #include <string>
@@ -68,19 +70,7 @@ unsigned int MurmurHash3(unsigned int nHashSeed, std::span<const unsigned char> 
     return h1;
 }
 
-void BIP32Hash(const ChainCode &chainCode, unsigned int nChild, unsigned char header, const unsigned char data[32], unsigned char output[64])
-{
-    unsigned char num[4];
-    WriteBE32(num, nChild);
-    CHMAC_SHA512(chainCode.begin(), chainCode.size()).Write(&header, 1).Write(data, 32).Write(num, 4).Finalize(output);
-}
 
-uint256 SHA256Uint256(const uint256& input)
-{
-    uint256 result;
-    CSHA256().Write(input.begin(), 32).Finalize(result.begin());
-    return result;
-}
 
 HashWriter TaggedHash(const std::string& tag)
 {
@@ -89,4 +79,20 @@ HashWriter TaggedHash(const std::string& tag)
     CSHA256().Write((const unsigned char*)tag.data(), tag.size()).Finalize(taghash.begin());
     writer << taghash << taghash;
     return writer;
+}
+
+void BIP32Hash(const ChainCode& chainCode, unsigned int child, unsigned char header, const unsigned char* data, unsigned char* output)
+{
+    CHMAC_SHA512(chainCode.begin(), chainCode.size())
+        .Write(&header, 1)
+        .Write(data, 32)
+        .Write((unsigned char*)&child, 4)
+        .Finalize(output);
+}
+
+uint256 SHA256Uint256(const uint256& input)
+{
+    uint256 result;
+    CSHA256().Write(input.begin(), input.size()).Finalize(result.begin());
+    return result;
 }
