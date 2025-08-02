@@ -1,16 +1,25 @@
-// Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2019 The Bitcoin Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
-
 #include <primitives/block.h>
 
+#include <serialize.h>
+#include <streams.h>
+#include <span.h> // necesario para std::span en versiones sin <span>
+#include <blake3/blake3.h>
 #include <hash.h>
 #include <tinyformat.h>
 
 uint256 CBlockHeader::GetHash() const
 {
-    return (HashWriter{} << *this).GetHash();
+    std::vector<unsigned char> vec;
+    VectorWriter w(vec, 0);
+    w << *this;
+
+    uint8_t out[BLAKE3_OUT_LEN];
+    blake3_hasher hasher;
+    blake3_hasher_init(&hasher);
+    blake3_hasher_update(&hasher, vec.data(), vec.size());
+    blake3_hasher_finalize(&hasher, out, BLAKE3_OUT_LEN);
+
+    return uint256(std::span<const unsigned char>(out, 32));
 }
 
 std::string CBlock::ToString() const
