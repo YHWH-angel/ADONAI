@@ -30,8 +30,8 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params&);
 
 /** Check whether a block hash satisfies the proof-of-work requirement specified by nBits */
-bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&);
-bool CheckProofOfWorkImpl(uint256 hash, unsigned int nBits, const Consensus::Params&);
+bool CheckProofOfWork(const CBlockHeader& block, const Consensus::Params& params);
+bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params& params); // <- la que faltaba
 
 /**
  * Return false if the proof-of-work requirement specified by new_nbits at a
@@ -46,5 +46,7 @@ bool CheckProofOfWorkImpl(uint256 hash, unsigned int nBits, const Consensus::Par
  * such as regtest/testnet.
  */
 bool PermittedDifficultyTransition(const Consensus::Params& params, int64_t height, uint32_t old_nbits, uint32_t new_nbits);
+
+//bool PermittedDifficultyTransition(const Consensus::Params& params, long height, unsigned int oldBits, unsigned int newBits);
 
 #endif // BITCOIN_POW_H
