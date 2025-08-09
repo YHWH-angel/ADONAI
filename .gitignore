@@ -1,31 +1,84 @@
-# Patterns that are specific to a text editor, IDE, operating system, or user
-# environment are not added here. They should be added to your local gitignore
-# file instead:
-# https://docs.github.com/en/get-started/git-basics/ignoring-files#configuring-ignored-files-for-all-repositories-on-your-computer
+# -------------------------
+# IGNORAR ARCHIVOS DE SISTEMA
+# -------------------------
+*.Zone.Identifier
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
 
-# Build subdirectories.
+# -------------------------
+# IGNORAR BINARIOS Y OBJETOS COMPILADOS
+# -------------------------
+*.o
+*.obj
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.dll
+*.so
+*.dylib
+
+# -------------------------
+# IGNORAR DIRECTORIOS DE BUILD Y CMAKE
+# -------------------------
 /*build*
 !/build-aux
 !/build_msvc
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+CTestTestfile.cmake
+/CMakeUserPresets.json
 
+# -------------------------
+# IGNORAR PYTHON COMPILADO
+# -------------------------
 *.pyc
 
-# Only ignore unexpected patches
+# -------------------------
+# IGNORAR PATCHES INESPERADOS
+# -------------------------
 *.patch
 !contrib/guix/patches/*.patch
 !depends/patches/**/*.patch
 
-/CMakeUserPresets.json
-
-# Previous releases
-/releases
-
-# cargo default target dir
-target/
-
+# -------------------------
+# IGNORAR SALIDAS DE CI/CD Y HERRAMIENTAS
+# -------------------------
 /guix-build-*
-
 /ci/scratch/
 .idea/
 .vscode/
-LICENSE:Zone.Identifier
+
+# -------------------------
+# IGNORAR RELEASES ANTIGUOS
+# -------------------------
+/releases
+
+# -------------------------
+# IGNORAR DIRECTORIOS DE TARGET (Rust/Cargo)
+# -------------------------
+target/
+
+# -------------------------
+# IGNORAR ARCHIVOS Y DIRECTORIOS DE BLOCKCHAIN (ADONAI/BITCOIN)
+# -------------------------
+*.dat
+peers.dat
+fee_estimates.dat
+banlist.dat
+wallet.dat
+blocks/
+chainstate/
+indexes/
+
+# -------------------------
+# ARCHIVOS ESPECÍFICOS DE ADONAI
+# -------------------------
+GENESIS.adonai.txt
