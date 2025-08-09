@@ -23,6 +23,33 @@ if (ENABLE_IPC AND NOT WITH_EXTERNAL_LIBMULTIPROCESS)
   include(../cmake/libmultiprocess.cmake)
   add_libmultiprocess(ipc/libmultiprocess)
 endif()
+
+
+# --- Integración de BLAKE3 (poner arriba, antes de usar 'blake3') ---
+add_library(blake3 STATIC
+  blake3/blake3.c
+  blake3/blake3_dispatch.c
+  blake3/blake3_portable.c
+)
+target_include_directories(blake3 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/blake3)
+target_compile_definitions(blake3 PRIVATE BLAKE3_NO_AVX512)
+
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
+  add_library(blake3_sse2   OBJECT blake3/blake3_sse2.c)
+  target_compile_options(blake3_sse2   PRIVATE -msse2)
+  add_library(blake3_sse41  OBJECT blake3/blake3_sse41.c)
+  target_compile_options(blake3_sse41  PRIVATE -msse4.1)
+  add_library(blake3_avx2   OBJECT blake3/blake3_avx2.c)
+  target_compile_options(blake3_avx2   PRIVATE -mavx2)
+  # (opcional: AVX-512 si te interesa)
+  target_sources(blake3 PRIVATE
+    $<TARGET_OBJECTS:blake3_sse2>
+    $<TARGET_OBJECTS:blake3_sse41>
+    $<TARGET_OBJECTS:blake3_avx2>
+  )
+endif()
+
+
 #=============================
 # secp256k1 subtree
 #=============================
@@ -184,6 +211,8 @@ add_library(bitcoin_common STATIC EXCLUDE_FROM_ALL
   script/solver.cpp
 )
 target_link_libraries(bitcoin_common
+  PUBLIC
+    blake3
   PRIVATE
     core_interface
     bitcoin_consensus
@@ -216,7 +245,6 @@ if(ENABLE_WALLET)
       bitcoin_common
       bitcoin_util
       Boost::headers
-      blake3
     )
     install_binary_component(bitcoin-wallet HAS_MANPAGE)
   endif()
@@ -485,34 +513,6 @@ add_subdirectory(test/util)
 if(BUILD_BENCH)
   add_subdirectory(bench)
 endif()
-
-# --- Integración de BLAKE3 ---
-add_library(blake3 STATIC
-    blake3/blake3.c
-    blake3/blake3_dispatch.c
-    blake3/blake3_portable.c
-)
-
-target_include_directories(blake3 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/blake3)
-target_compile_definitions(blake3 PRIVATE BLAKE3_NO_AVX512)
-
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
-    add_library(blake3_sse2 OBJECT blake3/blake3_sse2.c)
-    target_compile_options(blake3_sse2 PRIVATE -msse2)
-
-    add_library(blake3_sse41 OBJECT blake3/blake3_sse41.c)
-    target_compile_options(blake3_sse41 PRIVATE -msse4.1)
-
-    add_library(blake3_avx2 OBJECT blake3/blake3_avx2.c)
-    target_compile_options(blake3_avx2 PRIVATE -mavx2)
-
-    target_sources(blake3 PRIVATE
-        $<TARGET_OBJECTS:blake3_sse2>
-        $<TARGET_OBJECTS:blake3_sse41>
-        $<TARGET_OBJECTS:blake3_avx2>
-    )
-endif()
-
 
 if(BUILD_TESTS)
   add_subdirectory(test)

@@ -1,79 +1,130 @@
-Bitcoin Core integration/staging tree
-=====================================
+# Proyecto ADONAI - Nodo Blockchain con PoW BLAKE3
 
-https://bitcoincore.org
+ADONAI es un fork de Bitcoin Core con algoritmo PoW modificado a **BLAKE3**.  
+Este repositorio incluye parámetros de red propios y el bloque génesis ya fijado.
 
-For an immediately usable, binary version of the Bitcoin Core software, see
-https://bitcoincore.org/en/download/.
+> **Licencia:** MIT. Este proyecto preserva los avisos de copyright de Bitcoin Core y añade los de ADONAI.  
+> **Aviso:** No afiliado ni respaldado por Bitcoin Core. Las marcas de terceros pertenecen a sus respectivos dueños.
 
-What is Bitcoin Core?
----------------------
+---
 
-Bitcoin Core connects to the Bitcoin peer-to-peer network to download and fully
-validate blocks and transactions. It also includes a wallet and graphical user
-interface, which can be optionally built.
+## 1. Compilación
 
-Further information about Bitcoin Core is available in the [doc folder](/doc).
+```bash
+cd ~/adonai/adonai
+mkdir -p build && cd build
+cmake ..
+make -j$(nproc)
+```
 
-License
--------
+Binarios resultantes:
+```
+build/bin/bitcoind
+build/bin/bitcoin-cli
+```
 
-Bitcoin Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
-information or see https://opensource.org/license/MIT.
+---
 
-Development Process
--------------------
+## 2. Configuración
 
-The `master` branch is regularly built (see `doc/build-*.md` for instructions) and tested, but it is not guaranteed to be
-completely stable. [Tags](https://github.com/bitcoin/bitcoin/tags) are created
-regularly from release branches to indicate new official, stable release versions of Bitcoin Core.
+Crear directorio de datos y fichero de configuración:
 
-The https://github.com/bitcoin-core/gui repository is used exclusively for the
-development of the GUI. Its master branch is identical in all monotree
-repositories. Release branches and tags do not exist, so please do not fork
-that repository unless it is for development reasons.
+```bash
+mkdir -p /home/angel/.adonai
+nano /home/angel/.adonai/adonai.conf
+```
 
-The contribution workflow is described in [CONTRIBUTING.md](CONTRIBUTING.md)
-and useful hints for developers can be found in [doc/developer-notes.md](doc/developer-notes.md).
+Contenido mínimo de `adonai.conf` (puertos propios de ADONAI):
 
-Testing
--------
+```ini
+daemon=1
+server=1
+listen=1
+txindex=1
+logtimestamps=1
+maxconnections=64
 
-Testing and code review is the bottleneck for development; we get more pull
-requests than we can review and test on short notice. Please be patient and help out by testing
-other people's pull requests, and remember this is a security-critical project where any mistake might cost people
-lots of money.
+# Puertos ADONAI
+port=18444        # P2P
+rpcport=18443     # RPC
 
-### Automated Testing
+# RPC local
+rpcbind=127.0.0.1
+rpcallowip=127.0.0.1
+rpcuser=usuario_rpc
+rpcpassword=contraseña_rpc_segura
+```
 
-Developers are strongly encouraged to write [unit tests](src/test/README.md) for new code, and to
-submit new unit tests for old code. Unit tests can be compiled and run
-(assuming they weren't disabled during the generation of the build system) with: `ctest`. Further details on running
-and extending unit tests can be found in [/src/test/README.md](/src/test/README.md).
+> Si editas desde Windows, normaliza saltos de línea:  
+> `sed -i 's/\r$//' /home/angel/.adonai/adonai.conf`
 
-There are also [regression and integration tests](/test), written
-in Python.
-These tests can be run (if the [test dependencies](/test) are installed) with: `build/test/functional/test_runner.py`
-(assuming `build` is your build directory).
+---
 
-The CI (Continuous Integration) systems make sure that every pull request is tested on Windows, Linux, and macOS.
-The CI must pass on all commits before merge to avoid unrelated CI failures on new pull requests.
+## 3. Ejecución del nodo
 
-### Manual Quality Assurance (QA) Testing
+Inicia en segundo plano:
 
-Changes should be tested by somebody other than the developer who wrote the
-code. This is especially important for large or high-risk changes. It is useful
-to add a test plan to the pull request description if testing the changes is
-not straightforward.
+```bash
+cd ~/adonai/adonai/build
+./bin/bitcoind -daemon -conf=/home/angel/.adonai/adonai.conf -datadir=/home/angel/.adonai
+```
 
-Translations
-------------
+Ver logs en tiempo real (opcional):
+```bash
+tail -n 200 -f /home/angel/.adonai/debug.log
+```
 
-Changes to translations as well as new translations can be submitted to
-[Bitcoin Core's Transifex page](https://explore.transifex.com/bitcoin/bitcoin/).
+---
 
-Translations are periodically pulled from Transifex and merged into the git repository. See the
-[translation process](doc/translation_process.md) for details on how this works.
+## 4. Verificación del génesis
 
-**Important**: We do not accept translation changes as GitHub pull requests because the next
-pull from Transifex would automatically overwrite them again.
+```bash
+./bin/bitcoin-cli -conf=/home/angel/.adonai/adonai.conf -datadir=/home/angel/.adonai getblockhash 0
+```
+
+Debe devolver:
+
+```
+4c4efcd0ae575f920e8fb827b9d4ccb552d53ab573726afa6788394bb2753492
+```
+
+Más información de la cadena:
+
+```bash
+./bin/bitcoin-cli -conf=/home/angel/.adonai/adonai.conf -datadir=/home/angel/.adonai getblockchaininfo
+```
+
+---
+
+## 5. Parar el nodo
+
+```bash
+./bin/bitcoin-cli -conf=/home/angel/.adonai/adonai.conf -datadir=/home/angel/.adonai stop
+```
+
+---
+
+## 6. Parámetros del génesis
+
+Consulta `GENESIS.adonai.txt` (inclúyelo en la raíz del repo).  
+Contiene:
+- Hash génesis: `4c4efcd0ae575f920e8fb827b9d4ccb552d53ab573726afa6788394bb2753492`
+- Merkle root: `3c27610446c91576f0f18fa4e758b72565f678ae063346fe6d271d6d850783b6`
+- nTime: `1754122572`
+- nNonce: `2`
+- nBits: `0x207fffff`
+- Magic bytes: `AD 0E A1 01`
+- Puertos: `P2P 18444`, `RPC 18443`
+- HRP Bech32: `ad`
+- Prefijos Base58: pub=23, script=83, secret=153
+
+---
+
+## 7. Licencia
+
+Este repositorio se publica bajo **MIT**. Consulta el archivo [`LICENSE`](LICENSE) para los términos completos.  
+Mantén los avisos de copyright originales de Bitcoin Core al redistribuir.
+
+---
+
+© 2025 ADONAI contributors
