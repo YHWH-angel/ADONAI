@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-present The Bitcoin Core developers
+// Modifications (c) 2025 The Adonai Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -100,12 +101,18 @@ public:
         //consensus.powLimit = uint256{"00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"};
         consensus.powLimit = uint256{"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"};
 
-        
+        consensus.nPowTargetSpacingV1      = 120;     // arranque seguro
         consensus.nPowTargetSpacing = 45; //time between blocks
         consensus.nPowTargetTimespan = 14 * 24 * 60 * 60;
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.enforce_BIP94 = false;
         consensus.fPowNoRetargeting = false;
+
+        consensus.nPowSpacingSwitchHeight  = 10000;   // altura para cambio
+        consensus.nSubsidyInitial          = 50 * COIN;
+        consensus.nCoinbaseMaturity        = 200;     // ≈ 6h al inicio
+
+
         {
             auto& tap = consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT];
             tap.bit = 2;
@@ -134,10 +141,10 @@ public:
          * a large 32-bit integer with any alignment.
          */
         pchMessageStart[0] = 0xAD;
-        pchMessageStart[1] = 0x0E;
-        pchMessageStart[2] = 0xA1;
-        pchMessageStart[3] = 0x01;
-        nDefaultPort = 18444;        // P2P (elige dos números “tuyos”)
+        pchMessageStart[1] = 0x0D;
+        pchMessageStart[2] = 0x0A;
+        pchMessageStart[3] = 0x11;
+        nDefaultPort = 17001;        // P2P (elige dos números “tuyos”)
         nPruneAfterHeight = 100000;
         m_assumed_blockchain_size = 720;
         m_assumed_chain_state_size = 14;
@@ -155,6 +162,7 @@ public:
         assert(consensus.hashGenesisBlock == uint256{"4c4efcd0ae575f920e8fb827b9d4ccb552d53ab573726afa6788394bb2753492"});
         assert(genesis.hashMerkleRoot   == uint256{"3c27610446c91576f0f18fa4e758b72565f678ae063346fe6d271d6d850783b6"});
 
+        
                 // --- BEGIN: Génesis miner (temporal) ---
         /*arith_uint256 bnTarget;
         bnTarget.SetCompact(genesis.nBits);
@@ -202,12 +210,14 @@ public:
         bech32_hrp = "ad";
 
         vFixedSeeds.clear();
-
+        
         fDefaultConsistencyChecks = false;
         m_is_mockable_chain = false;
 
         m_assumeutxo_data = {};
 
+        vSeeds.emplace_back("seed1.adonai.org");
+        vSeeds.emplace_back("seed2.adonai.org");
 
         chainTxData = ChainTxData{.nTime = 0, .tx_count = 0, .dTxRate = 0.0};
 
