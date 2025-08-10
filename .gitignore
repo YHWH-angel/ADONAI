@@ -82,3 +82,6 @@ indexes/
 # ARCHIVOS ESPECÍFICOS DE ADONAI
 # -------------------------
 GENESIS.adonai.txt
+
+# Windows alt streams
+*:Zone.Identifier
