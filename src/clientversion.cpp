@@ -1,4 +1,5 @@
 // Copyright (c) 2012-2022 The Bitcoin Core developers
+// Modifications (c) 2025 The Adonai Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -77,6 +78,7 @@ std::string CopyrightHolders(const std::string& strPrefix)
     // Make sure Bitcoin Core copyright is not removed by accident
     if (copyright_devs.find("Bitcoin Core") == std::string::npos) {
         strCopyrightHolders += "\n" + strPrefix + "The Bitcoin Core developers";
+// Modifications (c) 2025 The Adonai Core developers
     }
     return strCopyrightHolders;
 }
