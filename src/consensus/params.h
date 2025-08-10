@@ -81,6 +81,11 @@ struct BIP9Deployment {
  * Parameters that influence chain consensus.
  */
 struct Params {
+    int64_t nPowTargetSpacingV1;      // 120
+    int32_t nPowSpacingSwitchHeight;  // altura del cambio
+    int64_t  nSubsidyInitial;          // subsidio inicial por bloque
+    int nCoinbaseMaturity;            // madurez de coinbase en bloques
+
     uint256 hashGenesisBlock;
     int nSubsidyHalvingInterval;
     /**
