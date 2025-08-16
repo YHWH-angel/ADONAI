@@ -546,11 +546,12 @@ public:
         consensus.SegwitHeight = 0; // Always active unless overridden
         consensus.MinBIP9WarningHeight = 0;
         consensus.powLimit = uint256{"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"};
-        consensus.nPowTargetTimespan = 24 * 60 * 60; // one day
-        consensus.nPowTargetSpacing = 10 * 60;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.enforce_BIP94 = opts.enforce_bip94;
         consensus.fPowNoRetargeting = true;
+
+        consensus.nPowTargetTimespan = 45; // irrelevante con no-retarget, pero coherente
+        consensus.nPowTargetSpacing = 45;  // Adonai: 45 s por bloque
 
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 0;
@@ -604,14 +605,62 @@ public:
             consensus.vDeployments[deployment_pos].min_activation_height = version_bits_params.min_activation_height;
         }
 
-        genesis = CreateGenesisBlock(1296688602, 2, 0x207fffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(
+            /* nTime */ 1754122572,
+            /* nNonce */ 2,
+            /* nBits */ 0x207fffff,
+            /* nVersion */ 1,
+            /* genesisReward */ 50 * COIN
+        );
         consensus.hashGenesisBlock = genesis.GetHash();
-        // assert(consensus.hashGenesisBlock == uint256{"0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206"});
-        // assert(genesis.hashMerkleRoot == uint256{"4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"});
 
-        vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.
+        // Asegura tus asserts (usa el formato de tu uint256, aquí es con llaves):
+        assert(consensus.hashGenesisBlock == uint256{"4c4efcd0ae575f920e8fb827b9d4ccb552d53ab573726afa6788394bb2753492"});
+        assert(genesis.hashMerkleRoot   == uint256{"3c27610446c91576f0f18fa4e758b72565f678ae063346fe6d271d6d850783b6"});
+
+
+                // --- BEGIN: Génesis miner (temporal) ---
+        /*arith_uint256 bnTarget;
+        bnTarget.SetCompact(genesis.nBits);
+
+        LogPrintf("Buscando génesis...\n");
+        uint256 best = uint256();
+        best.SetNull();
+
+        for (;;) {
+            uint256 hash = genesis.GetHash(); // Debe ser BLAKE3 si tu GetHash() ya usa BLAKE3
+            arith_uint256 arith = UintToArith256(hash);
+
+            if (best.IsNull() || arith < UintToArith256(best)) {
+                best = hash;
+                LogPrintf("nonce=%u hash=%s\n", genesis.nNonce, hash.ToString());
+            }
+
+            if (arith <= bnTarget) {
+                LogPrintf("¡¡Génesis encontrado!!\n");
+                LogPrintf("  nTime        = %u\n",  genesis.nTime);
+                LogPrintf("  nNonce       = %u\n",  genesis.nNonce);
+                LogPrintf("  nBits        = %u\n",  genesis.nBits);
+                LogPrintf("  genesis hash = %s\n", hash.ToString());
+                LogPrintf("  merkle root  = %s\n", genesis.hashMerkleRoot.ToString());
+                break;
+            }
+
+            if (++genesis.nNonce == 0) { // overflow
+                ++genesis.nTime;
+                LogPrintf("Nonce overflow, incrementando nTime a %u\n", genesis.nTime);
+            }
+        }
+            
+        // --- END: Génesis miner (temporal) ---
+        */
+
+        LogPrintf("MERKLE: %s", genesis.hashMerkleRoot.ToString());
+        LogPrintf("GENESIS HASH: %s\n", genesis.GetHash().ToString());
+
+        
         vSeeds.clear();
-        vSeeds.emplace_back("dummySeed.invalid.");
+        vFixedSeeds.clear();  //!< Regtest mode doesn't have any fixed seeds.
 
         fDefaultConsistencyChecks = true;
         m_is_mockable_chain = true;
@@ -646,12 +695,12 @@ public:
         };
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
-        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
-        base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,239);
-        base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
-        base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196); // rado-script
+        base58Prefixes[SECRET_KEY]     = std::vector<unsigned char>(1,239); // rado-WIF
+        base58Prefixes[EXT_PUBLIC_KEY] = std::vector<unsigned char>{0x04, 0x35, 0x87, 0xCF};
+        base58Prefixes[EXT_SECRET_KEY] = std::vector<unsigned char>{0x04, 0x35, 0x83, 0x94};
 
-        bech32_hrp = "bcrt";
+        bech32_hrp = "rado";
     }
 };
 

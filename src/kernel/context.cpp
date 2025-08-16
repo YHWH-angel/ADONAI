@@ -18,7 +18,8 @@ Context::Context()
     static std::once_flag globals_initialized{};
     std::call_once(globals_initialized, []() {
         std::string sha256_algo = SHA256AutoDetect();
-        LogInfo("Using the '%s' SHA256 implementation\n", sha256_algo);
+        LogInfo("Proof-of-Work hash function = BLAKE3\n");
+        LogInfo("Initialized internal SHA256 (non-PoW) = %s\n", sha256_algo);
         RandomInit();
     });
 }
