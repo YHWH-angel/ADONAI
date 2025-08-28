@@ -64,6 +64,7 @@ static bool InterpretBool(const std::string& strValue)
     return (LocaleIndependentAtoi<int>(strValue) != 0);
 }
 
+
 static std::string SettingName(const std::string& arg)
 {
     return arg.size() > 0 && arg[0] == '-' ? arg.substr(1) : arg;
@@ -561,6 +562,8 @@ void ArgsManager::AddCommand(const std::string& cmd, const std::string& help)
     auto ret = arg_map.emplace(cmd, Arg{"", help, ArgsManager::COMMAND});
     Assert(ret.second); // Fail on duplicate commands
 }
+
+
 
 void ArgsManager::AddArg(const std::string& name, const std::string& help, unsigned int flags, const OptionsCategory& cat)
 {

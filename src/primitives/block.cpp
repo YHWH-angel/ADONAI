@@ -19,7 +19,10 @@ uint256 CBlockHeader::GetHash() const
     blake3_hasher_update(&hasher, vec.data(), vec.size());
     blake3_hasher_finalize(&hasher, out, BLAKE3_OUT_LEN);
 
-    return uint256(std::span<const unsigned char>(out, 32));
+    uint256 res = uint256(std::span<const unsigned char>(out, 32));
+    LogPrintf("[POW] BLAKE3 header hash = %s\n", res.ToString());
+
+    return res;
 }
 
 std::string CBlock::ToString() const

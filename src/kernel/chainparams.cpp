@@ -21,6 +21,8 @@
 #include <util/chaintype.h>
 #include <util/strencodings.h>
 #include <uint256.h>
+#include <common/args.h>
+
 
 #include <algorithm>
 #include <cassert>
@@ -76,6 +78,55 @@ static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits
     const char* pszTimestamp = "New world order is approaching.";
     const CScript genesisOutputScript = CScript() << "04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f"_hex << OP_CHECKSIG;
     return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
+}
+
+
+void MineGenesis(CBlock& genesis)
+{
+    arith_uint256 target;
+    target.SetCompact(genesis.nBits);
+
+    LogPrintf("==> Mining genesis (nTime=%u, nBits=%08x)...\n", genesis.nTime, genesis.nBits);
+
+    uint256 best;
+    bool has_best = false;
+
+    // Evita overflow infinito si ya viene con nonce alto
+    if (genesis.nNonce == std::numeric_limits<uint32_t>::max()) {
+        genesis.nNonce = 0;
+        ++genesis.nTime;
+    }
+
+    while (true) {
+        const uint256 hash = genesis.GetHash();
+        const arith_uint256 ahash = UintToArith256(hash);
+
+        if (!has_best || ahash < UintToArith256(best)) {
+            best = hash;
+            has_best = true;
+            LogPrintf("  progress nonce=%u hash=%s\n", genesis.nNonce, hash.ToString());
+        }
+
+        if (ahash <= target) {
+            LogPrintf("==> GENESIS ENCONTRADO!\n");
+            LogPrintf("  nTime        = %u\n",  genesis.nTime);
+            LogPrintf("  nNonce       = %u\n",  genesis.nNonce);
+            LogPrintf("  nBits        = %u (0x%08x)\n", genesis.nBits, genesis.nBits);
+            LogPrintf("  genesis hash = %s\n",  hash.ToString());
+            LogPrintf("  merkle root  = %s\n",  genesis.hashMerkleRoot.ToString());
+            LogPrintf("==> Copia estos asserts en tu params:\n");
+            LogPrintf("  assert(consensus.hashGenesisBlock == uint256S(\"%s\"));\n", hash.ToString());
+            LogPrintf("  assert(genesis.hashMerkleRoot == uint256S(\"%s\"));\n", genesis.hashMerkleRoot.ToString());
+            break;
+        }
+
+        // Siguiente nonce / manejo de overflow
+        ++genesis.nNonce;
+        if (genesis.nNonce == 0) { // overflow
+            ++genesis.nTime;
+            LogPrintf("  nonce overflow, bump nTime -> %u\n", genesis.nTime);
+        }
+    }
 }
 
 /**
@@ -413,53 +464,37 @@ public:
 };
 
 /**
- * Signet: test network with an additional consensus parameter (see BIP325).
+ * Signet (ADONAI): red de test con challenge BIP325 + PoW BLAKE3.
  */
 class SigNetParams : public CChainParams {
 public:
     explicit SigNetParams(const SigNetOptions& options)
     {
-        std::vector<uint8_t> bin;
+        std::vector<uint8_t> challenge_bin;
         vFixedSeeds.clear();
         vSeeds.clear();
 
+        // ----- CHALLENGE -----
         if (!options.challenge) {
-            bin = "512103ad5e0edad18cb1f0fc0d28a3d4f1f3e445640337489abb10404f2d1e086be430210359ef5021964fe22d6f8e05b2463c9540ce96883fe3b278760f048f5189f2e6c452ae"_hex_v_u8;
-            vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_signet), std::end(chainparams_seed_signet));
-            vSeeds.emplace_back("seed.signet.bitcoin.sprovoost.nl.");
-            vSeeds.emplace_back("seed.signet.achownodes.xyz."); // Ava Chow, only supports x1, x5, x9, x49, x809, x849, xd, x400, x404, x408, x448, xc08, xc48, x40c
-
-            consensus.nMinimumChainWork = uint256{"000000000000000000000000000000000000000000000000000002b517f3d1a1"};
-            consensus.defaultAssumeValid = uint256{"000000895a110f46e59eb82bbc5bfb67fa314656009c295509c21b4999f5180a"}; // 237722
-            m_assumed_blockchain_size = 9;
-            m_assumed_chain_state_size = 1;
-            chainTxData = ChainTxData{
-                // Data from RPC: getchaintxstats 4096 000000895a110f46e59eb82bbc5bfb67fa314656009c295509c21b4999f5180a
-                .nTime    = 1741019645,
-                .tx_count = 16540736,
-                .dTxRate  = 1.064918879911595,
-            };
+            // ADONAI: pon aquí TU challenge por defecto (recomendado 1-of-1 o 1-of-2)
+            // Ejemplo de placeholder BIP325 (REEMPLAZA por tu clave):
+            // 51 <33-byte pubkey> 51 AE   => OP_1 <PK> OP_1 OP_CHECKMULTISIG
+            challenge_bin = "512103aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa51ae"_hex_v_u8; // TODO: reemplazar pubkey
+            // Sin seeds externos de Bitcoin
+            vFixedSeeds = {}; // TODO: añadir fijos propios si quieres
+            // vSeeds.emplace_back("seed.signet.adonai.network."); // TODO: tus DNS seeds
         } else {
-            bin = *options.challenge;
-            consensus.nMinimumChainWork = uint256{};
-            consensus.defaultAssumeValid = uint256{};
-            m_assumed_blockchain_size = 0;
-            m_assumed_chain_state_size = 0;
-            chainTxData = ChainTxData{
-                0,
-                0,
-                0,
-            };
-            LogPrintf("Signet with challenge %s\n", HexStr(bin));
+            challenge_bin = *options.challenge;
+            LogPrintf("Signet with custom challenge %s\n", HexStr(challenge_bin));
         }
 
-        if (options.seeds) {
-            vSeeds = *options.seeds;
-        }
+        if (options.seeds) vSeeds = *options.seeds;
 
+        // ----- CONSENSO -----
         m_chain_type = ChainType::SIGNET;
         consensus.signet_blocks = true;
-        consensus.signet_challenge.assign(bin.begin(), bin.end());
+        consensus.signet_challenge.assign(challenge_bin.begin(), challenge_bin.end());
+
         consensus.nSubsidyHalvingInterval = 210000;
         consensus.BIP34Height = 1;
         consensus.BIP34Hash = uint256{};
@@ -467,67 +502,101 @@ public:
         consensus.BIP66Height = 1;
         consensus.CSVHeight = 1;
         consensus.SegwitHeight = 1;
-        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
-        consensus.nPowTargetSpacing = 10 * 60;
-        consensus.fPowAllowMinDifficultyBlocks = false;
-        consensus.enforce_BIP94 = false;
+
+        // Timing objetivo ADONAI (mantén 60s si es tu target)
+        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // 2 semanas (estilo BTC; OK para tests)
+        consensus.nPowTargetSpacing  = 60;                // 60 s (ADONAI)
+        consensus.fPowAllowMinDifficultyBlocks = true;    // facilita el arranque de signet
         consensus.fPowNoRetargeting = false;
+        consensus.enforce_BIP94 = false;
         consensus.MinBIP9WarningHeight = 0;
-        consensus.powLimit = uint256{"00000377ae000000000000000000000000000000000000000000000000000000"};
-        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = Consensus::BIP9Deployment::NEVER_ACTIVE;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].min_activation_height = 0; // No activation delay
-        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].threshold = 1815; // 90%
-        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].period = 2016;
 
-        // Activation of Taproot (BIPs 340-342)
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].bit = 2;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].min_activation_height = 0; // No activation delay
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].threshold = 1815; // 90%
-        consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].period = 2016;
+        
+        consensus.powLimit = uint256{"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"};
 
-        // message start is defined as the first 4 bytes of the sha256d of the block script
+        // TESTDUMMY
+        {
+            auto& d = consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY];
+            d.bit = 28;
+            d.nStartTime = Consensus::BIP9Deployment::NEVER_ACTIVE;
+            d.nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+            d.min_activation_height = 0;  // sin delay
+            d.threshold = 1815;           // 90%
+            d.period = 2016;
+        }
+
+        // TAPROOT
+        {
+            auto& d = consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT];
+            d.bit = 2;
+            d.nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;
+            d.nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
+            d.min_activation_height = 0;  // sin delay
+            d.threshold = 1815;           // 90%
+            d.period = 2016;
+        }
+
+        // ----- MAGIC / MENSAJE START (derivado del challenge, BIP325) -----
         HashWriter h{};
         h << consensus.signet_challenge;
-        uint256 hash = h.GetHash();
-        std::copy_n(hash.begin(), 4, pchMessageStart.begin());
+        uint256 challenge_hash = h.GetHash();
+        std::copy_n(challenge_hash.begin(), 4, pchMessageStart.begin());
 
-        nDefaultPort = 38333;
+        // ----- RED -----
+        nDefaultPort = 28837;     // ADONAI signet P2P (evitar 38333 de BTC)
         nPruneAfterHeight = 1000;
 
-        genesis = CreateGenesisBlock(1598918400, 52613770, 0x1e0377ae, 1, 50 * COIN);
-        consensus.hashGenesisBlock = genesis.GetHash();
-        // assert(consensus.hashGenesisBlock == uint256{"00000008819873e925422c1ff0f99f7cc9bbb232af63a077a480a3633bee1ef6"});
-        // assert(genesis.hashMerkleRoot == uint256{"4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"});
+        // ----- GENESIS (valores provisionales) -----
+        // nBits: ajusta a tu powLimit/objetivo; estos son placeholders. Re-mina y fija constantes.
+        genesis = CreateGenesisBlock(/*nTime*/ 1723502400, /*nNonce*/ 1534261, /*nBits*/ 0x1e0fffff, /*nVersion*/ 1, /*genesisReward*/ 50 * COIN);
+        if (gArgs.GetBoolArg("-minegenesis", false)) {
+            MineGenesis(genesis);
+            
+        }else{
+            consensus.hashGenesisBlock = genesis.GetHash();
+            assert(consensus.hashGenesisBlock == uint256{"00000d250c9c1bfdfd933cabc32268b39d1556f6a29db879025019976f287d1e"});
+            assert(genesis.hashMerkleRoot == uint256{"3c27610446c91576f0f18fa4e758b72565f678ae063346fe6d271d6d850783b6"});
+        }
 
-        m_assumeutxo_data = {
-            {
-                .height = 160'000,
-                .hash_serialized = AssumeutxoHash{uint256{"fe0a44309b74d6b5883d246cb419c6221bcccf0b308c9b59b7d70783dbdf928a"}},
-                .m_chain_tx_count = 2289496,
-                .blockhash = consteval_ctor(uint256{"0000003ca3c99aff040f2563c2ad8f8ec88bd0fd6b8f0895cfaf1ef90353a62c"}),
-            }
+        // assert(consensus.hashGenesisBlock == uint256{"4c4efcd0ae575f920e8fb827b9d4ccb552d53ab573726afa6788394bb2753492"});
+        // TODO (tras minar): fija asserts con los hashes reales
+        // assert(consensus.hashGenesisBlock == uint256S("0x..."));
+        // assert(genesis.hashMerkleRoot == uint256S("0x..."));
+
+        // AssumeUTXO/assumevalid/chainwork: déjalos vacíos en signet propio
+        consensus.nMinimumChainWork = uint256{};
+        consensus.defaultAssumeValid = uint256{};
+        m_assumeutxo_data = {};
+        m_assumed_blockchain_size = 0;
+        m_assumed_chain_state_size = 0;
+
+        chainTxData = ChainTxData{
+            .nTime = genesis.nTime,
+            .tx_count = 1,
+            .dTxRate = 0.0,
         };
 
-        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
-        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
-        base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,239);
-        base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
-        base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
+        // ----- PREFIJOS DIRECCIONES -----
+        // Base58 (no críticos si te vas a Bech32; usa valores no colisionantes con BTC):
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 65);  // 'A' (~ADO signet)
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 125);
+        base58Prefixes[SECRET_KEY]     = std::vector<unsigned char>(1, 153);
+        base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E}; // xpub (placeholder)
+        base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4}; // xprv (placeholder)
 
-        bech32_hrp = "tb";
+        // Bech32 HRP propia para signet ADONAI
+        bech32_hrp = "sado";
 
         fDefaultConsistencyChecks = false;
         m_is_mockable_chain = false;
     }
 };
 
+
 /**
  * Regression test: intended for private networks only. Has minimal difficulty to ensure that
  * blocks can be found instantly.
+ * Angel: fixed.
  */
 class CRegTestParams : public CChainParams
 {
@@ -761,3 +830,4 @@ std::optional<ChainType> GetNetworkForMagic(const MessageStartChars& message)
     }
     return std::nullopt;
 }
+
