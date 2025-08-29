@@ -1253,8 +1253,7 @@ static ChainstateLoadResult InitAndLoadChainstate(
     if (chainman.m_interrupt) return {ChainstateLoadStatus::INTERRUPTED, {}};
 
     // This is defined and set here instead of inline in validation.h to avoid a hard
-    // dependency between validation and index/base, since the latter is not in
-    // libbitcoinkernel.
+    // dependency between validation and index/base.
     chainman.snapshot_download_completed = [&node]() {
         if (!node.chainman->m_blockman.IsPruneMode()) {
             LogPrintf("[snapshot] re-enabling NODE_NETWORK services\n");
