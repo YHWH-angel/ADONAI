@@ -20,7 +20,6 @@
 #include <uint256.h>
 #include <util/chaintype.h>
 #include <util/strencodings.h>
-#include <uint256.h>
 #include <common/args.h>
 
 
