@@ -53,6 +53,6 @@ const CBaseChainParams& BaseParams();
 void SelectBaseParams(const ChainType chain);
 
 /** List of possible chain / network names  */
-#define LIST_CHAIN_NAMES "main, test, testnet4, signet, regtest"
+#define LIST_CHAIN_NAMES "main, test, testnet4"
 
 #endif // BITCOIN_CHAINPARAMSBASE_H
