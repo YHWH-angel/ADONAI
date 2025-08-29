@@ -15,6 +15,7 @@
 #include <uint256.h>
 #include <protocol.h>
 #include <optional>
+#include <cassert>
 
 static uint256 Blake3Hash(const CBlockHeader& block)
 {
@@ -33,18 +34,52 @@ static uint256 Blake3Hash(const CBlockHeader& block)
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::Params& params)
 {
-    if (params.fPowNoRetargeting)
+    if (params.fPowNoRetargeting) {
+        if (pblock) {
+            const_cast<CBlockHeader*>(pblock)->nBits = pindexLast->nBits;
+        }
         return pindexLast->nBits;
+    }
 
-    // Elige aquí el algoritmo de ajuste de dificultad que uses (Bitcoin usa uno cada 2016 bloques)
-    return CalculateNextWorkRequired(pindexLast, pblock->GetBlockTime(), params);
+    // Only change the difficulty on adjustment intervals.
+    if ((pindexLast->nHeight + 1) % params.DifficultyAdjustmentInterval() != 0) {
+        if (pblock) {
+            const_cast<CBlockHeader*>(pblock)->nBits = pindexLast->nBits;
+        }
+        return pindexLast->nBits;
+    }
+
+    const CBlockIndex* pindexFirst = pindexLast->GetAncestor(pindexLast->nHeight - (params.DifficultyAdjustmentInterval() - 1));
+    unsigned int nBits = CalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
+    if (pblock) {
+        const_cast<CBlockHeader*>(pblock)->nBits = nBits;
+    }
+    return nBits;
 }
 
 unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params)
 {
-    // Fixed difficulty rule for testnet and BLAKE3
-    // 0x207fffff corresponds to the lowest difficulty (i.e., highest possible target)
-    return 0x207fffff;
+    assert(pindexLast);
+
+    int64_t nActualTimespan = pindexLast->GetBlockTime() - nFirstBlockTime;
+    if (nActualTimespan < params.nPowTargetTimespan / 4) {
+        nActualTimespan = params.nPowTargetTimespan / 4;
+    }
+    if (nActualTimespan > params.nPowTargetTimespan * 4) {
+        nActualTimespan = params.nPowTargetTimespan * 4;
+    }
+
+    arith_uint256 bnNew;
+    bnNew.SetCompact(pindexLast->nBits);
+    bnNew *= nActualTimespan;
+    bnNew /= params.nPowTargetTimespan;
+
+    const arith_uint256 bnPowLimit = UintToArith256(params.powLimit);
+    if (bnNew > bnPowLimit) {
+        bnNew = bnPowLimit;
+    }
+
+    return bnNew.GetCompact();
 }
 
 bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params& params)
