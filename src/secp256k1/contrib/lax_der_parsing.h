@@ -3,6 +3,11 @@
  * Distributed under the MIT software license, see the accompanying    *
  * file COPYING or https://www.opensource.org/licenses/mit-license.php.*
  ***********************************************************************/
+/* Copyright (c) 2014-2022 The Bitcoin Core developers
+ * Modifications (c) 2025 The Adonai Core developers
+ * Distributed under the MIT software license, see the accompanying
+ * file COPYING or http://www.opensource.org/licenses/mit-license.php.
+ */
 
 /****
  * Please do not link this file directly. It is not part of the libsecp256k1
@@ -74,7 +79,7 @@ extern "C" {
  *  This function will accept any valid DER encoded signature, even if the
  *  encoded numbers are out of range. In addition, it will accept signatures
  *  which violate the DER spec in various ways. Its purpose is to allow
- *  validation of the Bitcoin blockchain, which includes non-DER signatures
+ *  validation of the Adonai blockchain, which includes non-DER signatures
  *  from before the network rules were updated to enforce DER. Note that
  *  the set of supported violations is a strict subset of what OpenSSL will
  *  accept.

@@ -2,6 +2,9 @@
 # Copyright (c) 2024 Random "Randy" Lattice and Sean Andersen
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://www.opensource.org/licenses/mit-license.php.
+# Modifications (c) 2025 The Adonai Core developers
+# Distributed under the MIT software license, see the accompanying
+# file COPYING or http://www.opensource.org/licenses/mit-license.php.
 '''
 Generate a C file with ECDH testvectors from the Wycheproof project.
 '''
