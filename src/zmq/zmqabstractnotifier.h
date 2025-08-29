@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_ZMQ_ZMQABSTRACTNOTIFIER_H
-#define BITCOIN_ZMQ_ZMQABSTRACTNOTIFIER_H
+#ifndef ADONAI_ZMQ_ZMQABSTRACTNOTIFIER_H
+#define ADONAI_ZMQ_ZMQABSTRACTNOTIFIER_H
 
 #include <cstdint>
 #include <functional>
@@ -65,4 +65,4 @@ protected:
     int outbound_message_high_water_mark; // aka SNDHWM
 };
 
-#endif // BITCOIN_ZMQ_ZMQABSTRACTNOTIFIER_H
+#endif // ADONAI_ZMQ_ZMQABSTRACTNOTIFIER_H
