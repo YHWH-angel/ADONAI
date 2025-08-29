@@ -1,4 +1,5 @@
 # Copyright (c) 2023-present The Bitcoin Core developers
+# Modifications (c) 2025 The Adonai Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/license/mit/.
 
@@ -56,9 +57,9 @@ set(CMAKE_AUTOUIC_SEARCH_PATHS forms)
 
 configure_file(bitcoin_locale.qrc bitcoin_locale.qrc USE_SOURCE_PERMISSIONS COPYONLY)
 
-# The bitcoinqt sources have to include headers in
+# The adonaiqt sources have to include headers in
 # order to parse them to collect translatable strings.
-add_library(bitcoinqt STATIC EXCLUDE_FROM_ALL
+add_library(adonaiqt STATIC EXCLUDE_FROM_ALL
   bantablemodel.cpp
   bantablemodel.h
   bitcoin.cpp
@@ -120,12 +121,12 @@ add_library(bitcoinqt STATIC EXCLUDE_FROM_ALL
   bitcoin.qrc
   ${CMAKE_CURRENT_BINARY_DIR}/bitcoin_locale.qrc
 )
-target_compile_definitions(bitcoinqt
+target_compile_definitions(adonaiqt
   PUBLIC
     QT_NO_KEYWORDS
     QT_USE_QSTRINGBUILDER
 )
-target_include_directories(bitcoinqt
+target_include_directories(adonaiqt
   PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
 )
@@ -133,7 +134,7 @@ set_property(SOURCE macnotificationhandler.mm
   # Ignore warnings "'NSUserNotificationCenter' is deprecated: first deprecated in macOS 11.0".
   APPEND PROPERTY COMPILE_OPTIONS -Wno-deprecated-declarations
 )
-target_link_libraries(bitcoinqt
+target_link_libraries(adonaiqt
   PUBLIC
     Qt6::Widgets
   PRIVATE
@@ -147,7 +148,7 @@ target_link_libraries(bitcoinqt
 )
 
 if(ENABLE_WALLET)
-  target_sources(bitcoinqt
+  target_sources(adonaiqt
     PRIVATE
       addressbookpage.cpp
       addressbookpage.h
@@ -210,7 +211,7 @@ if(ENABLE_WALLET)
       walletview.cpp
       walletview.h
   )
-  target_link_libraries(bitcoinqt
+  target_link_libraries(adonaiqt
     PRIVATE
       bitcoin_wallet
       Qt6::Network
@@ -218,13 +219,13 @@ if(ENABLE_WALLET)
 endif()
 
 if(WITH_DBUS)
-  target_link_libraries(bitcoinqt PRIVATE Qt6::DBus)
+  target_link_libraries(adonaiqt PRIVATE Qt6::DBus)
 endif()
 
 if(qt_lib_type STREQUAL "STATIC_LIBRARY")
   # We want to define static plugins to link ourselves, thus preventing
   # automatic linking against a "sane" set of default static plugins.
-  qt6_import_plugins(bitcoinqt
+  qt6_import_plugins(adonaiqt
     EXCLUDE_BY_TYPE
       accessiblebridge
       platforms
@@ -248,44 +249,44 @@ set_source_files_properties(${ts_files} PROPERTIES OUTPUT_LOCATION ${CMAKE_CURRE
 if(Qt6_VERSION VERSION_GREATER_EQUAL 6.7)
   qt6_add_lrelease(TS_FILES ${ts_files} OPTIONS -silent)
 else()
-  qt6_add_lrelease(bitcoinqt TS_FILES ${ts_files} OPTIONS -silent)
+  qt6_add_lrelease(adonaiqt TS_FILES ${ts_files} OPTIONS -silent)
 endif()
 
-add_executable(bitcoin-qt
+add_executable(adonai-qt
   main.cpp
   ../init/bitcoin-qt.cpp
 )
 
-add_windows_resources(bitcoin-qt res/bitcoin-qt-res.rc)
-add_windows_application_manifest(bitcoin-qt)
+add_windows_resources(adonai-qt res/bitcoin-qt-res.rc)
+add_windows_application_manifest(adonai-qt)
 
-target_link_libraries(bitcoin-qt
+target_link_libraries(adonai-qt
   core_interface
-  bitcoinqt
+  adonaiqt
   bitcoin_node
 )
 
-import_plugins(bitcoin-qt)
-install_binary_component(bitcoin-qt HAS_MANPAGE)
+import_plugins(adonai-qt)
+install_binary_component(adonai-qt HAS_MANPAGE)
 if(WIN32)
-  set_target_properties(bitcoin-qt PROPERTIES WIN32_EXECUTABLE TRUE)
+  set_target_properties(adonai-qt PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()
 
 if(ENABLE_IPC)
-  add_executable(bitcoin-gui
+  add_executable(adonai-gui
     main.cpp
     ../init/bitcoin-gui.cpp
   )
-  target_link_libraries(bitcoin-gui
+  target_link_libraries(adonai-gui
     core_interface
-    bitcoinqt
+    adonaiqt
     bitcoin_node
     bitcoin_ipc
   )
-  import_plugins(bitcoin-gui)
-  install_binary_component(bitcoin-gui)
+  import_plugins(adonai-gui)
+  install_binary_component(adonai-gui)
   if(WIN32)
-    set_target_properties(bitcoin-gui PROPERTIES WIN32_EXECUTABLE TRUE)
+    set_target_properties(adonai-gui PROPERTIES WIN32_EXECUTABLE TRUE)
   endif()
 endif()
 
