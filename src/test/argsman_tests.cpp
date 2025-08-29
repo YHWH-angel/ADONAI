@@ -641,85 +641,6 @@ BOOST_AUTO_TEST_CASE(util_GetArg)
     BOOST_CHECK_EQUAL(testArgs.GetArg("pritest4", "default"), "b");
 }
 
-BOOST_AUTO_TEST_CASE(util_GetChainTypeString)
-{
-    TestArgsManager test_args;
-    const auto testnet = std::make_pair("-testnet", ArgsManager::ALLOW_ANY);
-    const auto testnet4 = std::make_pair("-testnet4", ArgsManager::ALLOW_ANY);
-    const auto regtest = std::make_pair("-regtest", ArgsManager::ALLOW_ANY);
-    test_args.SetupArgs({testnet, testnet4, regtest});
-
-    const char* argv_testnet4[] = {"cmd", "-testnet4"};
-    const char* argv_regtest[] = {"cmd", "-regtest"};
-    const char* argv_test_no_reg[] = {"cmd", "-testnet4", "-noregtest"};
-    const char* argv_both[] = {"cmd", "-testnet4", "-regtest"};
-
-    // regtest in test network section is ignored
-    const char* testnetconf = "testnet4=1\nregtest=0\n[testnet4]\nregtest=1";
-    std::string error;
-
-    BOOST_CHECK(test_args.ParseParameters(0, argv_testnet4, error));
-    BOOST_CHECK_EQUAL(test_args.GetChainTypeString(), "main");
-
-    BOOST_CHECK(test_args.ParseParameters(0, argv_testnet4, error));
-    BOOST_CHECK_EQUAL(test_args.GetChainTypeString(), "main");
-
-    BOOST_CHECK(test_args.ParseParameters(2, argv_testnet4, error));
-    BOOST_CHECK_EQUAL(test_args.GetChainTypeString(), "testnet4");
-
-    BOOST_CHECK(test_args.ParseParameters(2, argv_regtest, error));
-    BOOST_CHECK_EQUAL(test_args.GetChainTypeString(), "regtest");
-
-    BOOST_CHECK(test_args.ParseParameters(3, argv_test_no_reg, error));
-    BOOST_CHECK_EQUAL(test_args.GetChainTypeString(), "testnet4");
-
-    BOOST_CHECK(test_args.ParseParameters(3, argv_both, error));
-    BOOST_CHECK_THROW(test_args.GetChainTypeString(), std::runtime_error);
-
-    BOOST_CHECK(test_args.ParseParameters(0, argv_testnet4, error));
-    test_args.ReadConfigString(testnetconf);
-    BOOST_CHECK_EQUAL(test_args.GetChainTypeString(), "testnet4");
-
-    BOOST_CHECK(test_args.ParseParameters(2, argv_testnet4, error));
-    test_args.ReadConfigString(testnetconf);
-    BOOST_CHECK_EQUAL(test_args.GetChainTypeString(), "testnet4");
-
-    BOOST_CHECK(test_args.ParseParameters(2, argv_regtest, error));
-    test_args.ReadConfigString(testnetconf);
-    BOOST_CHECK_THROW(test_args.GetChainTypeString(), std::runtime_error);
-
-    BOOST_CHECK(test_args.ParseParameters(3, argv_test_no_reg, error));
-    test_args.ReadConfigString(testnetconf);
-    BOOST_CHECK_EQUAL(test_args.GetChainTypeString(), "testnet4");
-
-    BOOST_CHECK(test_args.ParseParameters(3, argv_both, error));
-    test_args.ReadConfigString(testnetconf);
-    BOOST_CHECK_THROW(test_args.GetChainTypeString(), std::runtime_error);
-
-    // check setting the network to testnet4 (and thus making
-    // [testnet4] regtest=1 potentially relevant) doesn't break things
-    test_args.SelectConfigNetwork("testnet4");
-
-    BOOST_CHECK(test_args.ParseParameters(0, argv_testnet4, error));
-    test_args.ReadConfigString(testnetconf);
-    BOOST_CHECK_EQUAL(test_args.GetChainTypeString(), "testnet4");
-
-    BOOST_CHECK(test_args.ParseParameters(2, argv_testnet4, error));
-    test_args.ReadConfigString(testnetconf);
-    BOOST_CHECK_EQUAL(test_args.GetChainTypeString(), "testnet4");
-
-    BOOST_CHECK(test_args.ParseParameters(2, argv_regtest, error));
-    test_args.ReadConfigString(testnetconf);
-    BOOST_CHECK_THROW(test_args.GetChainTypeString(), std::runtime_error);
-
-    BOOST_CHECK(test_args.ParseParameters(2, argv_test_no_reg, error));
-    test_args.ReadConfigString(testnetconf);
-    BOOST_CHECK_EQUAL(test_args.GetChainTypeString(), "testnet4");
-
-    BOOST_CHECK(test_args.ParseParameters(3, argv_both, error));
-    test_args.ReadConfigString(testnetconf);
-    BOOST_CHECK_THROW(test_args.GetChainTypeString(), std::runtime_error);
-}
 
 // Test different ways settings can be merged, and verify results. This test can
 // be used to confirm that updates to settings code don't change behavior
@@ -762,8 +683,8 @@ struct ArgsMergeTestingSetup : public BasicTestingSetup {
             ForEachNoDup(conf_actions, SET, SECTION_NEGATE, [&] {
                 for (bool soft_set : {false, true}) {
                     for (bool force_set : {false, true}) {
-                        for (const std::string& section : {ChainTypeToString(ChainType::MAIN), ChainTypeToString(ChainType::TESTNET), ChainTypeToString(ChainType::TESTNET4), ChainTypeToString(ChainType::SIGNET)}) {
-                            for (const std::string& network : {ChainTypeToString(ChainType::MAIN), ChainTypeToString(ChainType::TESTNET), ChainTypeToString(ChainType::TESTNET4), ChainTypeToString(ChainType::SIGNET)}) {
+                        for (const std::string& section : {ChainTypeToString(ChainType::MAIN), ChainTypeToString(ChainType::TESTNET), ChainTypeToString(ChainType::TESTNET4)}) {
+                            for (const std::string& network : {ChainTypeToString(ChainType::MAIN), ChainTypeToString(ChainType::TESTNET), ChainTypeToString(ChainType::TESTNET4)}) {
                                 for (bool net_specific : {false, true}) {
                                     fn(arg_actions, conf_actions, soft_set, force_set, section, network, net_specific);
                                 }
@@ -939,89 +860,6 @@ struct ChainMergeTestingSetup : public BasicTestingSetup {
     }
 };
 
-BOOST_FIXTURE_TEST_CASE(util_ChainMerge, ChainMergeTestingSetup)
-{
-    CHash256 out_sha;
-    FILE* out_file = nullptr;
-    if (const char* out_path = getenv("CHAIN_MERGE_TEST_OUT")) {
-        out_file = fsbridge::fopen(out_path, "w");
-        if (!out_file) throw std::system_error(errno, std::generic_category(), "fopen failed");
-    }
-
-    ForEachMergeSetup([&](const ActionList& arg_actions, const ActionList& conf_actions) {
-        TestArgsManager parser;
-        LOCK(parser.cs_args);
-        parser.AddArg("-regtest", "regtest", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
-        parser.AddArg("-testnet4", "testnet4", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
-
-        auto arg = [](Action action) { return action == ENABLE_TEST  ? "-testnet4=1"   :
-                                              action == DISABLE_TEST ? "-testnet4=0"   :
-                                              action == NEGATE_TEST  ? "-notestnet4=1" :
-                                              action == ENABLE_REG   ? "-regtest=1"   :
-                                              action == DISABLE_REG  ? "-regtest=0"   :
-                                              action == NEGATE_REG   ? "-noregtest=1" : nullptr; };
-
-        std::string desc;
-        std::vector<const char*> argv = {"ignored"};
-        for (Action action : arg_actions) {
-            const char* argstr = arg(action);
-            if (!argstr) break;
-            argv.push_back(argstr);
-            desc += " ";
-            desc += argv.back();
-        }
-        std::string error;
-        BOOST_CHECK(parser.ParseParameters(argv.size(), argv.data(), error));
-        BOOST_CHECK_EQUAL(error, "");
-
-        std::string conf;
-        for (Action action : conf_actions) {
-            const char* argstr = arg(action);
-            if (!argstr) break;
-            desc += " ";
-            desc += argstr + 1;
-            conf += argstr + 1;
-            conf += "\n";
-        }
-        std::istringstream conf_stream(conf);
-        BOOST_CHECK(parser.ReadConfigStream(conf_stream, "filepath", error));
-        BOOST_CHECK_EQUAL(error, "");
-
-        desc += " || ";
-        try {
-            desc += parser.GetChainTypeString();
-        } catch (const std::runtime_error& e) {
-            desc += "error: ";
-            desc += e.what();
-        }
-        desc += "\n";
-
-        out_sha.Write(MakeUCharSpan(desc));
-        if (out_file) {
-            BOOST_REQUIRE(fwrite(desc.data(), 1, desc.size(), out_file) == desc.size());
-        }
-    });
-
-    if (out_file) {
-        if (fclose(out_file)) throw std::system_error(errno, std::generic_category(), "fclose failed");
-        out_file = nullptr;
-    }
-
-    unsigned char out_sha_bytes[CSHA256::OUTPUT_SIZE];
-    out_sha.Finalize(out_sha_bytes);
-    std::string out_sha_hex = HexStr(out_sha_bytes);
-
-    // If check below fails, should manually dump the results with:
-    //
-    //   CHAIN_MERGE_TEST_OUT=results.txt ./test_bitcoin --run_test=argsman_tests/util_ChainMerge
-    //
-    // And verify diff against previous results to make sure the changes are expected.
-    //
-    // Results file is formatted like:
-    //
-    //   <input> || <output>
-    BOOST_CHECK_EQUAL(out_sha_hex, "c0e33aab0c74e040ddcee9edad59e8148d8e1cacb3cccd9ea1a1f485cb6bad21");
-}
 
 BOOST_AUTO_TEST_CASE(util_ReadWriteSettings)
 {

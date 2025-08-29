@@ -14,7 +14,7 @@ Developer Notes
         - [Compiling for debugging](#compiling-for-debugging)
         - [Show sources in debugging](#show-sources-in-debugging)
         - [`debug.log`](#debuglog)
-        - [Signet, testnet, and regtest modes](#signet-testnet-and-regtest-modes)
+        - [Testnet mode](#testnet-mode)
         - [DEBUG_LOCKORDER](#debug_lockorder)
         - [DEBUG_LOCKCONTENTION](#debug_lockcontention)
         - [Valgrind suppressions file](#valgrind-suppressions-file)
@@ -406,15 +406,11 @@ all log categories and `-loglevel=trace` will turn on all log severity levels.
 The Qt code routes `qDebug()` output to `debug.log` under category "qt": run with `-debug=qt`
 to see it.
 
-### Signet, testnet, and regtest modes
+### Testnet mode
 
 If you are testing multi-machine code that needs to operate across the internet,
-you can run with either the `-signet` or the `-testnet4` config option to test
-with "play bitcoins" on a test network.
-
-If you are testing something that can run on one machine, run with the
-`-regtest` option.  In regression test mode, blocks can be created on demand;
-see [test/functional/](/test/functional) for tests that run in `-regtest` mode.
+run with the `-testnet4` config option to test with "play bitcoins" on a test
+network.
 
 ### DEBUG_LOCKORDER
 

@@ -25,7 +25,7 @@ make -C depends NO_QT=1 MULTIPROCESS=1
 HOST_PLATFORM="x86_64-pc-linux-gnu"
 cmake -B build --toolchain=depends/$HOST_PLATFORM/toolchain.cmake
 cmake --build build
-build/bin/bitcoin -m node -regtest -printtoconsole -debug=ipc
+build/bin/bitcoin -m node -testnet4 -printtoconsole -debug=ipc
 BITCOIN_CMD="bitcoin -m" build/test/functional/test_runner.py
 ```
 
