@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_ZMQ_ZMQPUBLISHNOTIFIER_H
-#define BITCOIN_ZMQ_ZMQPUBLISHNOTIFIER_H
+#ifndef ADONAI_ZMQ_ZMQPUBLISHNOTIFIER_H
+#define ADONAI_ZMQ_ZMQPUBLISHNOTIFIER_H
 
 #include <zmq/zmqabstractnotifier.h>
 
@@ -73,4 +73,4 @@ public:
     bool NotifyTransactionRemoval(const CTransaction &transaction, uint64_t mempool_sequence) override;
 };
 
-#endif // BITCOIN_ZMQ_ZMQPUBLISHNOTIFIER_H
+#endif // ADONAI_ZMQ_ZMQPUBLISHNOTIFIER_H
