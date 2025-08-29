@@ -231,14 +231,14 @@ if(ENABLE_WALLET)
   add_subdirectory(wallet)
 
   if(BUILD_WALLET_TOOL)
-    add_executable(bitcoin-wallet
-      bitcoin-wallet.cpp
-      init/bitcoin-wallet.cpp
+    add_executable(adonai-wallet
+      adonai-wallet.cpp
+      init/adonai-wallet.cpp
       wallet/wallettool.cpp
     )
-    add_windows_resources(bitcoin-wallet bitcoin-wallet-res.rc)
-    add_windows_application_manifest(bitcoin-wallet)
-    target_link_libraries(bitcoin-wallet
+    add_windows_resources(adonai-wallet adonai-wallet-res.rc)
+    add_windows_application_manifest(adonai-wallet)
+    target_link_libraries(adonai-wallet
       PRIVATE
       blake3
       core_interface
@@ -247,12 +247,12 @@ if(ENABLE_WALLET)
       adonai_util
       Boost::headers
     )
-    install_binary_component(bitcoin-wallet HAS_MANPAGE)
+    install_binary_component(adonai-wallet HAS_MANPAGE)
   endif()
 endif()
 
 
-# P2P and RPC server functionality used by `bitcoind` and `bitcoin-qt` executables.
+# P2P and RPC server functionality used by `adonaid` and `bitcoin-qt` executables.
 add_library(bitcoin_node STATIC EXCLUDE_FROM_ALL
   addrdb.cpp
   addrman.cpp
@@ -367,41 +367,41 @@ target_link_libraries(bitcoin_node
 
 # Bitcoin wrapper executable that can call other executables.
 if(BUILD_BITCOIN_BIN)
-  add_executable(bitcoin bitcoin.cpp)
-  add_windows_resources(bitcoin bitcoin-res.rc)
-  add_windows_application_manifest(bitcoin)
-  target_link_libraries(bitcoin core_interface adonai_util)
-  install_binary_component(bitcoin)
+  add_executable(adonai adonai.cpp)
+  add_windows_resources(adonai adonai-res.rc)
+  add_windows_application_manifest(adonai)
+  target_link_libraries(adonai core_interface adonai_util)
+  install_binary_component(adonai)
 endif()
 
-# Bitcoin Core bitcoind.
+# Bitcoin Core adonaid.
 if(BUILD_DAEMON)
-  add_executable(bitcoind
-    bitcoind.cpp
-    init/bitcoind.cpp
+  add_executable(adonaid
+    adonaid.cpp
+    init/adonaid.cpp
   )
-  add_windows_resources(bitcoind bitcoind-res.rc)
-  add_windows_application_manifest(bitcoind)
-  target_link_libraries(bitcoind
+  add_windows_resources(adonaid adonaid-res.rc)
+  add_windows_application_manifest(adonaid)
+  target_link_libraries(adonaid
     core_interface
     bitcoin_node
     blake3
     $<TARGET_NAME_IF_EXISTS:adonai_wallet>
   )
-  install_binary_component(bitcoind HAS_MANPAGE)
+  install_binary_component(adonaid HAS_MANPAGE)
 endif()
 if(ENABLE_IPC AND BUILD_DAEMON)
-  add_executable(bitcoin-node
-    bitcoind.cpp
+  add_executable(adonai-node
+    adonaid.cpp
     init/bitcoin-node.cpp
   )
-  target_link_libraries(bitcoin-node
+  target_link_libraries(adonai-node
     core_interface
     bitcoin_node
     bitcoin_ipc
     $<TARGET_NAME_IF_EXISTS:adonai_wallet>
   )
-  install_binary_component(bitcoin-node)
+  install_binary_component(adonai-node)
 endif()
 
 if(ENABLE_IPC AND BUILD_TESTS)
@@ -434,10 +434,10 @@ target_link_libraries(bitcoin_cli
 
 # Bitcoin Core RPC client
 if(BUILD_CLI)
-  add_executable(bitcoin-cli bitcoin-cli.cpp)
-  add_windows_resources(bitcoin-cli bitcoin-cli-res.rc)
-  add_windows_application_manifest(bitcoin-cli)
-  target_link_libraries(bitcoin-cli
+  add_executable(adonai-cli adonai-cli.cpp)
+  add_windows_resources(adonai-cli adonai-cli-res.rc)
+  add_windows_application_manifest(adonai-cli)
+  target_link_libraries(adonai-cli
     core_interface
     bitcoin_cli
     bitcoin_common
@@ -446,37 +446,37 @@ if(BUILD_CLI)
     libevent::core
     libevent::extra
   )
-  install_binary_component(bitcoin-cli HAS_MANPAGE)
+  install_binary_component(adonai-cli HAS_MANPAGE)
 endif()
 
 
 if(BUILD_TX)
-  add_executable(bitcoin-tx bitcoin-tx.cpp)
-  add_windows_resources(bitcoin-tx bitcoin-tx-res.rc)
-  add_windows_application_manifest(bitcoin-tx)
-  target_link_libraries(bitcoin-tx
+  add_executable(adonai-tx adonai-tx.cpp)
+  add_windows_resources(adonai-tx adonai-tx-res.rc)
+  add_windows_application_manifest(adonai-tx)
+  target_link_libraries(adonai-tx
     core_interface
     bitcoin_common
     adonai_util
     univalue
     blake3
   )
-  install_binary_component(bitcoin-tx HAS_MANPAGE)
+  install_binary_component(adonai-tx HAS_MANPAGE)
 endif()
 
 
 if(BUILD_UTIL)
-  add_executable(bitcoin-util bitcoin-util.cpp)
-  add_windows_resources(bitcoin-util bitcoin-util-res.rc)
-  add_windows_application_manifest(bitcoin-util)
-  target_link_libraries(bitcoin-util
+  add_executable(adonai-util adonai-util.cpp)
+  add_windows_resources(adonai-util adonai-util-res.rc)
+  add_windows_application_manifest(adonai-util)
+  target_link_libraries(adonai-util
     PRIVATE
     blake3
     core_interface
     bitcoin_common
     adonai_util
   )
-  install_binary_component(bitcoin-util HAS_MANPAGE)
+  install_binary_component(adonai-util HAS_MANPAGE)
 endif()
 
 
@@ -490,8 +490,8 @@ if(BUILD_KERNEL_LIB)
 endif()
 
 if(BUILD_UTIL_CHAINSTATE)
-  add_executable(bitcoin-chainstate
-    bitcoin-chainstate.cpp
+  add_executable(adonai-chainstate
+    adonai-chainstate.cpp
   )
   # TODO: The `SKIP_BUILD_RPATH` property setting can be deleted
   #       in the future after reordering Guix script commands to
@@ -499,10 +499,10 @@ if(BUILD_UTIL_CHAINSTATE)
   # Relevant discussions:
   # - https://github.com/hebasto/bitcoin/pull/236#issuecomment-2183120953
   # - https://github.com/bitcoin/bitcoin/pull/30312#issuecomment-2191235833
-  set_target_properties(bitcoin-chainstate PROPERTIES
+  set_target_properties(adonai-chainstate PROPERTIES
     SKIP_BUILD_RPATH OFF
   )
-  target_link_libraries(bitcoin-chainstate
+  target_link_libraries(adonai-chainstate
     PRIVATE
       core_interface
       bitcoinkernel
