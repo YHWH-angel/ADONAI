@@ -1,8 +1,10 @@
 // Copyright 2016 Wladimir J. van der Laan
+// Copyright (c) 2014-2022 The Bitcoin Core developers
+// Modifications (c) 2025 The Adonai Core developers
 // Distributed under the MIT software license, see the accompanying
-// file COPYING or https://opensource.org/licenses/mit-license.php.
-#ifndef BITCOIN_UNIVALUE_INCLUDE_UNIVALUE_UTFFILTER_H
-#define BITCOIN_UNIVALUE_INCLUDE_UNIVALUE_UTFFILTER_H
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+#ifndef ADONAI_UNIVALUE_INCLUDE_UNIVALUE_UTFFILTER_H
+#define ADONAI_UNIVALUE_INCLUDE_UNIVALUE_UTFFILTER_H
 
 #include <string>
 
@@ -116,4 +118,4 @@ private:
     }
 };
 
-#endif // BITCOIN_UNIVALUE_INCLUDE_UNIVALUE_UTFFILTER_H
+#endif // ADONAI_UNIVALUE_INCLUDE_UNIVALUE_UTFFILTER_H
