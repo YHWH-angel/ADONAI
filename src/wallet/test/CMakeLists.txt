@@ -1,4 +1,5 @@
 # Copyright (c) 2023-present The Bitcoin Core developers
+# Modifications (c) 2025 The Adonai Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/license/mit/.
 
@@ -24,4 +25,4 @@ target_sources(test_bitcoin
     walletdb_tests.cpp
     walletload_tests.cpp
 )
-target_link_libraries(test_bitcoin bitcoin_wallet)
+target_link_libraries(test_bitcoin adonai_wallet)
