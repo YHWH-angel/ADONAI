@@ -1,4 +1,5 @@
 # Copyright (c) 2023-present The Bitcoin Core developers
+# Modifications (c) 2025 The Adonai Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/license/mit/.
 
@@ -140,7 +141,7 @@ target_link_libraries(fuzz
   test_fuzz
   bitcoin_cli
   bitcoin_common
-  bitcoin_util
+  adonai_util
   minisketch
   leveldb
   univalue

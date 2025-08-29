@@ -1,8 +1,9 @@
 # Copyright (c) 2023-present The Bitcoin Core developers
+# Modifications (c) 2025 The Adonai Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/license/mit/.
 
-add_library(bitcoin_util STATIC EXCLUDE_FROM_ALL
+add_library(adonai_util STATIC EXCLUDE_FROM_ALL
   asmap.cpp
   batchpriority.cpp
   bip32.cpp
@@ -37,7 +38,7 @@ add_library(bitcoin_util STATIC EXCLUDE_FROM_ALL
   ../sync.cpp
 )
 
-target_link_libraries(bitcoin_util
+target_link_libraries(adonai_util
   PRIVATE
     core_interface
     bitcoin_clientversion
