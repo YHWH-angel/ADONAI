@@ -42,7 +42,7 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
   target_compile_options(blake3_sse41  PRIVATE -msse4.1)
   add_library(blake3_avx2   OBJECT blake3/blake3_avx2.c)
   target_compile_options(blake3_avx2   PRIVATE -mavx2)
-  # (opcional: AVX-512 si te interesa)
+  # (optional: AVX-512 if desired)
   target_sources(blake3 PRIVATE
     $<TARGET_OBJECTS:blake3_sse2>
     $<TARGET_OBJECTS:blake3_sse41>
