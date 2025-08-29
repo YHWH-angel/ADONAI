@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_RPC_REGISTER_H
-#define BITCOIN_RPC_REGISTER_H
+#ifndef ADONAI_RPC_REGISTER_H
+#define ADONAI_RPC_REGISTER_H
 
 #include <bitcoin-build-config.h> // IWYU pragma: keep
 
@@ -41,4 +41,4 @@ static inline void RegisterAllCoreRPCCommands(CRPCTable &t)
     RegisterTxoutProofRPCCommands(t);
 }
 
-#endif // BITCOIN_RPC_REGISTER_H
+#endif // ADONAI_RPC_REGISTER_H
