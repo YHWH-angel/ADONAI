@@ -148,8 +148,8 @@ public:
         consensus.CSVHeight   = 0;
         consensus.SegwitHeight = 0;
         consensus.MinBIP9WarningHeight = 0;
-        //consensus.powLimit = uint256{"00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"};
-        consensus.powLimit = uint256{"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"};
+        // PoW BLAKE3: objetivo máximo más estricto para mayor seguridad
+        consensus.powLimit = uint256{"00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"};
 
         consensus.nPowTargetSpacingV1      = 120;     // arranque seguro
         consensus.nPowTargetSpacing = 45; //time between blocks
@@ -201,15 +201,15 @@ public:
 
         genesis = CreateGenesisBlock(
             /* nTime */ 1754122572,
-            /* nNonce */ 2,
-            /* nBits */ 0x207fffff,
+            /* nNonce */ 2445534,
+            /* nBits */ 0x1e0ffff0,
             /* nVersion */ 1,
             /* genesisReward */ 50 * COIN
         );
         consensus.hashGenesisBlock = genesis.GetHash();
 
         // Asegura tus asserts (usa el formato de tu uint256, aquí es con llaves):
-        assert(consensus.hashGenesisBlock == uint256{"4c4efcd0ae575f920e8fb827b9d4ccb552d53ab573726afa6788394bb2753492"});
+        assert(consensus.hashGenesisBlock == uint256{"00000be2948953149109fd556f8f0a327e450a52a3d9a411c88e5e7ad8eae0d1"});
         assert(genesis.hashMerkleRoot   == uint256{"3c27610446c91576f0f18fa4e758b72565f678ae063346fe6d271d6d850783b6"});
 
         
