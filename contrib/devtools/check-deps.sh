@@ -10,7 +10,7 @@ LIBS[common]="libbitcoin_common.a"
 LIBS[consensus]="libbitcoin_consensus.a"
 LIBS[crypto]="libbitcoin_crypto.a"
 LIBS[node]="libbitcoin_node.a"
-LIBS[util]="libbitcoin_util.a"
+LIBS[util]="libadonai_util.a"
 LIBS[wallet]="libbitcoin_wallet.a"
 
 # Declare allowed dependencies "X Y" where X is allowed to depend on Y. This

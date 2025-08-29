@@ -158,7 +158,7 @@ if(WITH_ZMQ)
 endif()
 
 # Home for common functionality shared by different executables and libraries.
-# Similar to `bitcoin_util` library, but higher-level.
+# Similar to `adonai_util` library, but higher-level.
 add_library(bitcoin_common STATIC EXCLUDE_FROM_ALL
   addresstype.cpp
   base58.cpp
@@ -217,7 +217,7 @@ target_link_libraries(bitcoin_common
   PRIVATE
     core_interface
     bitcoin_consensus
-    bitcoin_util
+    adonai_util
     univalue
     secp256k1
     Boost::headers
@@ -244,7 +244,7 @@ if(ENABLE_WALLET)
       core_interface
       adonai_wallet
       bitcoin_common
-      bitcoin_util
+      adonai_util
       Boost::headers
     )
     install_binary_component(bitcoin-wallet HAS_MANPAGE)
@@ -353,7 +353,7 @@ target_link_libraries(bitcoin_node
   PRIVATE
     core_interface
     bitcoin_common
-    bitcoin_util
+    adonai_util
     $<TARGET_NAME_IF_EXISTS:adonai_zmq>
     leveldb
     minisketch
@@ -370,7 +370,7 @@ if(BUILD_BITCOIN_BIN)
   add_executable(bitcoin bitcoin.cpp)
   add_windows_resources(bitcoin bitcoin-res.rc)
   add_windows_application_manifest(bitcoin)
-  target_link_libraries(bitcoin core_interface bitcoin_util)
+  target_link_libraries(bitcoin core_interface adonai_util)
   install_binary_component(bitcoin)
 endif()
 
@@ -441,7 +441,7 @@ if(BUILD_CLI)
     core_interface
     bitcoin_cli
     bitcoin_common
-    bitcoin_util
+    adonai_util
     blake3
     libevent::core
     libevent::extra
@@ -457,7 +457,7 @@ if(BUILD_TX)
   target_link_libraries(bitcoin-tx
     core_interface
     bitcoin_common
-    bitcoin_util
+    adonai_util
     univalue
     blake3
   )
@@ -474,7 +474,7 @@ if(BUILD_UTIL)
     blake3
     core_interface
     bitcoin_common
-    bitcoin_util
+    adonai_util
   )
   install_binary_component(bitcoin-util HAS_MANPAGE)
 endif()
