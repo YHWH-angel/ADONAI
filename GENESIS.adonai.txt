@@ -5,9 +5,9 @@ RPC port: 18443
 
 Genesis:
   time   = 1754122572
-  nonce  = 2
-  nBits  = 0x207fffff
-  hash   = 4c4efcd0ae575f920e8fb827b9d4ccb552d53ab573726afa6788394bb2753492
+  nonce  = 2445534
+  nBits  = 0x1e0ffff0
+  hash   = 00000be2948953149109fd556f8f0a327e450a52a3d9a411c88e5e7ad8eae0d1
   merkle = 3c27610446c91576f0f18fa4e758b72565f678ae063346fe6d271d6d850783b6
 
 Address formats:
