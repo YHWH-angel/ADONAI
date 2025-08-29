@@ -127,24 +127,24 @@ BOOST_AUTO_TEST_CASE(feefrac_operators)
     FeeFrac busted{(static_cast<int64_t>(INT32_MAX)) + 1, INT32_MAX};
     BOOST_CHECK(!(busted < busted));
 
-    FeeFrac max_fee{2100000000000000, INT32_MAX};
+    FeeFrac max_fee{10000000000000000, INT32_MAX};
     BOOST_CHECK(!(max_fee < max_fee));
     BOOST_CHECK(!(max_fee > max_fee));
     BOOST_CHECK(max_fee <= max_fee);
     BOOST_CHECK(max_fee >= max_fee);
 
     BOOST_CHECK_EQUAL(max_fee.EvaluateFeeDown(0), 0);
-    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeDown(1), 977888);
-    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeDown(2), 1955777);
-    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeDown(3), 2933666);
-    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeDown(1256796054), 1229006664189047);
-    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeDown(INT32_MAX), 2100000000000000);
+    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeDown(1), 4656612);
+    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeDown(2), 9313225);
+    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeDown(3), 13969838);
+    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeDown(1256796054), 5852412686614511);
+    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeDown(INT32_MAX), 10000000000000000);
     BOOST_CHECK_EQUAL(max_fee.EvaluateFeeUp(0), 0);
-    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeUp(1), 977889);
-    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeUp(2), 1955778);
-    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeUp(3), 2933667);
-    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeUp(1256796054), 1229006664189048);
-    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeUp(INT32_MAX), 2100000000000000);
+    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeUp(1), 4656613);
+    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeUp(2), 9313226);
+    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeUp(3), 13969839);
+    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeUp(1256796054), 5852412686614512);
+    BOOST_CHECK_EQUAL(max_fee.EvaluateFeeUp(INT32_MAX), 10000000000000000);
 
     FeeFrac max_fee2{1, 1};
     BOOST_CHECK(max_fee >= max_fee2);
