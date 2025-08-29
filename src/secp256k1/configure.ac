@@ -1,5 +1,10 @@
 AC_PREREQ([2.60])
 
+# Copyright (c) 2014-2022 The Bitcoin Core developers
+# Modifications (c) 2025 The Adonai Core developers
+# Distributed under the MIT software license, see the accompanying
+# file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 # The package (a.k.a. release) version is based on semantic versioning 2.0.0 of
 # the API. All changes in experimental modules are treated as
 # backwards-compatible and therefore at most increase the minor version.

@@ -1,3 +1,8 @@
+# Copyright (c) 2014-2022 The Bitcoin Core developers
+# Modifications (c) 2025 The Adonai Core developers
+# Distributed under the MIT software license, see the accompanying
+# file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 ACLOCAL_AMFLAGS = -I build-aux/m4
 
 # AM_CFLAGS will be automatically prepended to CFLAGS by Automake when compiling some foo
@@ -64,7 +69,7 @@ noinst_HEADERS += src/hash_impl.h
 noinst_HEADERS += src/field.h
 noinst_HEADERS += src/field_impl.h
 noinst_HEADERS += src/bench.h
-noinst_HEADERS += src/wycheproof/ecdsa_secp256k1_sha256_bitcoin_test.h
+noinst_HEADERS += src/wycheproof/ecdsa_secp256k1_sha256_adonai_test.h
 noinst_HEADERS += src/hsort.h
 noinst_HEADERS += src/hsort_impl.h
 noinst_HEADERS += contrib/lax_der_parsing.h
@@ -248,15 +253,15 @@ maintainer-clean-local: clean-precomp
 
 ### Pregenerated test vectors
 ### (see the comments in the previous section for detailed rationale)
-TESTVECTORS = src/wycheproof/ecdsa_secp256k1_sha256_bitcoin_test.h
+TESTVECTORS = src/wycheproof/ecdsa_secp256k1_sha256_adonai_test.h
 
 if ENABLE_MODULE_ECDH
 TESTVECTORS += src/wycheproof/ecdh_secp256k1_test.h
 endif
 
-src/wycheproof/ecdsa_secp256k1_sha256_bitcoin_test.h:
+src/wycheproof/ecdsa_secp256k1_sha256_adonai_test.h:
 	mkdir -p $(@D)
-	python3 $(top_srcdir)/tools/tests_wycheproof_generate_ecdsa.py $(top_srcdir)/src/wycheproof/ecdsa_secp256k1_sha256_bitcoin_test.json > $@
+	python3 $(top_srcdir)/tools/tests_wycheproof_generate_ecdsa.py $(top_srcdir)/src/wycheproof/ecdsa_secp256k1_sha256_adonai_test.json > $@
 
 src/wycheproof/ecdh_secp256k1_test.h:
 	mkdir -p $(@D)
@@ -283,7 +288,7 @@ EXTRA_DIST += sage/prove_group_implementations.sage
 EXTRA_DIST += sage/secp256k1_params.sage
 EXTRA_DIST += sage/weierstrass_prover.sage
 EXTRA_DIST += src/wycheproof/WYCHEPROOF_COPYING
-EXTRA_DIST += src/wycheproof/ecdsa_secp256k1_sha256_bitcoin_test.json
+EXTRA_DIST += src/wycheproof/ecdsa_secp256k1_sha256_adonai_test.json
 EXTRA_DIST += src/wycheproof/ecdh_secp256k1_test.json
 EXTRA_DIST += tools/tests_wycheproof_generate_ecdsa.py
 EXTRA_DIST += tools/tests_wycheproof_generate_ecdh.py

@@ -1,3 +1,9 @@
+/* Copyright (c) 2014-2022 The Bitcoin Core developers
+ * Modifications (c) 2025 The Adonai Core developers
+ * Distributed under the MIT software license, see the accompanying
+ * file COPYING or http://www.opensource.org/licenses/mit-license.php.
+ */
+
 #ifndef SECP256K1_SCHNORRSIG_H
 #define SECP256K1_SCHNORRSIG_H
 
@@ -9,7 +15,7 @@ extern "C" {
 #endif
 
 /** This module implements a variant of Schnorr signatures compliant with
- *  Bitcoin Improvement Proposal 340 "Schnorr Signatures for secp256k1"
+ *  Adonai Improvement Proposal 340 "Schnorr Signatures for secp256k1"
  *  (https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki).
  */
 
@@ -49,7 +55,7 @@ typedef int (*secp256k1_nonce_function_hardened)(
     void *data
 );
 
-/** An implementation of the nonce generation function as defined in Bitcoin
+/** An implementation of the nonce generation function as defined in Adonai
  *  Improvement Proposal 340 "Schnorr Signatures for secp256k1"
  *  (https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki).
  *
