@@ -83,9 +83,9 @@ struct BIP9Deployment {
  */
 struct Params {
     int64_t nPowTargetSpacingV1;      // 120
-    int32_t nPowSpacingSwitchHeight;  // altura del cambio
-    int64_t  nSubsidyInitial;          // subsidio inicial por bloque
-    int nCoinbaseMaturity;            // madurez de coinbase en bloques
+    int32_t nPowSpacingSwitchHeight;  // spacing change height
+    int64_t  nSubsidyInitial;         // initial block subsidy
+    int nCoinbaseMaturity;            // coinbase maturity in blocks
 
     uint256 hashGenesisBlock;
     int nSubsidyHalvingInterval;

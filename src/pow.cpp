@@ -42,8 +42,8 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 
 unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params)
 {
-    // Regla de dificultad fija para testnet y BLAKE3
-    // 0x207fffff corresponde a la dificultad más baja (es decir, target más alto posible)
+    // Fixed difficulty rule for testnet and BLAKE3
+    // 0x207fffff corresponds to the lowest difficulty (i.e., highest possible target)
     return 0x207fffff;
 }
 
@@ -55,7 +55,7 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
 
     bnTarget.SetCompact(nBits, &fNegative, &fOverflow);
 
-    // Verificación estándar del target
+    // Standard target verification
     if (fNegative || bnTarget == 0 || fOverflow || UintToArith256(hash) > bnTarget)
         return false;
 

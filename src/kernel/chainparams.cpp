@@ -575,15 +575,15 @@ public:
             .dTxRate = 0.0,
         };
 
-        // ----- PREFIJOS DIRECCIONES -----
-        // Base58 (no críticos si te vas a Bech32; usa valores no colisionantes con BTC):
+        // ----- ADDRESS PREFIXES -----
+        // Base58 (not critical if using Bech32; use values that don't collide with BTC):
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 65);  // 'A' (~ADO signet)
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 125);
         base58Prefixes[SECRET_KEY]     = std::vector<unsigned char>(1, 153);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E}; // xpub (placeholder)
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4}; // xprv (placeholder)
 
-        // Bech32 HRP propia para signet ADONAI
+        // Custom Bech32 HRP for ADONAI signet
         bech32_hrp = "sado";
 
         fDefaultConsistencyChecks = false;
