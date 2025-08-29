@@ -159,7 +159,7 @@ endif()
 
 # Home for common functionality shared by different executables and libraries.
 # Similar to `adonai_util` library, but higher-level.
-add_library(bitcoin_common STATIC EXCLUDE_FROM_ALL
+add_library(adonai_common STATIC EXCLUDE_FROM_ALL
   addresstype.cpp
   base58.cpp
   bech32.cpp
@@ -211,7 +211,7 @@ add_library(bitcoin_common STATIC EXCLUDE_FROM_ALL
   script/signingprovider.cpp
   script/solver.cpp
 )
-target_link_libraries(bitcoin_common
+target_link_libraries(adonai_common
   PUBLIC
     blake3
   PRIVATE
@@ -243,7 +243,7 @@ if(ENABLE_WALLET)
       blake3
       core_interface
       adonai_wallet
-      bitcoin_common
+      adonai_common
       adonai_util
       Boost::headers
     )
@@ -352,7 +352,7 @@ add_library(bitcoin_node STATIC EXCLUDE_FROM_ALL
 target_link_libraries(bitcoin_node
   PRIVATE
     core_interface
-    bitcoin_common
+    adonai_common
     adonai_util
     $<TARGET_NAME_IF_EXISTS:adonai_zmq>
     leveldb
@@ -440,7 +440,7 @@ if(BUILD_CLI)
   target_link_libraries(adonai-cli
     core_interface
     bitcoin_cli
-    bitcoin_common
+    adonai_common
     adonai_util
     blake3
     libevent::core
@@ -456,7 +456,7 @@ if(BUILD_TX)
   add_windows_application_manifest(adonai-tx)
   target_link_libraries(adonai-tx
     core_interface
-    bitcoin_common
+    adonai_common
     adonai_util
     univalue
     blake3
@@ -473,7 +473,7 @@ if(BUILD_UTIL)
     PRIVATE
     blake3
     core_interface
-    bitcoin_common
+    adonai_common
     adonai_util
   )
   install_binary_component(adonai-util HAS_MANPAGE)
