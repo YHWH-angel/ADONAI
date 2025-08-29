@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_CLIENTVERSION_H
-#define BITCOIN_CLIENTVERSION_H
+#ifndef ADONAI_CLIENTVERSION_H
+#define ADONAI_CLIENTVERSION_H
 
 #include <util/macros.h>
 
@@ -42,4 +42,4 @@ std::string LicenseInfo();
 
 #endif // RC_INVOKED
 
-#endif // BITCOIN_CLIENTVERSION_H
+#endif // ADONAI_CLIENTVERSION_H
