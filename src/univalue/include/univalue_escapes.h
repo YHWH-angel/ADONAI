@@ -1,10 +1,11 @@
 // Copyright 2014 BitPay Inc.
-// Copyright (c) 2022-present The Bitcoin Core developers
+// Copyright (c) 2014-2022 The Bitcoin Core developers
+// Modifications (c) 2025 The Adonai Core developers
 // Distributed under the MIT software license, see the accompanying
-// file COPYING or https://opensource.org/license/mit.
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_UNIVALUE_INCLUDE_UNIVALUE_ESCAPES_H
-#define BITCOIN_UNIVALUE_INCLUDE_UNIVALUE_ESCAPES_H
+#ifndef ADONAI_UNIVALUE_INCLUDE_UNIVALUE_ESCAPES_H
+#define ADONAI_UNIVALUE_INCLUDE_UNIVALUE_ESCAPES_H
 static const char *escapes[256] = {
 	"\\u0000",
 	"\\u0001",
@@ -263,4 +264,4 @@ static const char *escapes[256] = {
 	nullptr,
 	nullptr,
 };
-#endif // BITCOIN_UNIVALUE_INCLUDE_UNIVALUE_ESCAPES_H
+#endif // ADONAI_UNIVALUE_INCLUDE_UNIVALUE_ESCAPES_H
