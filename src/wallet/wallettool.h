@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_WALLET_WALLETTOOL_H
-#define BITCOIN_WALLET_WALLETTOOL_H
+#ifndef ADONAI_WALLET_WALLETTOOL_H
+#define ADONAI_WALLET_WALLETTOOL_H
 
 #include <string>
 
@@ -18,4 +18,4 @@ bool ExecuteWalletToolFunc(const ArgsManager& args, const std::string& command);
 } // namespace WalletTool
 } // namespace wallet
 
-#endif // BITCOIN_WALLET_WALLETTOOL_H
+#endif // ADONAI_WALLET_WALLETTOOL_H

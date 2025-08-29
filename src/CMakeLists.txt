@@ -242,7 +242,7 @@ if(ENABLE_WALLET)
       PRIVATE
       blake3
       core_interface
-      bitcoin_wallet
+      adonai_wallet
       bitcoin_common
       bitcoin_util
       Boost::headers
@@ -346,8 +346,8 @@ add_library(bitcoin_node STATIC EXCLUDE_FROM_ALL
   validation.cpp
   validationinterface.cpp
   versionbits.cpp
-  $<$<TARGET_EXISTS:bitcoin_wallet>:wallet/init.cpp>
-  $<$<NOT:$<TARGET_EXISTS:bitcoin_wallet>>:dummywallet.cpp>
+  $<$<TARGET_EXISTS:adonai_wallet>:wallet/init.cpp>
+  $<$<NOT:$<TARGET_EXISTS:adonai_wallet>>:dummywallet.cpp>
 )
 target_link_libraries(bitcoin_node
   PRIVATE
@@ -386,7 +386,7 @@ if(BUILD_DAEMON)
     core_interface
     bitcoin_node
     blake3
-    $<TARGET_NAME_IF_EXISTS:bitcoin_wallet>
+    $<TARGET_NAME_IF_EXISTS:adonai_wallet>
   )
   install_binary_component(bitcoind HAS_MANPAGE)
 endif()
@@ -399,7 +399,7 @@ if(ENABLE_IPC AND BUILD_DAEMON)
     core_interface
     bitcoin_node
     bitcoin_ipc
-    $<TARGET_NAME_IF_EXISTS:bitcoin_wallet>
+    $<TARGET_NAME_IF_EXISTS:adonai_wallet>
   )
   install_binary_component(bitcoin-node)
 endif()

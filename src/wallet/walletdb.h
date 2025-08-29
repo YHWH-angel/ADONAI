@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_WALLET_WALLETDB_H
-#define BITCOIN_WALLET_WALLETDB_H
+#ifndef ADONAI_WALLET_WALLETDB_H
+#define ADONAI_WALLET_WALLETDB_H
 
 #include <key.h>
 #include <script/sign.h>
@@ -312,4 +312,4 @@ bool HasLegacyRecords(CWallet& wallet);
 bool HasLegacyRecords(CWallet& wallet, DatabaseBatch& batch);
 } // namespace wallet
 
-#endif // BITCOIN_WALLET_WALLETDB_H
+#endif // ADONAI_WALLET_WALLETDB_H

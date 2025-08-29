@@ -1,4 +1,5 @@
 # Copyright (c) 2023-present The Bitcoin Core developers
+# Modifications (c) 2025 The Adonai Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/license/mit/.
 
@@ -62,7 +63,7 @@ target_raw_data_sources(bench_bitcoin NAMESPACE benchmark::data
 target_link_libraries(bench_bitcoin
   core_interface
   test_util
-  bitcoin_node
+  adonai_node
   Boost::headers
 )
 
@@ -77,7 +78,7 @@ if(ENABLE_WALLET)
       wallet_ismine.cpp
       wallet_migration.cpp
   )
-  target_link_libraries(bench_bitcoin bitcoin_wallet)
+  target_link_libraries(bench_bitcoin adonai_wallet)
 endif()
 
 add_test(NAME bench_sanity_check
