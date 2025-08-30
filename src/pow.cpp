@@ -5,33 +5,15 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <pow.h>
-#include <serialize.h>
-#include <streams.h>
+
 #include <arith_uint256.h>
 #include <chain.h>
 #include <consensus/params.h>
-#include <blake3/blake3.h>  // Asegúrate de tener esta cabecera
 #include <primitives/block.h>
 #include <uint256.h>
-#include <protocol.h>
-#include <optional>
-#include <cassert>
+
 #include <algorithm>
-
-static uint256 Blake3Hash(const CBlockHeader& block)
-{
-    std::vector<unsigned char> data;
-    VectorWriter stream(data, 0);
-    stream << block;
-
-    uint8_t hash[32];
-    blake3_hasher hasher;
-    blake3_hasher_init(&hasher);
-    blake3_hasher_update(&hasher, data.data(), data.size());
-    blake3_hasher_finalize(&hasher, hash, 32);
-
-    return uint256(std::span<const unsigned char>(hash, 32));
-}
+#include <optional>
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::Params& params)
 {
@@ -107,9 +89,7 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
 
 bool CheckProofOfWork(const CBlockHeader& block, const Consensus::Params& params)
 {
-    // Usa BLAKE3 como PoW
-    uint256 hash = Blake3Hash(block);
-
+    uint256 hash = block.GetHash();
     return CheckProofOfWork(hash, block.nBits, params);
 }
 
