@@ -24,8 +24,8 @@
 
 class ArgsManager;
 
-extern const char * const BITCOIN_CONF_FILENAME;
-extern const char * const BITCOIN_SETTINGS_FILENAME;
+extern const char * const ADONAI_CONF_FILENAME;
+extern const char * const ADONAI_SETTINGS_FILENAME;
 
 // Return true if -datadir option points to a valid directory or is not specified.
 bool CheckDataDirOption(const ArgsManager& args);
