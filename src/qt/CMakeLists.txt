@@ -139,7 +139,7 @@ target_link_libraries(adonaiqt
     Qt6::Widgets
   PRIVATE
     core_interface
-    bitcoin_cli
+    adonai_cli
     leveldb
     Boost::headers
     $<TARGET_NAME_IF_EXISTS:QRencode::QRencode>
@@ -213,7 +213,7 @@ if(ENABLE_WALLET)
   )
   target_link_libraries(adonaiqt
     PRIVATE
-      bitcoin_wallet
+      adonai_wallet
       Qt6::Network
   )
 endif()
@@ -254,16 +254,16 @@ endif()
 
 add_executable(adonai-qt
   main.cpp
-  ../init/bitcoin-qt.cpp
+  ../init/adonai-qt.cpp
 )
 
-add_windows_resources(adonai-qt res/bitcoin-qt-res.rc)
+add_windows_resources(adonai-qt res/adonai-qt-res.rc)
 add_windows_application_manifest(adonai-qt)
 
 target_link_libraries(adonai-qt
   core_interface
   adonaiqt
-  bitcoin_node
+  adonai_node
 )
 
 import_plugins(adonai-qt)
@@ -275,13 +275,13 @@ endif()
 if(ENABLE_IPC)
   add_executable(adonai-gui
     main.cpp
-    ../init/bitcoin-gui.cpp
+    ../init/adonai-gui.cpp
   )
   target_link_libraries(adonai-gui
     core_interface
     adonaiqt
-    bitcoin_node
-    bitcoin_ipc
+    adonai_node
+    adonai_ipc
   )
   import_plugins(adonai-gui)
   install_binary_component(adonai-gui)

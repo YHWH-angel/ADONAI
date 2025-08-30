@@ -1,13 +1,12 @@
-// Copyright (c) 2021-2022 The Bitcoin Core developers
+// Copyright (c) 2014-2022 The Bitcoin Core developers
 // Modifications (c) 2025 The Adonai Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 //! @file
-//! @brief Common init functions shared by bitcoin-node, bitcoin-wallet, etc.
-
-#ifndef BITCOIN_INIT_COMMON_H
-#define BITCOIN_INIT_COMMON_H
+//! @brief Common init functions shared by adonai-node, adonai-wallet, etc.
+#ifndef ADONAI_INIT_COMMON_H
+#define ADONAI_INIT_COMMON_H
 
 #include <util/result.h>
 
@@ -22,4 +21,4 @@ bool StartLogging(const ArgsManager& args);
 void LogPackageVersion();
 } // namespace init
 
-#endif // BITCOIN_INIT_COMMON_H
+#endif // ADONAI_INIT_COMMON_H
