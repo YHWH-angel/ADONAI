@@ -6,7 +6,7 @@
 #include <qt/receiverequestdialog.h>
 #include <qt/forms/ui_receiverequestdialog.h>
 
-#include <qt/bitcoinunits.h>
+#include <qt/adonaiunits.h>
 #include <qt/guiutil.h>
 #include <qt/optionsmodel.h>
 #include <qt/qrimagewidget.h>

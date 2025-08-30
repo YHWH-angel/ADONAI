@@ -3,11 +3,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_BITCOINAMOUNTFIELD_H
-#define BITCOIN_QT_BITCOINAMOUNTFIELD_H
+#ifndef ADONAI_QT_ADONAIAMOUNTFIELD_H
+#define ADONAI_QT_ADONAIAMOUNTFIELD_H
 
 #include <consensus/amount.h>
-#include <qt/bitcoinunits.h>
+#include <qt/adonaiunits.h>
 
 #include <QWidget>
 
@@ -83,4 +83,4 @@ private Q_SLOTS:
 
 };
 
-#endif // BITCOIN_QT_BITCOINAMOUNTFIELD_H
+#endif // ADONAI_QT_ADONAIAMOUNTFIELD_H

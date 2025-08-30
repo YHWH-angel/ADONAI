@@ -7,7 +7,7 @@
 
 #include <common/args.h>
 #include <init.h>
-#include <qt/bitcoin.h>
+#include <qt/adonai.h>
 #include <qt/guiutil.h>
 #include <qt/test/optiontests.h>
 #include <test/util/setup_common.h>

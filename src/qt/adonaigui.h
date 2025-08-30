@@ -3,12 +3,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_BITCOINGUI_H
-#define BITCOIN_QT_BITCOINGUI_H
+#ifndef ADONAI_QT_ADONAIGUI_H
+#define ADONAI_QT_ADONAIGUI_H
 
 #include <bitcoin-build-config.h> // IWYU pragma: keep
 
-#include <qt/bitcoinunits.h>
+#include <qt/adonaiunits.h>
 #include <qt/clientmodel.h>
 #include <qt/guiutil.h>
 #include <qt/optionsdialog.h>
@@ -354,4 +354,4 @@ private Q_SLOTS:
     void onMenuSelection(QAction* action);
 };
 
-#endif // BITCOIN_QT_BITCOINGUI_H
+#endif // ADONAI_QT_ADONAIGUI_H

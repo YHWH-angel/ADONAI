@@ -34,7 +34,7 @@ When an updated source file is merged into the GitHub repo, Transifex will autom
 
 To create the pull-request, use the following commands:
 ```
-git add src/qt/bitcoinstrings.cpp src/qt/locale/adonai_en.ts
+git add src/qt/adonaistrings.cpp src/qt/locale/adonai_en.ts
 git commit
 ```
 
@@ -71,7 +71,7 @@ When new plurals are added to the source file, it's important to do the followin
 7. Save the source file
 
 ### Translating a new language
-To create a new language template, you will need to edit the languages manifest file `src/qt/bitcoin_locale.qrc` and add a new entry. Below is an example of the English language entry.
+To create a new language template, you will need to edit the languages manifest file `src/qt/adonai_locale.qrc` and add a new entry. Below is an example of the English language entry.
 
 ```xml
 <qresource prefix="/translations">

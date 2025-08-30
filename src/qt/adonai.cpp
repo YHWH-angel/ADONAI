@@ -5,7 +5,7 @@
 
 #include <bitcoin-build-config.h> // IWYU pragma: keep
 
-#include <qt/bitcoin.h>
+#include <qt/adonai.h>
 
 #include <chainparams.h>
 #include <common/args.h>
@@ -19,7 +19,7 @@
 #include <node/context.h>
 #include <node/interface_ui.h>
 #include <noui.h>
-#include <qt/bitcoingui.h>
+#include <qt/adonaigui.h>
 #include <qt/clientmodel.h>
 #include <qt/guiconstants.h>
 #include <qt/guiutil.h>
@@ -141,12 +141,12 @@ static void initTranslations(QTranslator &qtTranslatorBase, QTranslator &qtTrans
         QApplication::installTranslator(&qtTranslator);
     }
 
-    // Load e.g. adonai_de.qm (shortcut "de" needs to be defined in bitcoin_locale.qrc)
+    // Load e.g. adonai_de.qm (shortcut "de" needs to be defined in adonai_locale.qrc)
     if (translatorBase.load(lang, ":/translations/")) {
         QApplication::installTranslator(&translatorBase);
     }
 
-    // Load e.g. adonai_de_DE.qm (shortcut "de_DE" needs to be defined in bitcoin_locale.qrc)
+    // Load e.g. adonai_de_DE.qm (shortcut "de_DE" needs to be defined in adonai_locale.qrc)
     if (translator.load(lang_territory, ":/translations/")) {
         QApplication::installTranslator(&translator);
     }
@@ -196,7 +196,7 @@ void DebugMessageHandler(QtMsgType type, const QMessageLogContext& context, cons
 }
 
 static int qt_argc = 1;
-static const char* qt_argv = "bitcoin-qt";
+static const char* qt_argv = "adonai-qt";
 
 BitcoinApplication::BitcoinApplication()
     : QApplication(qt_argc, const_cast<char**>(&qt_argv))
@@ -543,10 +543,10 @@ int GuiMain(int argc, char* argv[])
             return EXIT_FAILURE;
         }
         if (invalid_token) {
-            InitError(Untranslated(strprintf("Command line contains unexpected token '%s', see bitcoin-qt -h for a list of options.", argv[i])));
+            InitError(Untranslated(strprintf("Command line contains unexpected token '%s', see adonai-qt -h for a list of options.", argv[i])));
             QMessageBox::critical(nullptr, CLIENT_NAME,
                                   // message cannot be translated because translations have not been initialized
-                                  QString::fromStdString("Command line contains unexpected token '%1', see bitcoin-qt -h for a list of options.").arg(QString::fromStdString(argv[i])));
+                                  QString::fromStdString("Command line contains unexpected token '%1', see adonai-qt -h for a list of options.").arg(QString::fromStdString(argv[i])));
             return EXIT_FAILURE;
         }
     }

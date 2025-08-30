@@ -55,23 +55,23 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOUIC_SEARCH_PATHS forms)
 
-configure_file(bitcoin_locale.qrc bitcoin_locale.qrc USE_SOURCE_PERMISSIONS COPYONLY)
+configure_file(adonai_locale.qrc adonai_locale.qrc USE_SOURCE_PERMISSIONS COPYONLY)
 
 # The adonaiqt sources have to include headers in
 # order to parse them to collect translatable strings.
 add_library(adonaiqt STATIC EXCLUDE_FROM_ALL
   bantablemodel.cpp
   bantablemodel.h
-  bitcoin.cpp
-  bitcoin.h
-  bitcoinaddressvalidator.cpp
-  bitcoinaddressvalidator.h
-  bitcoinamountfield.cpp
-  bitcoinamountfield.h
-  bitcoingui.cpp
-  bitcoingui.h
-  bitcoinunits.cpp
-  bitcoinunits.h
+  adonai.cpp
+  adonai.h
+  adonaiaddressvalidator.cpp
+  adonaiaddressvalidator.h
+  adonaiamountfield.cpp
+  adonaiamountfield.h
+  adonaigui.cpp
+  adonaigui.h
+  adonaiunits.cpp
+  adonaiunits.h
   clientmodel.cpp
   clientmodel.h
   csvmodelwriter.cpp
@@ -118,8 +118,8 @@ add_library(adonaiqt STATIC EXCLUDE_FROM_ALL
   utilitydialog.h
   $<$<PLATFORM_ID:Windows>:winshutdownmonitor.cpp>
   $<$<PLATFORM_ID:Windows>:winshutdownmonitor.h>
-  bitcoin.qrc
-  ${CMAKE_CURRENT_BINARY_DIR}/bitcoin_locale.qrc
+  adonai.qrc
+  ${CMAKE_CURRENT_BINARY_DIR}/adonai_locale.qrc
 )
 target_compile_definitions(adonaiqt
   PUBLIC
@@ -352,7 +352,7 @@ else()
   file(GLOB ui_files ${CMAKE_CURRENT_SOURCE_DIR}/forms/*.ui)
   add_custom_target(translate
     COMMAND ${CMAKE_COMMAND} -E env XGETTEXT=${XGETTEXT_EXECUTABLE} COPYRIGHT_HOLDERS=${COPYRIGHT_HOLDERS} $<TARGET_FILE:Python3::Interpreter> ${PROJECT_SOURCE_DIR}/share/qt/extract_strings_qt.py ${translatable_sources}
-    COMMAND Qt6::lupdate -no-obsolete -I ${PROJECT_SOURCE_DIR}/src -locations relative ${CMAKE_CURRENT_SOURCE_DIR}/bitcoinstrings.cpp ${ui_files} ${qt_translatable_sources} -ts ${CMAKE_CURRENT_SOURCE_DIR}/locale/adonai_en.ts
+    COMMAND Qt6::lupdate -no-obsolete -I ${PROJECT_SOURCE_DIR}/src -locations relative ${CMAKE_CURRENT_SOURCE_DIR}/adonaistrings.cpp ${ui_files} ${qt_translatable_sources} -ts ${CMAKE_CURRENT_SOURCE_DIR}/locale/adonai_en.ts
     COMMAND Qt6::lconvert -drop-translations -o ${CMAKE_CURRENT_SOURCE_DIR}/locale/adonai_en.xlf -i ${CMAKE_CURRENT_SOURCE_DIR}/locale/adonai_en.ts
     COMMAND ${SED_EXECUTABLE} -i.old -e "s|source-language=\"en\" target-language=\"en\"|source-language=\"en\"|" -e "/<target xml:space=\"preserve\"><\\/target>/d" ${CMAKE_CURRENT_SOURCE_DIR}/locale/adonai_en.xlf
     COMMAND ${CMAKE_COMMAND} -E rm ${CMAKE_CURRENT_SOURCE_DIR}/locale/adonai_en.xlf.old
