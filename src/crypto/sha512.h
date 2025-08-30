@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_CRYPTO_SHA512_H
-#define BITCOIN_CRYPTO_SHA512_H
+#ifndef ADONAI_CRYPTO_SHA512_H
+#define ADONAI_CRYPTO_SHA512_H
 
 #include <cstdint>
 #include <cstdlib>
@@ -27,4 +27,4 @@ public:
     uint64_t Size() const { return bytes; }
 };
 
-#endif // BITCOIN_CRYPTO_SHA512_H
+#endif // ADONAI_CRYPTO_SHA512_H
