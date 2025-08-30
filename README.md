@@ -19,8 +19,8 @@ make -j$(nproc)
 
 Binarios resultantes:
 ```
-build/bin/bitcoind
-build/bin/bitcoin-cli
+build/bin/adonaid
+build/bin/adonai-cli
 ```
 
 ---
@@ -66,7 +66,7 @@ Inicia en segundo plano:
 
 ```bash
 cd ~/adonai/adonai/build
-./bin/bitcoind -daemon -conf=/home/angel/.adonai/adonai.conf -datadir=/home/angel/.adonai
+./bin/adonaid -daemon -conf=/home/angel/.adonai/adonai.conf -datadir=/home/angel/.adonai
 ```
 
 Ver logs en tiempo real (opcional):
@@ -79,7 +79,7 @@ tail -n 200 -f /home/angel/.adonai/debug.log
 ## 4. Verificación del génesis
 
 ```bash
-./bin/bitcoin-cli -conf=/home/angel/.adonai/adonai.conf -datadir=/home/angel/.adonai getblockhash 0
+./bin/adonai-cli -conf=/home/angel/.adonai/adonai.conf -datadir=/home/angel/.adonai getblockhash 0
 ```
 
 Debe devolver:
@@ -91,7 +91,7 @@ Debe devolver:
 Más información de la cadena:
 
 ```bash
-./bin/bitcoin-cli -conf=/home/angel/.adonai/adonai.conf -datadir=/home/angel/.adonai getblockchaininfo
+./bin/adonai-cli -conf=/home/angel/.adonai/adonai.conf -datadir=/home/angel/.adonai getblockchaininfo
 ```
 
 ---
@@ -99,7 +99,7 @@ Más información de la cadena:
 ## 5. Parar el nodo
 
 ```bash
-./bin/bitcoin-cli -conf=/home/angel/.adonai/adonai.conf -datadir=/home/angel/.adonai stop
+./bin/adonai-cli -conf=/home/angel/.adonai/adonai.conf -datadir=/home/angel/.adonai stop
 ```
 
 ---
