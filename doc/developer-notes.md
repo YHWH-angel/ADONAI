@@ -406,6 +406,9 @@ all log categories and `-loglevel=trace` will turn on all log severity levels.
 The Qt code routes `qDebug()` output to `debug.log` under category "qt": run with `-debug=qt`
 to see it.
 
+The proof-of-work hashing code logs under the `pow` category. Use `-debug=pow` to
+enable these messages and filter them easily.
+
 ### Testnet mode
 
 If you are testing multi-machine code that needs to operate across the internet,
