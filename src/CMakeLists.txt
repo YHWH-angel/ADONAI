@@ -112,19 +112,19 @@ if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 endif()
 
 add_custom_target(generate_build_info
-  BYPRODUCTS ${PROJECT_BINARY_DIR}/src/bitcoin-build-info.h
-  COMMAND ${CMAKE_COMMAND} -DBUILD_INFO_HEADER_PATH=${PROJECT_BINARY_DIR}/src/bitcoin-build-info.h -DSOURCE_DIR=${PROJECT_SOURCE_DIR} -P ${PROJECT_SOURCE_DIR}/cmake/script/GenerateBuildInfo.cmake
-  COMMENT "Generating bitcoin-build-info.h"
+  BYPRODUCTS ${PROJECT_BINARY_DIR}/src/adonai-build-info.h
+  COMMAND ${CMAKE_COMMAND} -DBUILD_INFO_HEADER_PATH=${PROJECT_BINARY_DIR}/src/adonai-build-info.h -DSOURCE_DIR=${PROJECT_SOURCE_DIR} -P ${PROJECT_SOURCE_DIR}/cmake/script/GenerateBuildInfo.cmake
+  COMMENT "Generating adonai-build-info.h"
   VERBATIM
 )
-add_library(bitcoin_clientversion STATIC EXCLUDE_FROM_ALL
+add_library(adonai_clientversion STATIC EXCLUDE_FROM_ALL
   clientversion.cpp
 )
-target_link_libraries(bitcoin_clientversion
+target_link_libraries(adonai_clientversion
   PRIVATE
     core_interface
 )
-add_dependencies(bitcoin_clientversion generate_build_info)
+add_dependencies(adonai_clientversion generate_build_info)
 
 add_subdirectory(crypto)
 add_subdirectory(util)
@@ -132,7 +132,7 @@ if(ENABLE_IPC)
   add_subdirectory(ipc)
 endif()
 
-add_library(bitcoin_consensus STATIC EXCLUDE_FROM_ALL
+add_library(adonai_consensus STATIC EXCLUDE_FROM_ALL
   arith_uint256.cpp
   consensus/merkle.cpp
   consensus/tx_check.cpp
@@ -145,10 +145,10 @@ add_library(bitcoin_consensus STATIC EXCLUDE_FROM_ALL
   script/script_error.cpp
   uint256.cpp
 )
-target_link_libraries(bitcoin_consensus
+target_link_libraries(adonai_consensus
   PRIVATE
     core_interface
-    bitcoin_crypto
+    adonai_crypto
     secp256k1
     blake3
 )
@@ -159,7 +159,7 @@ endif()
 
 # Home for common functionality shared by different executables and libraries.
 # Similar to `adonai_util` library, but higher-level.
-add_library(bitcoin_common STATIC EXCLUDE_FROM_ALL
+add_library(adonai_common STATIC EXCLUDE_FROM_ALL
   addresstype.cpp
   base58.cpp
   bech32.cpp
@@ -211,12 +211,12 @@ add_library(bitcoin_common STATIC EXCLUDE_FROM_ALL
   script/signingprovider.cpp
   script/solver.cpp
 )
-target_link_libraries(bitcoin_common
+target_link_libraries(adonai_common
   PUBLIC
     blake3
   PRIVATE
     core_interface
-    bitcoin_consensus
+    adonai_consensus
     adonai_util
     univalue
     secp256k1
@@ -231,29 +231,29 @@ if(ENABLE_WALLET)
   add_subdirectory(wallet)
 
   if(BUILD_WALLET_TOOL)
-    add_executable(bitcoin-wallet
-      bitcoin-wallet.cpp
+    add_executable(adonai-wallet
+      adonai-wallet.cpp
       init/bitcoin-wallet.cpp
       wallet/wallettool.cpp
     )
-    add_windows_resources(bitcoin-wallet bitcoin-wallet-res.rc)
-    add_windows_application_manifest(bitcoin-wallet)
-    target_link_libraries(bitcoin-wallet
+    add_windows_resources(adonai-wallet adonai-wallet-res.rc)
+    add_windows_application_manifest(adonai-wallet)
+    target_link_libraries(adonai-wallet
       PRIVATE
       blake3
       core_interface
       adonai_wallet
-      bitcoin_common
+      adonai_common
       adonai_util
       Boost::headers
     )
-    install_binary_component(bitcoin-wallet HAS_MANPAGE)
+    install_binary_component(adonai-wallet HAS_MANPAGE)
   endif()
 endif()
 
 
-# P2P and RPC server functionality used by `bitcoind` and `bitcoin-qt` executables.
-add_library(bitcoin_node STATIC EXCLUDE_FROM_ALL
+# P2P and RPC server functionality used by `adonaid` and `adonai-qt` executables.
+add_library(adonai_node STATIC EXCLUDE_FROM_ALL
   addrdb.cpp
   addrman.cpp
   banman.cpp
@@ -349,10 +349,10 @@ add_library(bitcoin_node STATIC EXCLUDE_FROM_ALL
   $<$<TARGET_EXISTS:adonai_wallet>:wallet/init.cpp>
   $<$<NOT:$<TARGET_EXISTS:adonai_wallet>>:dummywallet.cpp>
 )
-target_link_libraries(bitcoin_node
+target_link_libraries(adonai_node
   PRIVATE
     core_interface
-    bitcoin_common
+    adonai_common
     adonai_util
     $<TARGET_NAME_IF_EXISTS:adonai_zmq>
     leveldb
@@ -365,118 +365,118 @@ target_link_libraries(bitcoin_node
     $<TARGET_NAME_IF_EXISTS:USDT::headers>
 )
 
-# Bitcoin wrapper executable that can call other executables.
-if(BUILD_BITCOIN_BIN)
-  add_executable(bitcoin bitcoin.cpp)
-  add_windows_resources(bitcoin bitcoin-res.rc)
-  add_windows_application_manifest(bitcoin)
-  target_link_libraries(bitcoin core_interface adonai_util)
-  install_binary_component(bitcoin)
+# Adonai wrapper executable that can call other executables.
+if(BUILD_ADONAI_BIN)
+  add_executable(adonai adonai.cpp)
+  add_windows_resources(adonai adonai-res.rc)
+  add_windows_application_manifest(adonai)
+  target_link_libraries(adonai core_interface adonai_util)
+  install_binary_component(adonai)
 endif()
 
-# Bitcoin Core bitcoind.
+# Adonai Core adonaid.
 if(BUILD_DAEMON)
-  add_executable(bitcoind
-    bitcoind.cpp
+  add_executable(adonaid
+    adonaid.cpp
     init/bitcoind.cpp
   )
-  add_windows_resources(bitcoind bitcoind-res.rc)
-  add_windows_application_manifest(bitcoind)
-  target_link_libraries(bitcoind
+  add_windows_resources(adonaid adonaid-res.rc)
+  add_windows_application_manifest(adonaid)
+  target_link_libraries(adonaid
     core_interface
-    bitcoin_node
+    adonai_node
     blake3
     $<TARGET_NAME_IF_EXISTS:adonai_wallet>
   )
-  install_binary_component(bitcoind HAS_MANPAGE)
+  install_binary_component(adonaid HAS_MANPAGE)
 endif()
 if(ENABLE_IPC AND BUILD_DAEMON)
-  add_executable(bitcoin-node
-    bitcoind.cpp
+  add_executable(adonai-node
+    adonaid.cpp
     init/bitcoin-node.cpp
   )
-  target_link_libraries(bitcoin-node
+  target_link_libraries(adonai-node
     core_interface
-    bitcoin_node
-    bitcoin_ipc
+    adonai_node
+    adonai_ipc
     $<TARGET_NAME_IF_EXISTS:adonai_wallet>
   )
-  install_binary_component(bitcoin-node)
+  install_binary_component(adonai-node)
 endif()
 
 if(ENABLE_IPC AND BUILD_TESTS)
-    # bitcoin_ipc_test library target is defined here in src/CMakeLists.txt
+    # adonai_ipc_test library target is defined here in src/CMakeLists.txt
     # instead of src/test/CMakeLists.txt so capnp files in src/test/ are able to
     # reference capnp files in src/ipc/capnp/ by relative path. The Cap'n Proto
     # compiler only allows importing by relative path when the importing and
     # imported files are underneath the same compilation source prefix, so the
     # source prefix must be src/, not src/test/
-    add_library(bitcoin_ipc_test STATIC EXCLUDE_FROM_ALL
+    add_library(adonai_ipc_test STATIC EXCLUDE_FROM_ALL
       test/ipc_test.cpp
     )
-    target_capnp_sources(bitcoin_ipc_test ${PROJECT_SOURCE_DIR}
+    target_capnp_sources(adonai_ipc_test ${PROJECT_SOURCE_DIR}
       test/ipc_test.capnp
     )
-    add_dependencies(bitcoin_ipc_test bitcoin_ipc_headers)
+    add_dependencies(adonai_ipc_test adonai_ipc_headers)
 endif()
 
 
-add_library(bitcoin_cli STATIC EXCLUDE_FROM_ALL
+add_library(adonai_cli STATIC EXCLUDE_FROM_ALL
   compat/stdin.cpp
   rpc/client.cpp
 )
-target_link_libraries(bitcoin_cli
+target_link_libraries(adonai_cli
   PUBLIC
     core_interface
     univalue
 )
 
 
-# Bitcoin Core RPC client
+# Adonai Core RPC client
 if(BUILD_CLI)
-  add_executable(bitcoin-cli bitcoin-cli.cpp)
-  add_windows_resources(bitcoin-cli bitcoin-cli-res.rc)
-  add_windows_application_manifest(bitcoin-cli)
-  target_link_libraries(bitcoin-cli
+  add_executable(adonai-cli adonai-cli.cpp)
+  add_windows_resources(adonai-cli adonai-cli-res.rc)
+  add_windows_application_manifest(adonai-cli)
+  target_link_libraries(adonai-cli
     core_interface
-    bitcoin_cli
-    bitcoin_common
+    adonai_cli
+    adonai_common
     adonai_util
     blake3
     libevent::core
     libevent::extra
   )
-  install_binary_component(bitcoin-cli HAS_MANPAGE)
+  install_binary_component(adonai-cli HAS_MANPAGE)
 endif()
 
 
 if(BUILD_TX)
-  add_executable(bitcoin-tx bitcoin-tx.cpp)
-  add_windows_resources(bitcoin-tx bitcoin-tx-res.rc)
-  add_windows_application_manifest(bitcoin-tx)
-  target_link_libraries(bitcoin-tx
+  add_executable(adonai-tx adonai-tx.cpp)
+  add_windows_resources(adonai-tx adonai-tx-res.rc)
+  add_windows_application_manifest(adonai-tx)
+  target_link_libraries(adonai-tx
     core_interface
-    bitcoin_common
+    adonai_common
     adonai_util
     univalue
     blake3
   )
-  install_binary_component(bitcoin-tx HAS_MANPAGE)
+  install_binary_component(adonai-tx HAS_MANPAGE)
 endif()
 
 
 if(BUILD_UTIL)
-  add_executable(bitcoin-util bitcoin-util.cpp)
-  add_windows_resources(bitcoin-util bitcoin-util-res.rc)
-  add_windows_application_manifest(bitcoin-util)
-  target_link_libraries(bitcoin-util
+  add_executable(adonai-util adonai-util.cpp)
+  add_windows_resources(adonai-util adonai-util-res.rc)
+  add_windows_application_manifest(adonai-util)
+  target_link_libraries(adonai-util
     PRIVATE
     blake3
     core_interface
-    bitcoin_common
+    adonai_common
     adonai_util
   )
-  install_binary_component(bitcoin-util HAS_MANPAGE)
+  install_binary_component(adonai-util HAS_MANPAGE)
 endif()
 
 
