@@ -12,6 +12,7 @@
 #include <blake3/blake3.h>
 #include <hash.h>
 #include <tinyformat.h>
+#include <logging.h>
 
 uint256 CBlockHeader::GetHash() const
 {
@@ -26,7 +27,8 @@ uint256 CBlockHeader::GetHash() const
     blake3_hasher_finalize(&hasher, out, BLAKE3_OUT_LEN);
 
     uint256 res = uint256(std::span<const unsigned char>(out, 32));
-    LogPrintf("[POW] BLAKE3 header hash = %s\n", res.ToString());
+    // Logged under the "pow" category for filtering with -debug=pow
+    LogPrintLevel(BCLog::POW, BCLog::Level::Debug, "BLAKE3 header hash = %s\n", res.ToString());
 
     return res;
 }

@@ -185,6 +185,7 @@ static const std::map<std::string, BCLog::LogFlags, std::less<>> LOG_CATEGORIES_
     {"reindex", BCLog::REINDEX},
     {"cmpctblock", BCLog::CMPCTBLOCK},
     {"rand", BCLog::RAND},
+    {"pow", BCLog::POW},
     {"prune", BCLog::PRUNE},
     {"proxy", BCLog::PROXY},
     {"mempoolrej", BCLog::MEMPOOLREJ},
