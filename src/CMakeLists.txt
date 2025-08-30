@@ -18,7 +18,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 # not overridden.
 include(../cmake/crc32c.cmake)
 include(../cmake/leveldb.cmake)
-include(../cmake/minisketch.cmake)
 add_subdirectory(univalue)
 if (ENABLE_IPC AND NOT WITH_EXTERNAL_LIBMULTIPROCESS)
   include(../cmake/libmultiprocess.cmake)
@@ -304,7 +303,6 @@ add_library(adonai_node STATIC EXCLUDE_FROM_ALL
   node/mempool_persist_args.cpp
   node/miner.cpp
   node/mini_miner.cpp
-  node/minisketchwrapper.cpp
   node/peerman_args.cpp
   node/psbt.cpp
   node/timeoffsets.cpp
@@ -356,7 +354,6 @@ target_link_libraries(adonai_node
     adonai_util
     $<TARGET_NAME_IF_EXISTS:adonai_zmq>
     leveldb
-    minisketch
     univalue
     Boost::headers
     $<TARGET_NAME_IF_EXISTS:libevent::core>
