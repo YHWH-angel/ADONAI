@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SCRIPT_PARSING_H
-#define BITCOIN_SCRIPT_PARSING_H
+#ifndef ADONAI_SCRIPT_PARSING_H
+#define ADONAI_SCRIPT_PARSING_H
 
 #include <span.h>
 
@@ -38,4 +38,4 @@ std::span<const char> Expr(std::span<const char>& sp);
 
 } // namespace script
 
-#endif // BITCOIN_SCRIPT_PARSING_H
+#endif // ADONAI_SCRIPT_PARSING_H
