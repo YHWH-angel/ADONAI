@@ -152,8 +152,8 @@ public:
         consensus.powLimit = uint256{"00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"};
 
         consensus.nPowTargetSpacingV1      = 120;     // arranque seguro
-        consensus.nPowTargetSpacing = 45; //time between blocks
-        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60;
+        consensus.nPowTargetSpacing = 45; // time between blocks
+        consensus.nPowAveragingWindow = 60; // LWMA window
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.enforce_BIP94 = false;
         consensus.fPowNoRetargeting = false;
@@ -294,8 +294,8 @@ public:
         consensus.SegwitHeight = 834624; // 00000000002b980fcd729daaa248fd9316a5200e9b367f4ff2c42453e84201ca
         consensus.MinBIP9WarningHeight = 836640; // segwit activation height + miner confirmation window
         consensus.powLimit = uint256{"00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"};
-        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
+        consensus.nPowAveragingWindow = 60;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.enforce_BIP94 = false;
         consensus.fPowNoRetargeting = false;
@@ -385,8 +385,8 @@ public:
         consensus.SegwitHeight = 1;
         consensus.MinBIP9WarningHeight = 0;
         consensus.powLimit = uint256{"00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"};
-        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
+        consensus.nPowAveragingWindow = 60;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.enforce_BIP94 = true;
         consensus.fPowNoRetargeting = false;
@@ -505,8 +505,8 @@ public:
         consensus.SegwitHeight = 1;
 
         // Timing objetivo ADONAI (mantén 60s si es tu target)
-        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // 2 semanas (estilo ADO; OK para tests)
         consensus.nPowTargetSpacing  = 60;                // 60 s (ADONAI)
+        consensus.nPowAveragingWindow = 60;
         consensus.fPowAllowMinDifficultyBlocks = true;    // facilita el arranque de signet
         consensus.fPowNoRetargeting = false;
         consensus.enforce_BIP94 = false;
@@ -622,8 +622,8 @@ public:
         consensus.fPowNoRetargeting = true;
         consensus.nSubsidyInitial          = 50 * COIN;
 
-        consensus.nPowTargetTimespan = 45; // irrelevante con no-retarget, pero coherente
         consensus.nPowTargetSpacing = 45;  // Adonai: 45 s por bloque
+        consensus.nPowAveragingWindow = 60;
 
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 0;

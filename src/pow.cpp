@@ -16,6 +16,7 @@
 #include <protocol.h>
 #include <optional>
 #include <cassert>
+#include <algorithm>
 
 static uint256 Blake3Hash(const CBlockHeader& block)
 {
@@ -34,6 +35,7 @@ static uint256 Blake3Hash(const CBlockHeader& block)
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::Params& params)
 {
+    // Per-block LWMA difficulty adjustment
     if (params.fPowNoRetargeting) {
         if (pblock) {
             const_cast<CBlockHeader*>(pblock)->nBits = pindexLast->nBits;
@@ -41,45 +43,51 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         return pindexLast->nBits;
     }
 
-    // Only change the difficulty on adjustment intervals.
-    if ((pindexLast->nHeight + 1) % params.DifficultyAdjustmentInterval() != 0) {
+    const int64_t N = params.DifficultyAdjustmentInterval();
+    const int64_t T = params.nPowTargetSpacing;
+
+    // Not enough blocks for LWMA
+    if (pindexLast == nullptr || pindexLast->nHeight + 1 < N) {
+        const unsigned int pow_limit = UintToArith256(params.powLimit).GetCompact();
         if (pblock) {
-            const_cast<CBlockHeader*>(pblock)->nBits = pindexLast->nBits;
+            const_cast<CBlockHeader*>(pblock)->nBits = pow_limit;
         }
-        return pindexLast->nBits;
+        return pow_limit;
     }
 
-    const CBlockIndex* pindexFirst = pindexLast->GetAncestor(pindexLast->nHeight - (params.DifficultyAdjustmentInterval() - 1));
-    unsigned int nBits = CalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
+    const arith_uint256 pow_limit = UintToArith256(params.powLimit);
+    const int64_t k = N * (N + 1) * T / 2;
+
+    arith_uint256 sum_target = 0;
+    int64_t weighted_times = 0;
+    const CBlockIndex* block = pindexLast;
+
+    for (int64_t i = 1; i <= N; ++i) {
+        int64_t solvetime = block->GetBlockTime() - block->pprev->GetBlockTime();
+        solvetime = std::clamp<int64_t>(solvetime, -6 * T, 6 * T);
+        weighted_times += solvetime * i;
+        arith_uint256 target;
+        target.SetCompact(block->nBits);
+        sum_target += target;
+        block = block->pprev;
+    }
+
+    arith_uint256 avg_target = sum_target / N;
+    if (weighted_times < 1) {
+        weighted_times = 1;
+    }
+    avg_target *= static_cast<uint32_t>(weighted_times);
+    avg_target /= k;
+
+    if (avg_target > pow_limit) {
+        avg_target = pow_limit;
+    }
+
+    unsigned int nBits = avg_target.GetCompact();
     if (pblock) {
         const_cast<CBlockHeader*>(pblock)->nBits = nBits;
     }
     return nBits;
-}
-
-unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params)
-{
-    assert(pindexLast);
-
-    int64_t nActualTimespan = pindexLast->GetBlockTime() - nFirstBlockTime;
-    if (nActualTimespan < params.nPowTargetTimespan / 4) {
-        nActualTimespan = params.nPowTargetTimespan / 4;
-    }
-    if (nActualTimespan > params.nPowTargetTimespan * 4) {
-        nActualTimespan = params.nPowTargetTimespan * 4;
-    }
-
-    arith_uint256 bnNew;
-    bnNew.SetCompact(pindexLast->nBits);
-    bnNew *= nActualTimespan;
-    bnNew /= params.nPowTargetTimespan;
-
-    const arith_uint256 bnPowLimit = UintToArith256(params.powLimit);
-    if (bnNew > bnPowLimit) {
-        bnNew = bnPowLimit;
-    }
-
-    return bnNew.GetCompact();
 }
 
 bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params& params)
