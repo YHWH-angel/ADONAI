@@ -4,7 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #include <util/tokenpipe.h>
 
-#include <bitcoin-build-config.h> // IWYU pragma: keep
+#include <adonai-build-config.h> // IWYU pragma: keep
 
 #ifndef WIN32
 

@@ -7,7 +7,7 @@
 #ifndef BITCOIN_COMMON_SYSTEM_H
 #define BITCOIN_COMMON_SYSTEM_H
 
-#include <bitcoin-build-config.h> // IWYU pragma: keep
+#include <adonai-build-config.h> // IWYU pragma: keep
 
 #include <cstdint>
 #include <string>

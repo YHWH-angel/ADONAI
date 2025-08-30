@@ -8,11 +8,11 @@
 
 #include <util/macros.h>
 
-#include <bitcoin-build-config.h> // IWYU pragma: keep
+#include <adonai-build-config.h> // IWYU pragma: keep
 
 // Check that required client information is defined
 #if !defined(CLIENT_VERSION_MAJOR) || !defined(CLIENT_VERSION_MINOR) || !defined(CLIENT_VERSION_BUILD) || !defined(CLIENT_VERSION_IS_RELEASE) || !defined(COPYRIGHT_YEAR)
-#error Client version information missing: version is not defined by bitcoin-build-config.h or in any other way
+#error Client version information missing: version is not defined by adonai-build-config.h or in any other way
 #endif
 
 //! Copyright string used in Windows .rc files
