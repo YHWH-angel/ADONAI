@@ -433,7 +433,7 @@ public:
         vFixedSeeds.clear();
         vSeeds.clear();
         // nodes with support for servicebits filtering should be at the top
-        vSeeds.emplace_back("seed.testnet4.bitcoin.sprovoost.nl."); // Sjors Provoost
+        vSeeds.emplace_back("seed.testnet4.adonai.sprovoost.nl."); // Sjors Provoost
         vSeeds.emplace_back("seed.testnet4.wiz.biz."); // Jason Maurice
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
@@ -479,7 +479,7 @@ public:
             // Ejemplo de placeholder BIP325 (REEMPLAZA por tu clave):
             // 51 <33-byte pubkey> 51 AE   => OP_1 <PK> OP_1 OP_CHECKMULTISIG
             challenge_bin = "512103aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa51ae"_hex_v_u8; // TODO: reemplazar pubkey
-            // Sin seeds externos de Bitcoin
+            // Sin seeds externos de Adonai
             vFixedSeeds = {}; // TODO: añadir fijos propios si quieres
             // vSeeds.emplace_back("seed.signet.adonai.network."); // TODO: tus DNS seeds
         } else {
@@ -503,7 +503,7 @@ public:
         consensus.SegwitHeight = 1;
 
         // Timing objetivo ADONAI (mantén 60s si es tu target)
-        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // 2 semanas (estilo BTC; OK para tests)
+        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // 2 semanas (estilo ADO; OK para tests)
         consensus.nPowTargetSpacing  = 60;                // 60 s (ADONAI)
         consensus.fPowAllowMinDifficultyBlocks = true;    // facilita el arranque de signet
         consensus.fPowNoRetargeting = false;
@@ -542,7 +542,7 @@ public:
         std::copy_n(challenge_hash.begin(), 4, pchMessageStart.begin());
 
         // ----- RED -----
-        nDefaultPort = 28837;     // ADONAI signet P2P (evitar 38333 de BTC)
+        nDefaultPort = 28837;     // ADONAI signet P2P (evitar 38333 de ADO)
         nPruneAfterHeight = 1000;
 
         // ----- GENESIS (valores provisionales) -----
@@ -576,7 +576,7 @@ public:
         };
 
         // ----- ADDRESS PREFIXES -----
-        // Base58 (not critical if using Bech32; use values that don't collide with BTC):
+        // Base58 (not critical if using Bech32; use values that don't collide with ADO):
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 65);  // 'A' (~ADO signet)
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 125);
         base58Prefixes[SECRET_KEY]     = std::vector<unsigned char>(1, 153);
