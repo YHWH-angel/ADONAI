@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_IPC_EXCEPTION_H
-#define BITCOIN_IPC_EXCEPTION_H
+#ifndef ADONAI_IPC_EXCEPTION_H
+#define ADONAI_IPC_EXCEPTION_H
 
 #include <stdexcept>
 
@@ -18,4 +18,4 @@ public:
 };
 } // namespace ipc
 
-#endif // BITCOIN_IPC_EXCEPTION_H
+#endif // ADONAI_IPC_EXCEPTION_H
