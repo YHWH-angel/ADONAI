@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_INTERFACES_INIT_H
-#define BITCOIN_INTERFACES_INIT_H
+#ifndef ADONAI_INTERFACES_INIT_H
+#define ADONAI_INTERFACES_INIT_H
 
 #include <interfaces/chain.h>
 #include <interfaces/echo.h>
@@ -25,7 +25,7 @@ class Ipc;
 //! and get access to other interfaces (Node, Chain, Wallet, etc).
 //!
 //! There is a different Init interface implementation for each process
-//! (bitcoin-gui, bitcoin-node, bitcoin-wallet, bitcoind, bitcoin-qt) and each
+//! (adonai-gui, adonai-node, adonai-wallet, adonaid, adonai-qt) and each
 //! implementation can implement the make methods for interfaces it supports.
 //! The default make methods all return null.
 class Init
@@ -56,4 +56,4 @@ std::unique_ptr<Init> MakeWalletInit(int argc, char* argv[], int& exit_status);
 std::unique_ptr<Init> MakeGuiInit(int argc, char* argv[]);
 } // namespace interfaces
 
-#endif // BITCOIN_INTERFACES_INIT_H
+#endif // ADONAI_INTERFACES_INIT_H
