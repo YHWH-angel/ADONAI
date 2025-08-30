@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
 # Copyright (c) 2019-present The Bitcoin Core developers
+# Modifications (c) 2025 The Adonai Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -15,6 +16,6 @@ export NO_DEPENDS=1
 export TEST_RUNNER_EXTRA="--exclude rpc_bind,feature_bind_extra"
 export GOAL="install"
 # TODO enable GUI
-export BITCOIN_CONFIG="\
+export ADONAI_CONFIG="\
  -DWITH_ZMQ=ON -DBUILD_GUI=OFF \
 "

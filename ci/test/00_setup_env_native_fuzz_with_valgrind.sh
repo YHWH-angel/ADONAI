@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
 # Copyright (c) 2019-present The Bitcoin Core developers
+# Modifications (c) 2025 The Adonai Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -15,7 +16,7 @@ export RUN_FUNCTIONAL_TESTS=false
 export RUN_FUZZ_TESTS=true
 export FUZZ_TESTS_CONFIG="--valgrind"
 export GOAL="all"
-export BITCOIN_CONFIG="\
+export ADONAI_CONFIG="\
  -DBUILD_FOR_FUZZING=ON \
  -DCMAKE_CXX_FLAGS='-Wno-error=array-bounds' \
 "

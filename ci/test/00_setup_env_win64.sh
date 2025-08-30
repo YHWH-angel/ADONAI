@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
 # Copyright (c) 2019-present The Bitcoin Core developers
+# Modifications (c) 2025 The Adonai Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -14,5 +15,5 @@ export PACKAGES="g++-mingw-w64-x86-64-posix nsis"
 export RUN_UNIT_TESTS=false
 export RUN_FUNCTIONAL_TESTS=false
 export GOAL="deploy"
-export BITCOIN_CONFIG="-DREDUCE_EXPORTS=ON -DBUILD_GUI_TESTS=OFF \
+export ADONAI_CONFIG="-DREDUCE_EXPORTS=ON -DBUILD_GUI_TESTS=OFF \
 -DCMAKE_CXX_FLAGS='-Wno-error=maybe-uninitialized'"

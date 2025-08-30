@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
 # Copyright (c) 2019-present The Bitcoin Core developers
+# Modifications (c) 2025 The Adonai Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -23,7 +24,7 @@ export APT_LLVM_V="20"
 export PACKAGES="systemtap-sdt-dev clang-${APT_LLVM_V} llvm-${APT_LLVM_V} libclang-rt-${APT_LLVM_V}-dev python3-zmq qt6-base-dev qt6-tools-dev qt6-l10n-tools libevent-dev libboost-dev libzmq3-dev libqrencode-dev libsqlite3-dev ${BPFCC_PACKAGE}"
 export NO_DEPENDS=1
 export GOAL="install"
-export BITCOIN_CONFIG="\
+export ADONAI_CONFIG="\
  -DWITH_USDT=ON -DWITH_ZMQ=ON -DBUILD_GUI=ON \
  -DSANITIZERS=address,float-divide-by-zero,integer,undefined \
  -DCMAKE_C_COMPILER=clang-${APT_LLVM_V} \

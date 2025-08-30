@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
 # Copyright (c) 2020-present The Bitcoin Core developers
+# Modifications (c) 2025 The Adonai Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -14,10 +15,10 @@ export PACKAGES="llvm clang g++-multilib"
 export DEP_OPTS="DEBUG=1 MULTIPROCESS=1"
 export GOAL="install"
 export TEST_RUNNER_EXTRA="--v2transport --usecli"
-export BITCOIN_CONFIG="\
+export ADONAI_CONFIG="\
  -DCMAKE_BUILD_TYPE=Debug \
  -DCMAKE_C_COMPILER='clang;-m32' \
  -DCMAKE_CXX_COMPILER='clang++;-m32' \
  -DAPPEND_CPPFLAGS='-DBOOST_MULTI_INDEX_ENABLE_SAFE_MODE' \
 "
-export BITCOIN_CMD="bitcoin -m" # Used in functional tests
+export BITCOIN_CMD="adonai -m" # Used in functional tests
