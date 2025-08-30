@@ -94,5 +94,21 @@ BOOST_AUTO_TEST_CASE(difficulty_converges_down)
     BOOST_CHECK_EQUAL(second_adjust, first_adjust);
 }
 
+// Compute the hash of the genesis block header and verify proof of work
+BOOST_AUTO_TEST_CASE(genesis_block_pow)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, ChainType::MAIN);
+    const Consensus::Params& params = chainParams->GetConsensus();
+
+    const CBlock& genesis = chainParams->GenesisBlock();
+    const CBlockHeader& header = genesis.GetBlockHeader();
+    const uint256 hash = header.GetHash();
+
+    BOOST_CHECK(CheckProofOfWork(hash, header.nBits, params));
+    BOOST_CHECK_EQUAL(
+        CheckProofOfWork(hash, header.nBits, params),
+        CheckProofOfWork(header, params));
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
