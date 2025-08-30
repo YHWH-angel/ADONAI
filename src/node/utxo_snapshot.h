@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_NODE_UTXO_SNAPSHOT_H
-#define BITCOIN_NODE_UTXO_SNAPSHOT_H
+#ifndef ADONAI_NODE_UTXO_SNAPSHOT_H
+#define ADONAI_NODE_UTXO_SNAPSHOT_H
 
 #include <chainparams.h>
 #include <kernel/chainparams.h>
@@ -130,4 +130,4 @@ std::optional<fs::path> FindSnapshotChainstateDir(const fs::path& data_dir);
 
 } // namespace node
 
-#endif // BITCOIN_NODE_UTXO_SNAPSHOT_H
+#endif // ADONAI_NODE_UTXO_SNAPSHOT_H
