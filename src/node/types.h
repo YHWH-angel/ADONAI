@@ -11,8 +11,8 @@
 //! dependencies. More complicated types should be defined in dedicated header
 //! files.
 
-#ifndef BITCOIN_NODE_TYPES_H
-#define BITCOIN_NODE_TYPES_H
+#ifndef ADONAI_NODE_TYPES_H
+#define ADONAI_NODE_TYPES_H
 
 #include <consensus/amount.h>
 #include <cstddef>
@@ -100,4 +100,4 @@ struct BlockCheckOptions {
 };
 } // namespace node
 
-#endif // BITCOIN_NODE_TYPES_H
+#endif // ADONAI_NODE_TYPES_H
