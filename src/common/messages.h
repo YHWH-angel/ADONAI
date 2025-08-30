@@ -9,8 +9,8 @@
 //! messages, and are called in different parts of the codebase across
 //! node/wallet/gui boundaries.
 
-#ifndef BITCOIN_COMMON_MESSAGES_H
-#define BITCOIN_COMMON_MESSAGES_H
+#ifndef ADONAI_COMMON_MESSAGES_H
+#define ADONAI_COMMON_MESSAGES_H
 
 #include <string>
 
@@ -38,4 +38,4 @@ bilingual_str AmountHighWarn(const std::string& optname);
 bilingual_str AmountErrMsg(const std::string& optname, const std::string& strValue);
 } // namespace common
 
-#endif // BITCOIN_COMMON_MESSAGES_H
+#endif // ADONAI_COMMON_MESSAGES_H

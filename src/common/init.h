@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_COMMON_INIT_H
-#define BITCOIN_COMMON_INIT_H
+#ifndef ADONAI_COMMON_INIT_H
+#define ADONAI_COMMON_INIT_H
 
 #include <util/translation.h>
 
@@ -37,4 +37,4 @@ using SettingsAbortFn = std::function<bool(const bilingual_str& message, const s
 std::optional<ConfigError> InitConfig(ArgsManager& args, SettingsAbortFn settings_abort_fn = nullptr);
 } // namespace common
 
-#endif // BITCOIN_COMMON_INIT_H
+#endif // ADONAI_COMMON_INIT_H
