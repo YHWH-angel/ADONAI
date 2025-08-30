@@ -8,8 +8,8 @@
 #include <chainparams.h>
 #include <key.h>
 #include <logging.h>
-#include <qt/bitcoin.h>
-#include <qt/bitcoingui.h>
+#include <qt/adonai.h>
+#include <qt/adonaigui.h>
 #include <qt/networkstyle.h>
 #include <qt/rpcconsole.h>
 #include <test/util/setup_common.h>

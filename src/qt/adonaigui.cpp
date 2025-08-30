@@ -5,9 +5,9 @@
 
 #include <bitcoin-build-config.h> // IWYU pragma: keep
 
-#include <qt/bitcoingui.h>
+#include <qt/adonaigui.h>
 
-#include <qt/bitcoinunits.h>
+#include <qt/adonaiunits.h>
 #include <qt/clientmodel.h>
 #include <qt/createwalletdialog.h>
 #include <qt/guiconstants.h>

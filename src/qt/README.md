@@ -32,14 +32,14 @@ To run:
 
 - Functional tests used to ensure proper functionality of the GUI. Significant changes to the GUI code normally require new or updated tests.
 
-#### bitcoingui.(h/cpp)
+#### adonaigui.(h/cpp)
 
 - Represents the main window of the Adonai UI.
 
 #### \*model.(h/cpp)
 
 - The model. When it has a corresponding controller, it generally inherits from  [QAbstractTableModel](https://doc.qt.io/qt-5/qabstracttablemodel.html). Models that are used by controllers as helpers inherit from other Qt classes like [QValidator](https://doc.qt.io/qt-5/qvalidator.html).
-- ClientModel is used by the main application `bitcoingui` and several models like `peertablemodel`.
+- ClientModel is used by the main application `adonaigui` and several models like `peertablemodel`.
 
 #### \*page.(h/cpp)
 
@@ -51,7 +51,7 @@ To run:
 
 #### paymentserver.(h/cpp)
 
-- (Deprecated) Used to process BIP21 payment URI requests. Also handles URI-based application switching (e.g. when following a bitcoin:... link from a browser).
+- (Deprecated) Used to process BIP21 payment URI requests. Also handles URI-based application switching (e.g. when following an adonai:... link from a browser).
 
 #### walletview.(h/cpp)
 
@@ -60,8 +60,8 @@ To run:
 #### Other .h/cpp files
 
 * UI elements like AdonaiAmountField, which inherit from QWidget.
-* `bitcoinstrings.cpp`: automatically generated
-* `bitcoinunits.(h/cpp)`: ADO / mADO / etc. handling
+* `adonaistrings.cpp`: automatically generated
+* `adonaiunits.(h/cpp)`: ADO / mADO / etc. handling
 * `callback.h`
 * `guiconstants.h`: UI colors, app name, etc.
 * `guiutil.h`: several helper functions

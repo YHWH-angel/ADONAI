@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_BITCOINUNITS_H
-#define BITCOIN_QT_BITCOINUNITS_H
+#ifndef ADONAI_QT_ADONAIUNITS_H
+#define ADONAI_QT_ADONAIUNITS_H
 
 #include <consensus/amount.h>
 
@@ -114,4 +114,4 @@ typedef BitcoinUnits::Unit BitcoinUnit;
 QDataStream& operator<<(QDataStream& out, const BitcoinUnit& unit);
 QDataStream& operator>>(QDataStream& in, BitcoinUnit& unit);
 
-#endif // BITCOIN_QT_BITCOINUNITS_H
+#endif // ADONAI_QT_ADONAIUNITS_H
