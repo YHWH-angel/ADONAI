@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 The Bitcoin Core developers
+// Copyright (c) 2014-2022 The Bitcoin Core developers
 // Modifications (c) 2025 The Adonai Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -7,7 +7,7 @@
 #include <interfaces/chain.h>
 #include <interfaces/echo.h>
 #include <interfaces/init.h>
-#include <interfaces/ipc.h>
+#include <interfaces/mining.h>
 #include <interfaces/node.h>
 #include <interfaces/wallet.h>
 #include <node/context.h>
@@ -15,16 +15,14 @@
 
 #include <memory>
 
+using node::NodeContext;
+
 namespace init {
 namespace {
-const char* EXE_NAME = "bitcoin-node";
-
-class BitcoinNodeInit : public interfaces::Init
+class AdonaidInit : public interfaces::Init
 {
 public:
-    BitcoinNodeInit(node::NodeContext& node, const char* arg0)
-        : m_node(node),
-          m_ipc(interfaces::MakeIpc(EXE_NAME, arg0, *this))
+    AdonaidInit(NodeContext& node) : m_node(node)
     {
         InitContext(m_node);
         m_node.init = this;
@@ -37,24 +35,14 @@ public:
         return MakeWalletLoader(chain, *Assert(m_node.args));
     }
     std::unique_ptr<interfaces::Echo> makeEcho() override { return interfaces::MakeEcho(); }
-    interfaces::Ipc* ipc() override { return m_ipc.get(); }
-    bool canListenIpc() override { return true; }
-    node::NodeContext& m_node;
-    std::unique_ptr<interfaces::Ipc> m_ipc;
+    NodeContext& m_node;
 };
 } // namespace
 } // namespace init
 
 namespace interfaces {
-std::unique_ptr<Init> MakeNodeInit(node::NodeContext& node, int argc, char* argv[], int& exit_status)
+std::unique_ptr<Init> MakeNodeInit(NodeContext& node, int argc, char* argv[], int& exit_status)
 {
-    auto init = std::make_unique<init::BitcoinNodeInit>(node, argc > 0 ? argv[0] : "");
-    // Check if bitcoin-node is being invoked as an IPC server. If so, then
-    // bypass normal execution and just respond to requests over the IPC
-    // channel and return null.
-    if (init->m_ipc->startSpawnedProcess(argc, argv, exit_status)) {
-        return nullptr;
-    }
-    return init;
+    return std::make_unique<init::AdonaidInit>(node);
 }
 } // namespace interfaces

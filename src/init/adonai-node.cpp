@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022 The Bitcoin Core developers
+// Copyright (c) 2014-2022 The Bitcoin Core developers
 // Modifications (c) 2025 The Adonai Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -7,7 +7,7 @@
 #include <interfaces/chain.h>
 #include <interfaces/echo.h>
 #include <interfaces/init.h>
-#include <interfaces/mining.h>
+#include <interfaces/ipc.h>
 #include <interfaces/node.h>
 #include <interfaces/wallet.h>
 #include <node/context.h>
@@ -17,10 +17,14 @@
 
 namespace init {
 namespace {
-class BitcoinQtInit : public interfaces::Init
+const char* EXE_NAME = "adonai-node";
+
+class AdonaiNodeInit : public interfaces::Init
 {
 public:
-    BitcoinQtInit()
+    AdonaiNodeInit(node::NodeContext& node, const char* arg0)
+        : m_node(node),
+          m_ipc(interfaces::MakeIpc(EXE_NAME, arg0, *this))
     {
         InitContext(m_node);
         m_node.init = this;
@@ -33,14 +37,24 @@ public:
         return MakeWalletLoader(chain, *Assert(m_node.args));
     }
     std::unique_ptr<interfaces::Echo> makeEcho() override { return interfaces::MakeEcho(); }
-    node::NodeContext m_node;
+    interfaces::Ipc* ipc() override { return m_ipc.get(); }
+    bool canListenIpc() override { return true; }
+    node::NodeContext& m_node;
+    std::unique_ptr<interfaces::Ipc> m_ipc;
 };
 } // namespace
 } // namespace init
 
 namespace interfaces {
-std::unique_ptr<Init> MakeGuiInit(int argc, char* argv[])
+std::unique_ptr<Init> MakeNodeInit(node::NodeContext& node, int argc, char* argv[], int& exit_status)
 {
-    return std::make_unique<init::BitcoinQtInit>();
+    auto init = std::make_unique<init::AdonaiNodeInit>(node, argc > 0 ? argv[0] : "");
+    // Check if adonai-node is being invoked as an IPC server. If so, then
+    // bypass normal execution and just respond to requests over the IPC
+    // channel and return null.
+    if (init->m_ipc->startSpawnedProcess(argc, argv, exit_status)) {
+        return nullptr;
+    }
+    return init;
 }
 } // namespace interfaces

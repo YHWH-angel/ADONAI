@@ -233,7 +233,7 @@ if(ENABLE_WALLET)
   if(BUILD_WALLET_TOOL)
     add_executable(adonai-wallet
       adonai-wallet.cpp
-      init/bitcoin-wallet.cpp
+      init/adonai-wallet.cpp
       wallet/wallettool.cpp
     )
     add_windows_resources(adonai-wallet adonai-wallet-res.rc)
@@ -376,7 +376,7 @@ endif()
 if(BUILD_DAEMON)
   add_executable(adonaid
     adonaid.cpp
-    init/bitcoind.cpp
+    init/adonaid.cpp
   )
   add_windows_resources(adonaid adonaid-res.rc)
   add_windows_application_manifest(adonaid)
@@ -391,7 +391,7 @@ endif()
 if(ENABLE_IPC AND BUILD_DAEMON)
   add_executable(adonai-node
     adonaid.cpp
-    init/bitcoin-node.cpp
+    init/adonai-node.cpp
   )
   target_link_libraries(adonai-node
     core_interface
