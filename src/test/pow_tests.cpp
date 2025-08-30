@@ -104,10 +104,11 @@ BOOST_AUTO_TEST_CASE(genesis_block_pow)
     const CBlockHeader& header = genesis.GetBlockHeader();
     const uint256 hash = header.GetHash();
 
-    BOOST_CHECK(CheckProofOfWork(hash, header.nBits, params));
-    BOOST_CHECK_EQUAL(
-        CheckProofOfWork(hash, header.nBits, params),
-        CheckProofOfWork(header, params));
+    const bool direct = CheckProofOfWork(hash, header.nBits, params);
+    const bool via_header = CheckProofOfWork(header, params);
+
+    BOOST_CHECK(direct);
+    BOOST_CHECK_EQUAL(direct, via_header);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
