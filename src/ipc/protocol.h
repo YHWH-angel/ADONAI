@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_IPC_PROTOCOL_H
-#define BITCOIN_IPC_PROTOCOL_H
+#ifndef ADONAI_IPC_PROTOCOL_H
+#define ADONAI_IPC_PROTOCOL_H
 
 #include <interfaces/init.h>
 
@@ -68,4 +68,4 @@ public:
 };
 } // namespace ipc
 
-#endif // BITCOIN_IPC_PROTOCOL_H
+#endif // ADONAI_IPC_PROTOCOL_H
