@@ -1,11 +1,11 @@
-# Copyright (c) 2023-present The Bitcoin Core developers
+# Copyright (c) 2014-2022 The Bitcoin Core developers
 # Modifications (c) 2025 The Adonai Core developers
 # Distributed under the MIT software license, see the accompanying
-# file COPYING or https://opensource.org/license/mit/.
+# file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 # Do not use generator expressions in test sources because the
 # SOURCES property is processed to gather test suite macros.
-target_sources(test_bitcoin
+target_sources(test_adonai
   PRIVATE
     init_test_fixture.cpp
     wallet_test_fixture.cpp
@@ -25,4 +25,4 @@ target_sources(test_bitcoin
     walletdb_tests.cpp
     walletload_tests.cpp
 )
-target_link_libraries(test_bitcoin adonai_wallet)
+target_link_libraries(test_adonai adonai_wallet)

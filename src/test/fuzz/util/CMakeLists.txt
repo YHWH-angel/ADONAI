@@ -1,6 +1,7 @@
-# Copyright (c) 2023-present The Bitcoin Core developers
+# Copyright (c) 2014-2022 The Bitcoin Core developers
+# Modifications (c) 2025 The Adonai Core developers
 # Distributed under the MIT software license, see the accompanying
-# file COPYING or https://opensource.org/license/mit/.
+# file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 add_library(test_fuzz STATIC EXCLUDE_FROM_ALL
   check_globals.cpp
@@ -15,7 +16,7 @@ target_link_libraries(test_fuzz
   PRIVATE
     core_interface
     test_util
-    bitcoin_node
+    adonai_node
     Boost::headers
 )
 
