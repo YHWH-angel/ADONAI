@@ -7,6 +7,7 @@
 #include <pow.h>
 #include <test/util/setup_common.h>
 #include <util/chaintype.h>
+#include <arith_uint256.h>
 
 #include <boost/test/unit_test.hpp>
 
@@ -92,6 +93,33 @@ BOOST_AUTO_TEST_CASE(difficulty_converges_down)
 
     unsigned int second_adjust = chain.back().nBits;
     BOOST_CHECK_EQUAL(second_adjust, first_adjust);
+}
+
+// Ensure that with exactly N blocks, difficulty calculation uses pow_limit and
+// does not attempt to dereference a null pprev (genesis).
+BOOST_AUTO_TEST_CASE(no_dereference_with_exact_window)
+{
+    const auto chainParams = CreateChainParams(*m_node.args, ChainType::MAIN);
+    const Consensus::Params& params = chainParams->GetConsensus();
+
+    const int window = params.DifficultyAdjustmentInterval();
+    std::vector<CBlockIndex> chain(window);
+    chain[0].nHeight = 0;
+    chain[0].nTime = 0;
+    chain[0].nBits = chainParams->GenesisBlock().nBits;
+
+    for (int i = 1; i < window; ++i) {
+        chain[i].pprev = &chain[i - 1];
+        chain[i].nHeight = i;
+        chain[i].nTime = chain[i - 1].GetBlockTime() + params.nPowTargetSpacing;
+        chain[i].nBits = chainParams->GenesisBlock().nBits;
+    }
+
+    const unsigned int pow_limit = UintToArith256(params.powLimit).GetCompact();
+    CBlockHeader header;
+    unsigned int nBits = GetNextWorkRequired(&chain.back(), &header, params);
+    BOOST_CHECK_EQUAL(nBits, pow_limit);
+    BOOST_CHECK_EQUAL(header.nBits, pow_limit);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

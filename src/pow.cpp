@@ -47,7 +47,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     const int64_t T = params.nPowTargetSpacing;
 
     // Not enough blocks for LWMA
-    if (pindexLast == nullptr || pindexLast->nHeight + 1 < N) {
+    if (pindexLast == nullptr || pindexLast->nHeight + 1 <= N) {
         const unsigned int pow_limit = UintToArith256(params.powLimit).GetCompact();
         if (pblock) {
             const_cast<CBlockHeader*>(pblock)->nBits = pow_limit;
@@ -63,6 +63,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     const CBlockIndex* block = pindexLast;
 
     for (int64_t i = 1; i <= N; ++i) {
+        if (!block->pprev) break;
         int64_t solvetime = block->GetBlockTime() - block->pprev->GetBlockTime();
         solvetime = std::clamp<int64_t>(solvetime, -6 * T, 6 * T);
         weighted_times += solvetime * i;
