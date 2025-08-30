@@ -63,7 +63,7 @@
 #include <validation.h>
 #include <validationinterface.h>
 
-#include <adonai-build-config.h> // IWYU pragma: keep
+#include <bitcoin-build-config.h> // IWYU pragma: keep
 
 #include <any>
 #include <memory>
