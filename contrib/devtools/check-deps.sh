@@ -11,7 +11,7 @@ LIBS[consensus]="libbitcoin_consensus.a"
 LIBS[crypto]="libbitcoin_crypto.a"
 LIBS[node]="libbitcoin_node.a"
 LIBS[util]="libadonai_util.a"
-LIBS[wallet]="libbitcoin_wallet.a"
+LIBS[wallet]="libadonai_wallet.a"
 
 # Declare allowed dependencies "X Y" where X is allowed to depend on Y. This
 # list is taken from doc/design/libraries.md.
