@@ -138,7 +138,7 @@ public:
         m_chain_type = ChainType::MAIN;
         consensus.signet_blocks = false;
         consensus.signet_challenge.clear();
-        consensus.nSubsidyHalvingInterval = 2803200;
+        consensus.nSubsidyHalvingInterval = 1000000;
         consensus.script_flag_exceptions.clear();
 
         consensus.BIP34Height = 0;
@@ -283,7 +283,7 @@ public:
         m_chain_type = ChainType::TESTNET;
         consensus.signet_blocks = false;
         consensus.signet_challenge.clear();
-        consensus.nSubsidyHalvingInterval = 2803200;
+        consensus.nSubsidyHalvingInterval = 1000000;
         consensus.script_flag_exceptions.emplace( // BIP16 exception
             uint256{"00000000dd30457c001f4095d208cc1296b0eed002427aa599874af7a432b105"}, SCRIPT_VERIFY_NONE);
         consensus.BIP34Height = 21111;
@@ -299,6 +299,7 @@ public:
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.enforce_BIP94 = false;
         consensus.fPowNoRetargeting = false;
+        consensus.nSubsidyInitial          = 50 * COIN;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = Consensus::BIP9Deployment::NEVER_ACTIVE;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
@@ -375,7 +376,7 @@ public:
         m_chain_type = ChainType::TESTNET4;
         consensus.signet_blocks = false;
         consensus.signet_challenge.clear();
-        consensus.nSubsidyHalvingInterval = 2803200;
+        consensus.nSubsidyHalvingInterval = 1000000;
         consensus.BIP34Height = 1;
         consensus.BIP34Hash = uint256{};
         consensus.BIP65Height = 1;
@@ -389,6 +390,7 @@ public:
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.enforce_BIP94 = true;
         consensus.fPowNoRetargeting = false;
+        consensus.nSubsidyInitial          = 50 * COIN;
 
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = Consensus::BIP9Deployment::NEVER_ACTIVE;
@@ -494,7 +496,7 @@ public:
         consensus.signet_blocks = true;
         consensus.signet_challenge.assign(challenge_bin.begin(), challenge_bin.end());
 
-        consensus.nSubsidyHalvingInterval = 2803200;
+        consensus.nSubsidyHalvingInterval = 1000000;
         consensus.BIP34Height = 1;
         consensus.BIP34Hash = uint256{};
         consensus.BIP65Height = 1;
@@ -509,6 +511,7 @@ public:
         consensus.fPowNoRetargeting = false;
         consensus.enforce_BIP94 = false;
         consensus.MinBIP9WarningHeight = 0;
+        consensus.nSubsidyInitial          = 50 * COIN;
 
         
         consensus.powLimit = uint256{"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"};
@@ -617,6 +620,7 @@ public:
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.enforce_BIP94 = opts.enforce_bip94;
         consensus.fPowNoRetargeting = true;
+        consensus.nSubsidyInitial          = 50 * COIN;
 
         consensus.nPowTargetTimespan = 45; // irrelevante con no-retarget, pero coherente
         consensus.nPowTargetSpacing = 45;  // Adonai: 45 s por bloque
