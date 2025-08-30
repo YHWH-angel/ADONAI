@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_KERNEL_BLOCKMANAGER_OPTS_H
-#define BITCOIN_KERNEL_BLOCKMANAGER_OPTS_H
+#ifndef ADONAI_KERNEL_BLOCKMANAGER_OPTS_H
+#define ADONAI_KERNEL_BLOCKMANAGER_OPTS_H
 
 #include <dbwrapper.h>
 #include <kernel/notifications_interface.h>
@@ -34,4 +34,4 @@ struct BlockManagerOpts {
 
 } // namespace kernel
 
-#endif // BITCOIN_KERNEL_BLOCKMANAGER_OPTS_H
+#endif // ADONAI_KERNEL_BLOCKMANAGER_OPTS_H

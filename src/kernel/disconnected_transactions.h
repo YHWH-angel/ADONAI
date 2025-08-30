@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_KERNEL_DISCONNECTED_TRANSACTIONS_H
-#define BITCOIN_KERNEL_DISCONNECTED_TRANSACTIONS_H
+#ifndef ADONAI_KERNEL_DISCONNECTED_TRANSACTIONS_H
+#define ADONAI_KERNEL_DISCONNECTED_TRANSACTIONS_H
 
 #include <primitives/transaction.h>
 #include <util/hasher.h>
@@ -74,4 +74,4 @@ public:
     /** Clear all data structures and return the list of transactions. */
     std::list<CTransactionRef> take();
 };
-#endif // BITCOIN_KERNEL_DISCONNECTED_TRANSACTIONS_H
+#endif // ADONAI_KERNEL_DISCONNECTED_TRANSACTIONS_H
