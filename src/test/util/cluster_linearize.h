@@ -212,8 +212,8 @@ struct DepGraphFormatter
                 // Read fee, encoded as an unsigned varint (odd=negative, even=non-negative).
                 uint64_t coded_fee;
                 s >> VARINT(coded_fee);
-                coded_fee &= 0xFFFFFFFFFFFFFF; // Enough for fee between -280M...280M ADO.
-                static_assert(0xFFFFFFFFFFFFFF > uint64_t{2} * 280320000 * 100000000);
+                coded_fee &= 0xFFFFFFFFFFFFFF; // Enough for fee between -100M...100M ADO.
+                static_assert(0xFFFFFFFFFFFFFF > uint64_t{2} * 100000000 * 100000000);
                 new_feerate = {UnsignedToSigned(coded_fee), size};
                 // Read dependency information.
                 auto topo_idx = reordering.size();
