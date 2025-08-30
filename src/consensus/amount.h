@@ -4,15 +4,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_CONSENSUS_AMOUNT_H
-#define BITCOIN_CONSENSUS_AMOUNT_H
+#ifndef ADONAI_CONSENSUS_AMOUNT_H
+#define ADONAI_CONSENSUS_AMOUNT_H
 
 #include <cstdint>
 
 /** Amount in satoshis (Can be negative) */
 typedef int64_t CAmount;
 
-/** The amount of satoshis in one BTC. */
+/** The amount of satoshis in one ADO. */
 static constexpr CAmount COIN = 100000000;
 
 /** No amount larger than this (in satoshi) is valid.
@@ -27,4 +27,4 @@ static constexpr CAmount COIN = 100000000;
 static constexpr CAmount MAX_MONEY = 280320000 * COIN;
 inline bool MoneyRange(const CAmount& nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
 
-#endif // BITCOIN_CONSENSUS_AMOUNT_H
+#endif // ADONAI_CONSENSUS_AMOUNT_H
