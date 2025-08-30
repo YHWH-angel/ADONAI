@@ -27,9 +27,9 @@ BOOST_AUTO_TEST_CASE(difficulty_converges_up)
     chain[0].nBits = chainParams->GenesisBlock().nBits;
 
     // First window: blocks arrive twice as fast as the target spacing.
-    const int64_t fast_spacing = params.nPowTargetSpacing / 2;
     for (int i = 1; i <= window; ++i) {
         CBlockHeader header;
+        int64_t fast_spacing = params.GetTargetSpacing(i) / 2;
         header.nTime = chain[i - 1].GetBlockTime() + fast_spacing;
         chain[i].pprev = &chain[i - 1];
         chain[i].nHeight = i;
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(difficulty_converges_up)
     // Subsequent blocks: assume production now matches the target spacing.
     for (int i = window + 1; i < static_cast<int>(chain.size()); ++i) {
         CBlockHeader header;
-        header.nTime = chain[i - 1].GetBlockTime() + params.nPowTargetSpacing;
+        header.nTime = chain[i - 1].GetBlockTime() + params.GetTargetSpacing(i);
         chain[i].pprev = &chain[i - 1];
         chain[i].nHeight = i;
         chain[i].nTime = header.nTime;
@@ -68,9 +68,9 @@ BOOST_AUTO_TEST_CASE(difficulty_converges_down)
     chain[0].nBits = chainParams->GenesisBlock().nBits;
 
     // Initial phase: blocks arrive at half the target rate.
-    const int64_t slow_spacing = params.nPowTargetSpacing * 2;
     for (int i = 1; i <= window; ++i) {
         CBlockHeader header;
+        int64_t slow_spacing = params.GetTargetSpacing(i) * 2;
         header.nTime = chain[i - 1].GetBlockTime() + slow_spacing;
         chain[i].pprev = &chain[i - 1];
         chain[i].nHeight = i;
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(difficulty_converges_down)
     // Subsequent blocks with normal spacing.
     for (int i = window + 1; i < static_cast<int>(chain.size()); ++i) {
         CBlockHeader header;
-        header.nTime = chain[i - 1].GetBlockTime() + params.nPowTargetSpacing;
+        header.nTime = chain[i - 1].GetBlockTime() + params.GetTargetSpacing(i);
         chain[i].pprev = &chain[i - 1];
         chain[i].nHeight = i;
         chain[i].nTime = header.nTime;
@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE(no_dereference_with_exact_window)
     for (int i = 1; i < window; ++i) {
         chain[i].pprev = &chain[i - 1];
         chain[i].nHeight = i;
-        chain[i].nTime = chain[i - 1].GetBlockTime() + params.nPowTargetSpacing;
+        chain[i].nTime = chain[i - 1].GetBlockTime() + params.GetTargetSpacing(i);
         chain[i].nBits = chainParams->GenesisBlock().nBits;
     }
 

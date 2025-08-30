@@ -14,6 +14,7 @@
 #include <limits>
 #include <map>
 #include <vector>
+#include <utility>
 
 namespace Consensus {
 
@@ -82,8 +83,6 @@ struct BIP9Deployment {
  * Parameters that influence chain consensus.
  */
 struct Params {
-    int64_t nPowTargetSpacingV1;      // 120
-    int32_t nPowSpacingSwitchHeight;  // spacing change height
     int64_t  nSubsidyInitial;         // initial block subsidy
     int nCoinbaseMaturity;            // coinbase maturity in blocks
 
@@ -124,9 +123,33 @@ struct Params {
     bool fPowNoRetargeting;
     int64_t nPowTargetSpacing;
     int64_t nPowAveragingWindow;
+    std::vector<std::pair<int32_t, int64_t>> powSpacingRamps;
     std::chrono::seconds PowTargetSpacing() const
     {
         return std::chrono::seconds{nPowTargetSpacing};
+    }
+    int64_t GetTargetSpacing(int32_t height) const
+    {
+        if (powSpacingRamps.empty()) {
+            return nPowTargetSpacing;
+        }
+        auto prev = powSpacingRamps.front();
+        if (height <= prev.first) {
+            return prev.second;
+        }
+        for (const auto& stage : powSpacingRamps) {
+            if (height <= stage.first) {
+                int32_t h1 = prev.first;
+                int32_t h2 = stage.first;
+                int64_t s1 = prev.second;
+                int64_t s2 = stage.second;
+                if (h2 == h1) return s2;
+                double alpha = double(height - h1) / double(h2 - h1);
+                return s1 + static_cast<int64_t>((s2 - s1) * alpha);
+            }
+            prev = stage;
+        }
+        return powSpacingRamps.back().second;
     }
     int64_t DifficultyAdjustmentInterval() const { return nPowAveragingWindow; }
     /** The best chain should have at least this much work */

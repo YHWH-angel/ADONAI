@@ -151,14 +151,18 @@ public:
         // PoW BLAKE3: objetivo máximo más estricto para mayor seguridad
         consensus.powLimit = uint256{"00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"};
 
-        consensus.nPowTargetSpacingV1      = 120;     // arranque seguro
         consensus.nPowTargetSpacing = 45; // time between blocks
         consensus.nPowAveragingWindow = 60; // LWMA window
+        consensus.powSpacingRamps = {
+            {0,    120},
+            {3000, 90},
+            {6000, 60},
+            {10000, 45},
+        };
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.enforce_BIP94 = false;
         consensus.fPowNoRetargeting = false;
 
-        consensus.nPowSpacingSwitchHeight  = 10000;   // altura para cambio
         consensus.nSubsidyInitial          = 50 * COIN;
         consensus.nCoinbaseMaturity        = 200;     // ≈ 6h al inicio
 
