@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+Copyright (c) 2014-2022 The Bitcoin Core developers
+Modifications (c) 2025 The Adonai Core developers
+Distributed under the MIT software license, see the accompanying
+file COPYING or https://opensource.org/license/mit/
+-->
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
   <assemblyIdentity
       type="win32"
-      name="org.bitcoincore.${target}"
+      name="org.adonaicore.${target}"
       version="${CLIENT_VERSION_MAJOR}.${CLIENT_VERSION_MINOR}.${CLIENT_VERSION_BUILD}.0"
   />
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">

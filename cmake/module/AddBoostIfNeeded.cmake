@@ -1,6 +1,7 @@
-# Copyright (c) 2023-present The Bitcoin Core developers
+# Copyright (c) 2014-2022 The Bitcoin Core developers
+# Modifications (c) 2025 The Adonai Core developers
 # Distributed under the MIT software license, see the accompanying
-# file COPYING or https://opensource.org/license/mit/.
+# file COPYING or https://opensource.org/license/mit/
 
 function(add_boost_if_needed)
   #[=[
@@ -8,7 +9,7 @@ function(add_boost_if_needed)
         Boost. Therefore, a proper check will be appropriate here.
 
   Implementation notes:
-  Although only Boost headers are used to build Bitcoin Core,
+  Although only Boost headers are used to build Adonai Core,
   we still leverage a standard CMake's approach to handle
   dependencies, i.e., the Boost::headers "library".
   A command target_link_libraries(target PRIVATE Boost::headers)

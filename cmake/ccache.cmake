@@ -1,6 +1,7 @@
-# Copyright (c) 2023-present The Bitcoin Core developers
+# Copyright (c) 2014-2022 The Bitcoin Core developers
+# Modifications (c) 2025 The Adonai Core developers
 # Distributed under the MIT software license, see the accompanying
-# file COPYING or https://opensource.org/license/mit/.
+# file COPYING or https://opensource.org/license/mit/
 
 if(NOT MSVC)
   find_program(CCACHE_EXECUTABLE ccache)

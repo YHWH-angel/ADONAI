@@ -1,9 +1,10 @@
-// Copyright (c) 2023-present The Bitcoin Core developers
+// Copyright (c) 2014-2022 The Bitcoin Core developers
+// Modifications (c) 2025 The Adonai Core developers
 // Distributed under the MIT software license, see the accompanying
-// file COPYING or https://opensource.org/license/mit/.
+// file COPYING or https://opensource.org/license/mit/
 
-#ifndef BITCOIN_CONFIG_H
-#define BITCOIN_CONFIG_H
+#ifndef ADONAI_CONFIG_H
+#define ADONAI_CONFIG_H
 
 /* Version Build */
 #define CLIENT_VERSION_BUILD @CLIENT_VERSION_BUILD@
@@ -112,4 +113,4 @@
 /* Define if QR support should be compiled in */
 #cmakedefine USE_QRCODE 1
 
-#endif //BITCOIN_CONFIG_H
+#endif //ADONAI_CONFIG_H

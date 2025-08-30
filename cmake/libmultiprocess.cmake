@@ -1,10 +1,11 @@
-# Copyright (c) 2025 The Bitcoin Core developers
+# Copyright (c) 2014-2022 The Bitcoin Core developers
+# Modifications (c) 2025 The Adonai Core developers
 # Distributed under the MIT software license, see the accompanying
-# file COPYING or https://opensource.org/license/mit/.
+# file COPYING or https://opensource.org/license/mit/
 
 function(add_libmultiprocess subdir)
   # Set BUILD_TESTING to match BUILD_TESTS. BUILD_TESTING is a standard cmake
-  # option that controls whether enable_testing() is called, but in the bitcoin
+  # option that controls whether enable_testing() is called, but in the adonai
   # build a BUILD_TESTS option is used instead.
   set(BUILD_TESTING "${BUILD_TESTS}")
   add_subdirectory(${subdir} EXCLUDE_FROM_ALL)
