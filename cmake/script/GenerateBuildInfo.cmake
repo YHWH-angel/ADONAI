@@ -1,6 +1,7 @@
-# Copyright (c) 2023-present The Bitcoin Core developers
+# Copyright (c) 2014-2022 The Bitcoin Core developers
+# Modifications (c) 2025 The Adonai Core developers
 # Distributed under the MIT software license, see the accompanying
-# file COPYING or https://opensource.org/license/mit/.
+# file COPYING or https://opensource.org/license/mit/
 
 macro(fatal_error)
   message(FATAL_ERROR "\n"
@@ -30,7 +31,7 @@ endif()
 
 set(GIT_TAG)
 set(GIT_COMMIT)
-if(NOT "$ENV{BITCOIN_GENBUILD_NO_GIT}" STREQUAL "1")
+if(NOT "$ENV{ADONAI_GENBUILD_NO_GIT}" STREQUAL "1")
   find_package(Git QUIET)
   if(Git_FOUND)
     execute_process(
