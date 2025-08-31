@@ -3,6 +3,10 @@ pchMessageStart: AD 0E A1 01
 P2P port: 18444
 RPC port: 18443
 
+Subsidio inicial: 18 ADO
+Halving cada: 2,803,200 bloques (~4 años)
+Suministro máximo: 100,915,200 ADO
+
 Genesis:
   time   = 1754122572
   nonce  = 2445534
