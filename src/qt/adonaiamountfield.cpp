@@ -126,7 +126,7 @@ public:
 
             const QFontMetrics fm(fontMetrics());
             int h = lineEdit()->minimumSizeHint().height();
-            int w = GUIUtil::TextWidth(fm, BitcoinUnits::format(BitcoinUnit::BTC, BitcoinUnits::maxMoney(), false, BitcoinUnits::SeparatorStyle::ALWAYS));
+            int w = GUIUtil::TextWidth(fm, BitcoinUnits::format(BitcoinUnit::ADO, BitcoinUnits::maxMoney(), false, BitcoinUnits::SeparatorStyle::ALWAYS));
             w += 2; // cursor blinking space
 
             QStyleOptionSpinBox opt;
@@ -151,8 +151,8 @@ public:
     }
 
 private:
-    BitcoinUnit currentUnit{BitcoinUnit::BTC};
-    CAmount singleStep{CAmount(100000)}; // satoshis
+    BitcoinUnit currentUnit{BitcoinUnit::ADO};
+    CAmount singleStep{CAmount(100000)}; // angels
     mutable QSize cachedMinimumSizeHint;
     bool m_allow_empty{true};
     CAmount m_min_amount{CAmount(0)};

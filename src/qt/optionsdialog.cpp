@@ -127,8 +127,8 @@ OptionsDialog::OptionsDialog(QWidget* parent, bool enableWallet)
     /* remove Window tab on Mac */
     ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->tabWindow));
     /* hide launch at startup option on macOS */
-    ui->bitcoinAtStartup->setVisible(false);
-    ui->verticalLayout_Main->removeWidget(ui->bitcoinAtStartup);
+    ui->adonaiAtStartup->setVisible(false);
+    ui->verticalLayout_Main->removeWidget(ui->adonaiAtStartup);
     ui->verticalLayout_Main->removeItem(ui->horizontalSpacer_0_Main);
 #endif
 
@@ -149,10 +149,10 @@ OptionsDialog::OptionsDialog(QWidget* parent, bool enableWallet)
     /* Display elements init */
     QDir translations(":translations");
 
-    ui->bitcoinAtStartup->setToolTip(ui->bitcoinAtStartup->toolTip().arg(CLIENT_NAME));
-    ui->bitcoinAtStartup->setText(ui->bitcoinAtStartup->text().arg(CLIENT_NAME));
+    ui->adonaiAtStartup->setToolTip(ui->adonaiAtStartup->toolTip().arg(CLIENT_NAME));
+    ui->adonaiAtStartup->setText(ui->adonaiAtStartup->text().arg(CLIENT_NAME));
 
-    ui->openBitcoinConfButton->setToolTip(ui->openBitcoinConfButton->toolTip().arg(CLIENT_NAME));
+    ui->openAdonaiConfButton->setToolTip(ui->openAdonaiConfButton->toolTip().arg(CLIENT_NAME));
 
     ui->lang->setToolTip(ui->lang->toolTip().arg(CLIENT_NAME));
     ui->lang->addItem(QString("(") + tr("default") + QString(")"), QVariant(""));
@@ -279,7 +279,7 @@ void OptionsDialog::setCurrentTab(OptionsDialog::Tab tab)
 void OptionsDialog::setMapper()
 {
     /* Main */
-    mapper->addMapping(ui->bitcoinAtStartup, OptionsModel::StartAtStartup);
+    mapper->addMapping(ui->adonaiAtStartup, OptionsModel::StartAtStartup);
     mapper->addMapping(ui->threadsScriptVerif, OptionsModel::ThreadsScriptVerif);
     mapper->addMapping(ui->databaseCache, OptionsModel::DatabaseCache);
     mapper->addMapping(ui->prune, OptionsModel::Prune);
@@ -353,7 +353,7 @@ void OptionsDialog::on_resetButton_clicked()
     }
 }
 
-void OptionsDialog::on_openBitcoinConfButton_clicked()
+void OptionsDialog::on_openAdonaiConfButton_clicked()
 {
     QMessageBox config_msgbox(this);
     config_msgbox.setIcon(QMessageBox::Information);
@@ -373,7 +373,7 @@ void OptionsDialog::on_openBitcoinConfButton_clicked()
     if (config_msgbox.clickedButton() != open_button) return;
 
     /* show an error if there was some problem opening the file */
-    if (!GUIUtil::openBitcoinConf())
+    if (!GUIUtil::openAdonaiConf())
         QMessageBox::critical(this, tr("Error"), tr("The configuration file could not be opened."));
 }
 

@@ -9,13 +9,13 @@
 
 #include <cstdint>
 
-/** Amount in satoshis (Can be negative) */
+/** Amount in angels (Can be negative) */
 typedef int64_t CAmount;
 
-/** The amount of satoshis in one ADO. */
+/** The amount of angels in one ADO. */
 static constexpr CAmount COIN = 100000000;
 
-/** No amount larger than this (in satoshi) is valid.
+/** No amount larger than this (in angels) is valid.
  *
  * Note that this constant is *not* the total money supply, which in Adonai
  * currently happens to be less than 100,915,200 ADO for various reasons, but
