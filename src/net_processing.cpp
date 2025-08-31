@@ -2985,6 +2985,10 @@ void PeerManagerImpl::ProcessHeadersMessage(CNode& pfrom, Peer& peer,
                                                            state, &pindexLast)};
     if (!processed) {
         if (state.IsInvalid()) {
+            const uint256 hash{headers.front().GetHash()};
+            LogDebug(static_cast<BCLog::LogFlags>(BCLog::NET | BCLog::VALIDATION),
+                     "invalid header %s from peer=%d: %s\n",
+                     hash.ToString(), pfrom.GetId(), state.GetRejectReason());
             MaybePunishNodeForBlock(pfrom.GetId(), state, via_compact_block, "invalid header received");
             return;
         }
