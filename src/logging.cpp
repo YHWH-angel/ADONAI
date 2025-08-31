@@ -254,9 +254,15 @@ static std::string LogCategoryToStr(BCLog::LogFlags category)
     if (category == BCLog::ALL) {
         return "all";
     }
-    auto it = LOG_CATEGORIES_BY_FLAG.find(category);
-    assert(it != LOG_CATEGORIES_BY_FLAG.end());
-    return it->second;
+    std::string ret;
+    for (const auto& [name, flag] : LOG_CATEGORIES_BY_STR) {
+        if ((category & flag) != 0) {
+            if (!ret.empty()) ret += ",";
+            ret += name;
+        }
+    }
+    assert(!ret.empty());
+    return ret;
 }
 
 static std::optional<BCLog::Level> GetLogLevel(std::string_view level_str)

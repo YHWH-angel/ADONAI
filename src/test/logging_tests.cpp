@@ -171,6 +171,20 @@ BOOST_FIXTURE_TEST_CASE(logging_LogPrintMacros, LogSetup)
     BOOST_CHECK_EQUAL_COLLECTIONS(log_lines.begin(), log_lines.end(), expected.begin(), expected.end());
 }
 
+BOOST_FIXTURE_TEST_CASE(logging_LogPrintMacros_MultiCategory, LogSetup)
+{
+    LogDebug(static_cast<BCLog::LogFlags>(BCLog::NET | BCLog::VALIDATION), "foo11: %s", "bar11");
+    std::ifstream file{tmp_log_path};
+    std::vector<std::string> log_lines;
+    for (std::string log; std::getline(file, log);) {
+        log_lines.push_back(log);
+    }
+    std::vector<std::string> expected = {
+        "[net,validation] foo11: bar11",
+    };
+    BOOST_CHECK_EQUAL_COLLECTIONS(log_lines.begin(), log_lines.end(), expected.begin(), expected.end());
+}
+
 BOOST_FIXTURE_TEST_CASE(logging_LogPrintMacros_CategoryName, LogSetup)
 {
     LogInstance().EnableCategory(BCLog::LogFlags::ALL);
