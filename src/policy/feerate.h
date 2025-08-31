@@ -16,7 +16,7 @@
 #include <type_traits>
 
 const std::string CURRENCY_UNIT = "ADO"; // One formatted unit
-const std::string CURRENCY_ATOM = "sat"; // One indivisible minimum value unit
+const std::string CURRENCY_ATOM = "ang"; // One indivisible minimum value unit
 
 /* Used to determine type of fee estimation requested */
 enum class FeeEstimateMode {
@@ -24,42 +24,42 @@ enum class FeeEstimateMode {
     ECONOMICAL,   //!< Force estimateSmartFee to use non-conservative estimates
     CONSERVATIVE, //!< Force estimateSmartFee to use conservative estimates
     ADO_KVB,      //!< Use ADO/kvB fee rate unit
-    SAT_VB,       //!< Use sat/vB fee rate unit
+    SAT_VB,       //!< Use ang/vB fee rate unit
 };
 
 /**
- * Fee rate in satoshis per kilovirtualbyte: CAmount / kvB
+ * Fee rate in angels per kilovirtualbyte: CAmount / kvB
  */
 class CFeeRate
 {
 private:
-    /** Fee rate in sat/kvB (satoshis per 1000 virtualbytes) */
+    /** Fee rate in ang/kvB (angels per 1000 virtualbytes) */
     CAmount nSatoshisPerK;
 
 public:
-    /** Fee rate of 0 satoshis per kvB */
+    /** Fee rate of 0 angels per kvB */
     CFeeRate() : nSatoshisPerK(0) { }
     template<std::integral I> // Disallow silent float -> int conversion
     explicit CFeeRate(const I _nSatoshisPerK): nSatoshisPerK(_nSatoshisPerK) {
     }
 
     /**
-     * Construct a fee rate from a fee in satoshis and a vsize in vB.
+     * Construct a fee rate from a fee in angels and a vsize in vB.
      *
-     * param@[in]   nFeePaid    The fee paid by a transaction, in satoshis
+     * param@[in]   nFeePaid    The fee paid by a transaction, in angels
      * param@[in]   num_bytes   The vsize of a transaction, in vbytes
      */
     CFeeRate(const CAmount& nFeePaid, uint32_t num_bytes);
 
     /**
-     * Return the fee in satoshis for the given vsize in vbytes.
-     * If the calculated fee would have fractional satoshis, then the
-     * returned fee will always be rounded up to the nearest satoshi.
+     * Return the fee in angels for the given vsize in vbytes.
+     * If the calculated fee would have fractional angels, then the
+     * returned fee will always be rounded up to the nearest angel.
      */
     CAmount GetFee(uint32_t num_bytes) const;
 
     /**
-     * Return the fee in satoshis for a vsize of 1000 vbytes
+     * Return the fee in angels for a vsize of 1000 vbytes
      */
     CAmount GetFeePerK() const { return nSatoshisPerK; }
     friend bool operator<(const CFeeRate& a, const CFeeRate& b) { return a.nSatoshisPerK < b.nSatoshisPerK; }

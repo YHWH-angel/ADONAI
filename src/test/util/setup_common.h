@@ -246,7 +246,7 @@ struct TestChain100Setup : public TestingSetup {
      *
      * @param target_feerate    The new mempool minimum feerate after this function returns.
      *                          Must be above max(incremental feerate, min relay feerate),
-     *                          or 1sat/vB with default settings.
+     *                          or 1ang/vB with default settings.
      */
     void MockMempoolMinFee(const CFeeRate& target_feerate);
 

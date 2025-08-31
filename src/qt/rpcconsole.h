@@ -37,7 +37,7 @@ class QMenu;
 class QItemSelection;
 QT_END_NAMESPACE
 
-/** Local Bitcoin RPC console. */
+/** Local Adonai RPC console. */
 class RPCConsole: public QWidget
 {
     Q_OBJECT
