@@ -207,14 +207,14 @@ public:
 
         genesis = CreateGenesisBlock(
             /* nTime */ 1754122572,
-            /* nNonce */ 2445534,
-            /* nBits */ 0x1e0ffff0,
+            /* nNonce */ 119040,
+            /* nBits */ 0x1e0fffff,
             /* nVersion */ 1,
             /* genesisReward */ 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
         // Asegura tus asserts (usa el formato de tu uint256, aquí es con llaves):
-        assert(consensus.hashGenesisBlock == uint256{"00000be2948953149109fd556f8f0a327e450a52a3d9a411c88e5e7ad8eae0d1"});
+        assert(consensus.hashGenesisBlock == uint256{"000008358709fae09230a75838c2c30b15eff28790d530c2d8b0fd5739e0cd06"});
         assert(genesis.hashMerkleRoot == uint256{"3c27610446c91576f0f18fa4e758b72565f678ae063346fe6d271d6d850783b6"});
 
 
