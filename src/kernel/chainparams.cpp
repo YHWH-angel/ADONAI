@@ -271,9 +271,6 @@ public:
 
         m_assumeutxo_data = {};
 
-        vSeeds.emplace_back("seed1.adonai.org");
-        vSeeds.emplace_back("seed2.adonai.org");
-
         chainTxData = ChainTxData{.nTime = 0, .tx_count = 0, .dTxRate = 0.0};
     }
 };
@@ -441,9 +438,6 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-        // nodes with support for servicebits filtering should be at the top
-        vSeeds.emplace_back("seed.testnet4.adonai.sprovoost.nl."); // Sjors Provoost
-        vSeeds.emplace_back("seed.testnet4.wiz.biz.");             // Jason Maurice
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 196);
@@ -452,8 +446,6 @@ public:
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
 
         bech32_hrp = "tb";
-
-        vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_testnet4), std::end(chainparams_seed_testnet4));
 
         fDefaultConsistencyChecks = false;
         m_is_mockable_chain = false;
@@ -490,7 +482,6 @@ public:
             challenge_bin = "512103aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa51ae"_hex_v_u8; // TODO: reemplazar pubkey
             // Sin seeds externos de Adonai
             vFixedSeeds = {}; // TODO: añadir fijos propios si quieres
-            // vSeeds.emplace_back("seed.signet.adonai.network."); // TODO: tus DNS seeds
         } else {
             challenge_bin = *options.challenge;
             LogPrintf("Signet with custom challenge %s\n", HexStr(challenge_bin));
