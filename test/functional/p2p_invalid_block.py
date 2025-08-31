@@ -72,9 +72,15 @@ class InvalidBlockRequestTest(BitcoinTestFramework):
         # For more information on merkle-root malleability see src/consensus/merkle.cpp.
         self.log.info("Test merkle root malleability.")
 
-        tx1 = create_tx_with_script(block1.vtx[0], 0, script_sig=bytes([OP_TRUE]), amount=50 * COIN)
-        tx2 = create_tx_with_script(tx1, 0, script_sig=bytes([OP_TRUE]), amount=50 * COIN)
-        block2 = create_block(tip, create_coinbase(height), block_time, txlist=[tx1, tx2])
+        tx1 = create_tx_with_script(
+            block1.vtx[0], 0, script_sig=bytes([OP_TRUE]), amount=18 * COIN
+        )
+        tx2 = create_tx_with_script(
+            tx1, 0, script_sig=bytes([OP_TRUE]), amount=18 * COIN
+        )
+        block2 = create_block(
+            tip, create_coinbase(height), block_time, txlist=[tx1, tx2]
+        )
         block_time += 1
         block2.solve()
         orig_hash = block2.sha256
@@ -86,7 +92,9 @@ class InvalidBlockRequestTest(BitcoinTestFramework):
         assert_equal(orig_hash, block2.rehash())
         assert_not_equal(block2_orig.vtx, block2.vtx)
 
-        peer.send_blocks_and_test([block2], node, success=False, reject_reason='bad-txns-duplicate')
+        peer.send_blocks_and_test(
+            [block2], node, success=False, reject_reason="bad-txns-duplicate"
+        )
 
         # Check transactions for duplicate inputs (CVE-2018-17144)
         self.log.info("Test duplicate input block.")
@@ -95,7 +103,9 @@ class InvalidBlockRequestTest(BitcoinTestFramework):
         block2_dup.vtx[2].vin.append(block2_dup.vtx[2].vin[0])
         block2_dup.hashMerkleRoot = block2_dup.calc_merkle_root()
         block2_dup.solve()
-        peer.send_blocks_and_test([block2_dup], node, success=False, reject_reason='bad-txns-inputs-duplicate')
+        peer.send_blocks_and_test(
+            [block2_dup], node, success=False, reject_reason="bad-txns-inputs-duplicate"
+        )
 
         self.log.info("Test very broken block.")
 
@@ -103,13 +113,16 @@ class InvalidBlockRequestTest(BitcoinTestFramework):
         block_time += 1
         block3.solve()
 
-        peer.send_blocks_and_test([block3], node, success=False, reject_reason='bad-cb-amount')
-
+        peer.send_blocks_and_test(
+            [block3], node, success=False, reject_reason="bad-cb-amount"
+        )
 
         # Complete testing of CVE-2012-2459 by sending the original block.
         # It should be accepted even though it has the same hash as the mutated one.
 
-        self.log.info("Test accepting original block after rejecting its mutated version.")
+        self.log.info(
+            "Test accepting original block after rejecting its mutated version."
+        )
         peer.send_blocks_and_test([block2_orig], node, success=True, timeout=5)
 
         # Update tip info
@@ -119,24 +132,34 @@ class InvalidBlockRequestTest(BitcoinTestFramework):
 
         # Complete testing of CVE-2018-17144, by checking for the inflation bug.
         # Create a block that spends the output of a tx in a previous block.
-        tx3 = create_tx_with_script(tx2, 0, script_sig=bytes([OP_TRUE]), amount=50 * COIN)
+        tx3 = create_tx_with_script(
+            tx2, 0, script_sig=bytes([OP_TRUE]), amount=18 * COIN
+        )
         tx3.vin.append(tx3.vin[0])  # Duplicates input
         block4 = create_block(tip, create_coinbase(height), block_time, txlist=[tx3])
         block4.solve()
         self.log.info("Test inflation by duplicating input")
-        peer.send_blocks_and_test([block4], node, success=False,  reject_reason='bad-txns-inputs-duplicate')
+        peer.send_blocks_and_test(
+            [block4], node, success=False, reject_reason="bad-txns-inputs-duplicate"
+        )
 
-        self.log.info("Test accepting identical block after rejecting it due to a future timestamp.")
+        self.log.info(
+            "Test accepting identical block after rejecting it due to a future timestamp."
+        )
         t = int(time.time())
         node.setmocktime(t)
         # Set block time +1 second past max future validity
-        block = create_block(tip, create_coinbase(height), t + MAX_FUTURE_BLOCK_TIME + 1)
+        block = create_block(
+            tip, create_coinbase(height), t + MAX_FUTURE_BLOCK_TIME + 1
+        )
         block.solve()
         # Need force_send because the block will get rejected without a getdata otherwise
-        peer.send_blocks_and_test([block], node, force_send=True, success=False, reject_reason='time-too-new')
+        peer.send_blocks_and_test(
+            [block], node, force_send=True, success=False, reject_reason="time-too-new"
+        )
         node.setmocktime(t + 1)
         peer.send_blocks_and_test([block], node, success=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     InvalidBlockRequestTest(__file__).main()

@@ -42,7 +42,7 @@ static void TestBlockSubsidyHalvings(int nSubsidyHalvingInterval)
 {
     Consensus::Params consensusParams;
     consensusParams.nSubsidyHalvingInterval = nSubsidyHalvingInterval;
-    consensusParams.nSubsidyInitial = 50 * COIN;
+    consensusParams.nSubsidyInitial = 18 * COIN;
     TestBlockSubsidyHalvings(consensusParams);
 }
 
@@ -50,8 +50,8 @@ BOOST_AUTO_TEST_CASE(block_subsidy_test)
 {
     const auto chainParams = CreateChainParams(*m_node.args, ChainType::MAIN);
     TestBlockSubsidyHalvings(chainParams->GetConsensus()); // As in main
-    TestBlockSubsidyHalvings(150); // As in regtest
-    TestBlockSubsidyHalvings(1000); // Just another interval
+    TestBlockSubsidyHalvings(150);                         // As in regtest
+    TestBlockSubsidyHalvings(1000);                        // Just another interval
 }
 
 BOOST_AUTO_TEST_CASE(subsidy_limit_test)
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(subsidy_limit_test)
         nSum += nSubsidy * 1000;
         BOOST_CHECK(MoneyRange(nSum));
     }
-    BOOST_CHECK_EQUAL(nSum, CAmount{9999389647000000});
+    BOOST_CHECK_EQUAL(nSum, CAmount{9775462500000000});
 }
 
 

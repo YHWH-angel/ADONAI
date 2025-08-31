@@ -104,9 +104,19 @@ Más información de la cadena:
 
 ---
 
-## 6. Parámetros del génesis
+## 6. Política monetaria
 
-Consulta `GENESIS.adonai.txt` (inclúyelo en la raíz del repo).  
+La emisión de ADONAI sigue una política de halving similar a la de Bitcoin:
+
+- **Subsidio inicial:** 18 ADO por bloque.
+- **Halving:** cada 2 803 200 bloques (~4 años).
+- **Tope máximo:** 100 915 200 ADO en total.
+- **Emisión primer año:** ~12,61 millones de ADO.
+- **Duración prevista:** ~124 años (31 reducciones).
+
+## 7. Parámetros del génesis
+
+Consulta `GENESIS.adonai.txt` (inclúyelo en la raíz del repo).
 Contiene:
 - Hash génesis: `4c4efcd0ae575f920e8fb827b9d4ccb552d53ab573726afa6788394bb2753492`
 - Merkle root: `3c27610446c91576f0f18fa4e758b72565f678ae063346fe6d271d6d850783b6`
@@ -120,7 +130,7 @@ Contiene:
 
 ---
 
-## 7. Licencia
+## 8. Licencia
 
 Este repositorio se publica bajo **MIT**. Consulta el archivo [`LICENSE`](LICENSE) para los términos completos.  
 Mantén los avisos de copyright originales de Bitcoin Core al redistribuir.
