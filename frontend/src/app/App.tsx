@@ -1,13 +1,20 @@
 import { useTranslation } from 'react-i18next'
+import Onboarding from '@/features/onboarding'
 import { useTheme } from '@/lib/theme'
+import { useWalletStore } from '@/store/wallet'
 import './App.css'
 
 export default function App() {
   const { t, i18n } = useTranslation()
   const { theme, toggle } = useTheme()
+  const isLoaded = useWalletStore((s) => s.isLoaded)
 
   const switchLang = () => {
     i18n.changeLanguage(i18n.language === 'en' ? 'es' : 'en')
+  }
+
+  if (!isLoaded) {
+    return <Onboarding />
   }
 
   return (
