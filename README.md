@@ -130,7 +130,13 @@ Contiene:
 
 ---
 
-## 8. Licencia
+## 8. Interfaz web
+
+ADONAI incluye un gateway HTTP opcional que expone un API REST y una SPA en React para controlar el nodo. La especificación completa de los endpoints se encuentra en [openapi.yaml](openapi.yaml) y la documentación detallada en [doc/web-interface.md](doc/web-interface.md).
+
+---
+
+## 9. Licencia
 
 Este repositorio se publica bajo **MIT**. Consulta el archivo [`LICENSE`](LICENSE) para los términos completos.  
 Mantén los avisos de copyright originales de Bitcoin Core al redistribuir.

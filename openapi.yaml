@@ -1,0 +1,519 @@
+openapi: 3.0.3
+info:
+  title: ADONAI Web Gateway API
+  version: 0.1.0
+  description: |
+    REST contract for the ADONAI web interface. It exposes a subset of the
+    JSON-RPC methods through a REST/JSON API served by the local gateway.
+servers:
+  - url: http://localhost:17001
+    description: Local gateway
+security:
+  - CookieAuth: []
+components:
+  securitySchemes:
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: auth_token
+      description: HttpOnly cookie carrying the session token. Use X-CSRF-Token header for CSRF protection.
+  schemas:
+    BlockchainInfo:
+      type: object
+      properties:
+        chain:
+          type: string
+        blocks:
+          type: integer
+        headers:
+          type: integer
+        bestblockhash:
+          type: string
+        difficulty:
+          type: number
+        verificationprogress:
+          type: number
+        chainwork:
+          type: string
+      additionalProperties: true
+    NetworkInfo:
+      type: object
+      properties:
+        version:
+          type: integer
+        subversion:
+          type: string
+        protocolversion:
+          type: integer
+        localservices:
+          type: string
+        connections:
+          type: integer
+      additionalProperties: true
+    MiningInfo:
+      type: object
+      properties:
+        blocks:
+          type: integer
+        currentblockweight:
+          type: integer
+        currentblocktx:
+          type: integer
+        difficulty:
+          type: number
+        networkhashps:
+          type: number
+        pooledtx:
+          type: integer
+      additionalProperties: true
+    WalletDescriptor:
+      type: object
+      properties:
+        name:
+          type: string
+        loaded:
+          type: boolean
+      required: [name, loaded]
+    Address:
+      type: object
+      properties:
+        address:
+          type: string
+      required: [address]
+    Balance:
+      type: object
+      properties:
+        balance:
+          type: number
+      required: [balance]
+    Transaction:
+      type: object
+      properties:
+        txid:
+          type: string
+        category:
+          type: string
+        amount:
+          type: number
+        confirmations:
+          type: integer
+        time:
+          type: integer
+      additionalProperties: true
+    TxIdList:
+      type: array
+      items:
+        type: string
+    DecodeRawRequest:
+      type: object
+      properties:
+        hex:
+          type: string
+      required: [hex]
+    SendToAddressRequest:
+      type: object
+      properties:
+        address:
+          type: string
+        amount:
+          type: number
+        comment:
+          type: string
+      required: [address, amount]
+    WalletPassphraseRequest:
+      type: object
+      properties:
+        passphrase:
+          type: string
+        timeout:
+          type: integer
+      required: [passphrase, timeout]
+    ToggleMiningRequest:
+      type: object
+      properties:
+        generate:
+          type: boolean
+        threads:
+          type: integer
+      required: [generate]
+paths:
+  /blockchain/info:
+    get:
+      summary: Get blockchain information
+      operationId: getBlockchainInfo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlockchainInfo'
+  /network/info:
+    get:
+      summary: Get network information
+      operationId: getNetworkInfo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkInfo'
+  /mining/info:
+    get:
+      summary: Get mining information
+      operationId: getMiningInfo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MiningInfo'
+  /network/connectioncount:
+    get:
+      summary: Get number of connections
+      operationId: getConnectionCount
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  connectionCount:
+                    type: integer
+  /node/uptime:
+    get:
+      summary: Get node uptime
+      operationId: getUptime
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uptime:
+                    type: integer
+  /wallets:
+    get:
+      summary: List loaded wallets
+      operationId: listWallets
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WalletDescriptor'
+    post:
+      summary: Create wallet
+      operationId: createWallet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                passphrase:
+                  type: string
+              required: [name]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletDescriptor'
+  /wallets/load:
+    post:
+      summary: Load wallet by name
+      operationId: loadWallet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+              required: [name]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletDescriptor'
+  /wallets/{wallet}/newaddress:
+    post:
+      summary: Get a new address from wallet
+      operationId: getNewAddress
+      parameters:
+        - in: path
+          name: wallet
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+  /wallets/{wallet}/balance:
+    get:
+      summary: Get wallet balance
+      operationId: getBalance
+      parameters:
+        - in: path
+          name: wallet
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Balance'
+  /wallets/{wallet}/transactions:
+    get:
+      summary: List wallet transactions
+      operationId: listTransactions
+      parameters:
+        - in: path
+          name: wallet
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+  /wallets/{wallet}/sendtoaddress:
+    post:
+      summary: Send coins to an address
+      operationId: sendToAddress
+      parameters:
+        - in: path
+          name: wallet
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendToAddressRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  txid:
+                    type: string
+  /wallets/{wallet}/unlock:
+    post:
+      summary: Unlock wallet with passphrase
+      operationId: walletPassphrase
+      parameters:
+        - in: path
+          name: wallet
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletPassphraseRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  unlocked:
+                    type: boolean
+  /wallets/{wallet}/lock:
+    post:
+      summary: Lock wallet
+      operationId: walletLock
+      parameters:
+        - in: path
+          name: wallet
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  locked:
+                    type: boolean
+  /mempool:
+    get:
+      summary: Get raw mempool
+      operationId: getRawMempool
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TxIdList'
+  /transactions/{txid}:
+    get:
+      summary: Get transaction details
+      operationId: getTransaction
+      parameters:
+        - in: path
+          name: txid
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+  /transactions/decode:
+    post:
+      summary: Decode raw transaction
+      operationId: decodeRawTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecodeRawRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+  /mining/blocktemplate:
+    post:
+      summary: Get block template
+      operationId: getBlockTemplate
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /mining/toggle:
+    post:
+      summary: Enable or disable mining
+      operationId: toggleMining
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToggleMiningRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+  /node/stop:
+    post:
+      summary: Stop the node
+      operationId: stopNode
+      responses:
+        '200':
+          description: Node stopping
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stopping:
+                    type: boolean
+  /node/logging:
+    get:
+      summary: Get logging configuration
+      operationId: getLogging
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: boolean
+    post:
+      summary: Set logging configuration
+      operationId: setLogging
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                include:
+                  type: array
+                  items:
+                    type: string
+                exclude:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: boolean
