@@ -1,0 +1,24 @@
+html {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  display: flex;
+  place-items: center;
+  justify-content: center;
+}
+
+html.dark {
+  background-color: #242424;
+  color: rgba(255, 255, 255, 0.87);
+}
+
+html:not(.dark) {
+  background-color: #ffffff;
+  color: #213547;
+}
