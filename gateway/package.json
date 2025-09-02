@@ -1,0 +1,24 @@
+{
+  "name": "adonai-gateway",
+  "version": "0.1.0",
+  "description": "HTTP/WebSocket gateway for the ADONAI node",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node -e \"console.log('No tests yet')\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bitcoin-core": "^4.2.0",
+    "cookie-parser": "^1.4.6",
+    "csurf": "^1.11.0",
+    "express": "^4.18.2",
+    "express-rate-limit": "^6.10.0",
+    "express-session": "^1.17.3",
+    "helmet": "^7.0.0",
+    "ws": "^8.17.0",
+    "zeromq": "^6.0.0"
+  }
+}
