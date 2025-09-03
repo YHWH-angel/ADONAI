@@ -18,6 +18,7 @@ export interface WalletSlice {
   setTransactions: (txs: string[]) => void
   setAddress: (address: string) => void
   setUtxos: (utxos: Utxo[]) => void
+  clearWallet: () => void
 }
 
 export interface Utxo {

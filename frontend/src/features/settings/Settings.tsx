@@ -15,6 +15,7 @@ export default function Settings() {
     setLogs,
     setVerbosity,
     setZmqEndpoint,
+    clearWallet,
   } = useAppStore((s) => ({
     datadir: s.datadir,
     logs: s.logs,
@@ -24,6 +25,7 @@ export default function Settings() {
     setLogs: s.setLogs,
     setVerbosity: s.setVerbosity,
     setZmqEndpoint: s.setZmqEndpoint,
+    clearWallet: s.clearWallet,
   }))
 
   const seed = useWalletStore((s) => s.seed)
@@ -49,6 +51,7 @@ export default function Settings() {
         try {
           const data = JSON.parse(reader.result as string)
           if (Array.isArray(data.seed)) {
+            clearWallet()
             loadWallet(data.seed)
           }
         } catch (e) {

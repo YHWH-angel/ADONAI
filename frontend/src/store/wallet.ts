@@ -24,13 +24,18 @@ export const useWalletStore = create<WalletState>()(
   ),
 )
 
-export const createWalletSlice: AppSlice<WalletSlice> = (set) => ({
+const initialWalletState = {
   balance: 0,
   transactions: [],
   address: 'adonai1placeholder',
   utxos: [],
+}
+
+export const createWalletSlice: AppSlice<WalletSlice> = (set) => ({
+  ...initialWalletState,
   setBalance: (balance) => set({ balance }),
   setTransactions: (transactions) => set({ transactions }),
   setAddress: (address) => set({ address }),
   setUtxos: (utxos) => set({ utxos }),
+  clearWallet: () => set(initialWalletState),
 })
