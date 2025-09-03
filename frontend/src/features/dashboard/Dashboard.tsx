@@ -15,12 +15,7 @@ export default function Dashboard() {
     isMining,
     minerHashrate,
     setHeight,
-    setDifficulty,
-    setNetHashrate,
-    setBalance,
     setTransactions,
-    setIsMining,
-    setMinerHashrate,
   } = useAppStore((s) => ({
     height: s.height,
     difficulty: s.difficulty,
@@ -30,44 +25,30 @@ export default function Dashboard() {
     isMining: s.isMining,
     minerHashrate: s.minerHashrate,
     setHeight: s.setHeight,
-    setDifficulty: s.setDifficulty,
-    setNetHashrate: s.setNetHashrate,
-    setBalance: s.setBalance,
     setTransactions: s.setTransactions,
-    setIsMining: s.setIsMining,
-    setMinerHashrate: s.setMinerHashrate,
   }))
 
   const { start, stop } = useMiner()
 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8080/ws')
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ subscribe: 'newBlock' }))
+      ws.send(JSON.stringify({ subscribe: 'newTx' }))
+    }
     ws.onmessage = (e) => {
       try {
-        const data = JSON.parse(e.data)
-        if (data.height !== undefined) setHeight(data.height)
-        if (data.difficulty !== undefined) setDifficulty(data.difficulty)
-        if (data.netHashrate !== undefined) setNetHashrate(data.netHashrate)
-        if (data.balance !== undefined) setBalance(data.balance)
-        if (data.transactions !== undefined) setTransactions(data.transactions)
-        if (data.isMining !== undefined) setIsMining(data.isMining)
-        if (data.minerHashrate !== undefined) {
-          setMinerHashrate(data.minerHashrate)
+        const { event, data } = JSON.parse(e.data)
+        if (event === 'newBlock') setHeight((h) => h + 1)
+        if (event === 'newTx' && data.txid) {
+          setTransactions((t) => [data.txid, ...t])
         }
       } catch (err) {
         console.error('ws message error', err)
       }
     }
     return () => ws.close()
-  }, [
-    setHeight,
-    setDifficulty,
-    setNetHashrate,
-    setBalance,
-    setTransactions,
-    setIsMining,
-    setMinerHashrate,
-  ])
+  }, [setHeight, setTransactions])
 
   return (
     <div className="dashboard">
