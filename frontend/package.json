@@ -13,6 +13,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@scure/bip39": "^2.0.0",
     "i18next": "^25.4.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

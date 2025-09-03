@@ -11,10 +11,30 @@ export const createSettingsSlice: AppSlice<SettingsSlice> = (set) => ({
   setVerbosity: (verbosity) => set({ verbosity }),
   setZmqEndpoint: (zmqEndpoint) => set({ zmqEndpoint }),
   exportWallet: async () => {
-    console.log('export wallet')
+    try {
+      const res = await fetch('/api/exportwallet')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'wallet.dat'
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('export wallet failed', err)
+    }
   },
   importWallet: async (file) => {
-    console.log('import wallet', file)
+    try {
+      const content = await file.text()
+      await fetch('/api/importwallet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+      })
+    } catch (err) {
+      console.error('import wallet failed', err)
+    }
   },
   toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
 })

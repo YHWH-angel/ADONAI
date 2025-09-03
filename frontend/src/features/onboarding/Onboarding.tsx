@@ -1,43 +1,9 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useWalletStore } from '@/store/wallet'
+import { generateMnemonic, validateMnemonic } from '@scure/bip39'
+import { english } from '@scure/bip39/wordlists/english'
 import './onboarding.css'
-
-const WORDS = [
-  'apple',
-  'banana',
-  'cherry',
-  'dog',
-  'eagle',
-  'frog',
-  'grape',
-  'house',
-  'ice',
-  'jungle',
-  'kite',
-  'lemon',
-  'moon',
-  'night',
-  'orange',
-  'pumpkin',
-  'queen',
-  'rocket',
-  'sun',
-  'tree',
-  'umbrella',
-  'violin',
-  'whale',
-  'xray',
-  'yellow',
-  'zebra',
-]
-
-function generateSeed() {
-  return Array.from(
-    { length: 12 },
-    () => WORDS[Math.floor(Math.random() * WORDS.length)],
-  )
-}
 
 enum Step {
   CHOOSE,
@@ -55,7 +21,8 @@ export default function Onboarding() {
   const [input, setInput] = useState('')
 
   const handleCreate = () => {
-    const words = generateSeed()
+    const mnemonic = generateMnemonic(english, 128)
+    const words = mnemonic.split(' ')
     setSeed(words)
     setStep(Step.SHOW)
   }
@@ -71,7 +38,7 @@ export default function Onboarding() {
 
   const handleImport = () => {
     const words = input.trim().split(/\s+/)
-    if (words.length >= 12) {
+    if (validateMnemonic(words.join(' '), english)) {
       loadWallet(words)
     } else {
       alert(t('seedInvalid'))

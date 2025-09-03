@@ -8,6 +8,8 @@ const BitcoinClient = require('bitcoin-core');
 const WebSocket = require('ws');
 const zmq = require('zeromq');
 const http = require('http');
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 // RPC client configuration
@@ -73,6 +75,11 @@ const RPC_WHITELIST = [
   'setgenerate',
   'stop',
   'logging',
+  'getnewaddress',
+  'sendtoaddress',
+  'dumpwallet',
+  'importwallet',
+  'getbalance',
 ];
 
 // REST -> RPC mapping
@@ -84,6 +91,39 @@ app.post('/api/:method', apiLimiter, requireAuth, csrfProtection, async (req, re
   try {
     const params = Array.isArray(req.body) ? req.body : Object.values(req.body || {});
     const result = await rpcClient.command([{ method, parameters: params }]);
+    res.json(result[0]);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Wallet export
+app.get('/api/exportwallet', apiLimiter, requireAuth, async (_req, res) => {
+  try {
+    const tmp = path.join(os.tmpdir(), 'wallet-export.dat');
+    const [{ result }] = await rpcClient.command([
+      { method: 'dumpwallet', parameters: [tmp] },
+    ]);
+    res.download(result.filename, 'wallet.dat', (err) => {
+      fs.unlink(result.filename, () => {});
+      if (err) console.error('export download error', err);
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Wallet import
+app.post('/api/importwallet', apiLimiter, requireAuth, async (req, res) => {
+  try {
+    const content = req.body?.content;
+    if (!content) return res.status(400).json({ error: 'missing content' });
+    const tmp = path.join(os.tmpdir(), 'wallet-import.dat');
+    fs.writeFileSync(tmp, content, 'utf8');
+    const result = await rpcClient.command([
+      { method: 'importwallet', parameters: [tmp] },
+    ]);
+    fs.unlink(tmp, () => {});
     res.json(result[0]);
   } catch (e) {
     res.status(500).json({ error: e.message });

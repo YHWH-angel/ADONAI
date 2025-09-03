@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { useAppStore } from '@/store'
 
 export function useMiner() {
@@ -11,41 +11,32 @@ export function useMiner() {
     }),
   )
 
-  useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8080/miner')
-    ws.onmessage = (e) => {
-      try {
-        const data = JSON.parse(e.data)
-        if (data.isMining !== undefined) setIsMining(data.isMining)
-        if (data.hashrate !== undefined) setMinerHashrate(data.hashrate)
-      } catch (err) {
-        console.error('miner ws error', err)
-      }
-    }
-    return () => ws.close()
-  }, [setIsMining, setMinerHashrate])
-
   const start = useCallback(async () => {
     try {
-      await fetch('/api/miner/start', {
+      await fetch('/api/setgenerate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode }),
+        body: JSON.stringify([true, 1]),
       })
       setIsMining(true)
     } catch (err) {
       console.error('start mining failed', err)
     }
-  }, [mode, setIsMining])
+  }, [setIsMining])
 
   const stop = useCallback(async () => {
     try {
-      await fetch('/api/miner/stop', { method: 'POST' })
+      await fetch('/api/setgenerate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify([false]),
+      })
       setIsMining(false)
+      setMinerHashrate(0)
     } catch (err) {
       console.error('stop mining failed', err)
     }
-  }, [setIsMining])
+  }, [setIsMining, setMinerHashrate])
 
   return { isMining, mode, start, stop }
 }
