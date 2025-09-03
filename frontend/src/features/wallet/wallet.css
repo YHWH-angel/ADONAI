@@ -1,0 +1,15 @@
+.wallet-nav button {
+  margin-right: 0.5rem;
+}
+
+.receive,
+.send,
+.history,
+.utxos {
+  margin-top: 1rem;
+}
+
+.send label {
+  display: block;
+  margin-top: 0.5rem;
+}
