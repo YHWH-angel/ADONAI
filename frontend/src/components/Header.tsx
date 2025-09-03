@@ -2,7 +2,7 @@ import { useTheme } from '@/lib/theme'
 import { useTranslation } from 'react-i18next'
 import Navigation, { NavItem } from './Navigation'
 
-export type Page = 'dashboard' | 'wallet' | 'mining' | 'network'
+export type Page = 'dashboard' | 'wallet' | 'mining' | 'network' | 'settings'
 
 interface HeaderProps {
   onNavigate: (page: Page) => void
@@ -28,6 +28,11 @@ export default function Header({ onNavigate }: HeaderProps) {
       key: 'network',
       label: t('network'),
       onClick: () => onNavigate('network'),
+    },
+    {
+      key: 'settings',
+      label: t('settings'),
+      onClick: () => onNavigate('settings'),
     },
   ]
 

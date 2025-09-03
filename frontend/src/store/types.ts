@@ -37,6 +37,16 @@ export interface MiningSlice {
 
 export interface SettingsSlice {
   darkMode: boolean
+  datadir: string
+  logsPath: string
+  verbosity: 'info' | 'debug' | 'error'
+  zmqEndpoint: string
+  setDatadir: (dir: string) => void
+  setLogsPath: (path: string) => void
+  setVerbosity: (level: 'info' | 'debug' | 'error') => void
+  setZmqEndpoint: (endpoint: string) => void
+  exportWallet: () => Promise<void>
+  importWallet: (file: File) => Promise<void>
   toggleDarkMode: () => void
 }
 
