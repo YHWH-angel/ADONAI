@@ -12,12 +12,17 @@ export function useMiner() {
   )
 
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8080/miner')
+    const ws = new WebSocket('ws://localhost:8080/ws')
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ subscribe: 'miner' }))
+    }
     ws.onmessage = (e) => {
       try {
-        const data = JSON.parse(e.data)
-        if (data.isMining !== undefined) setIsMining(data.isMining)
-        if (data.hashrate !== undefined) setMinerHashrate(data.hashrate)
+        const { event, data } = JSON.parse(e.data)
+        if (event === 'miner') {
+          if (data.isMining !== undefined) setIsMining(data.isMining)
+          if (data.hashrate !== undefined) setMinerHashrate(data.hashrate)
+        }
       } catch (err) {
         console.error('miner ws error', err)
       }

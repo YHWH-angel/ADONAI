@@ -117,6 +117,20 @@ wss.on('connection', (ws) => {
   });
 });
 
+// Periodic miner state broadcast
+async function pollMiner() {
+  try {
+    const [info] = await rpcClient.command([{ method: 'getmininginfo', parameters: [] }]);
+    const isMining = info.generating || info.generate || false;
+    const hashrate = info.hashespersec || info.networkhashps || 0;
+    broadcast('miner', { isMining, hashrate });
+  } catch (e) {
+    // swallow errors to avoid noisy logs when daemon is unavailable
+  }
+}
+pollMiner();
+setInterval(pollMiner, 5000);
+
 // ZMQ subscriptions for block/tx events
 async function initZmq() {
   const sock = new zmq.Subscriber();
