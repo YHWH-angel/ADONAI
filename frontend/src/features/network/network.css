@@ -1,0 +1,34 @@
+.network {
+  padding: 1rem;
+  display: flex;
+  gap: 2rem;
+}
+
+.network section {
+  flex: 1;
+}
+
+.network table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.network th,
+.network td {
+  border: 1px solid #ccc;
+  padding: 0.25rem;
+  text-align: left;
+}
+
+.network ul {
+  list-style: none;
+  padding: 0;
+}
+
+.network li {
+  margin-bottom: 0.25rem;
+}
+
+.details {
+  margin-top: 1rem;
+}
