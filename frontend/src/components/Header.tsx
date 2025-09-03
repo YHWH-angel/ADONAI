@@ -1,6 +1,6 @@
 import { useTheme } from '@/lib/theme'
 import { useTranslation } from 'react-i18next'
-import Navigation, { NavItem } from './Navigation'
+import Navigation, { type NavItem } from './Navigation'
 
 export type Page = 'dashboard' | 'wallet' | 'mining' | 'network' | 'settings'
 
