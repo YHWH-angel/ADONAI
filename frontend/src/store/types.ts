@@ -39,5 +39,35 @@ export interface SettingsSlice {
   toggleDarkMode: () => void
 }
 
-export type AppState = NodeSlice & WalletSlice & MiningSlice & SettingsSlice
+export interface Peer {
+  id: number
+  address: string
+  ping: number
+  type: string
+}
+
+export interface MempoolTx {
+  txid: string
+}
+
+export interface Block {
+  hash: string
+  height: number
+  txs: string[]
+}
+
+export interface NetworkSlice {
+  peers: Peer[]
+  mempool: MempoolTx[]
+  blocks: Block[]
+  setPeers: (peers: Peer[]) => void
+  setMempool: (txs: MempoolTx[]) => void
+  setBlocks: (blocks: Block[]) => void
+}
+
+export type AppState = NodeSlice &
+  WalletSlice &
+  MiningSlice &
+  SettingsSlice &
+  NetworkSlice
 export type AppSlice<T> = StateCreator<AppState, [], [], T>
