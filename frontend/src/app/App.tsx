@@ -8,10 +8,8 @@ import Network from '@/features/network'
 import Settings from '@/features/settings'
 import { useTheme } from '@/lib/theme'
 import { useWalletStore } from '@/store/wallet'
+import { Layout, Header, PAGES, type Page } from '@/components'
 import './App.css'
-
-const PAGES = ['dashboard', 'wallet', 'mining', 'network', 'settings'] as const
-type Page = (typeof PAGES)[number]
 
 const PAGE_COMPONENTS: Record<Page, JSX.Element> = {
   dashboard: <Dashboard />,
@@ -35,24 +33,30 @@ export default function App() {
     return <Onboarding />
   }
 
+  const labels = PAGES.reduce(
+    (acc, p) => {
+      acc[p] = t(p)
+      return acc
+    },
+    {} as Record<Page, string>,
+  )
+
   return (
-    <div className="container">
-      <div className="actions">
-        <button onClick={toggle} aria-label="toggle theme">
-          {theme === 'light' ? '🌙' : '☀️'}
-        </button>
-        <button onClick={switchLang} aria-label="toggle language">
-          {i18n.language === 'en' ? 'ES' : 'EN'}
-        </button>
-      </div>
-      <nav className="main-nav">
-        {PAGES.map((p) => (
-          <button key={p} onClick={() => setPage(p)} aria-label={p}>
-            {t(p)}
-          </button>
-        ))}
-      </nav>
+    <Layout
+      header={
+        <Header
+          pages={PAGES}
+          labels={labels}
+          current={page}
+          theme={theme}
+          language={i18n.language}
+          onNavigate={setPage}
+          onToggleTheme={toggle}
+          onToggleLanguage={switchLang}
+        />
+      }
+    >
       {PAGE_COMPONENTS[page]}
-    </div>
+    </Layout>
   )
 }
