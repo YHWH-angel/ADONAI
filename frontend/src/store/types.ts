@@ -29,9 +29,10 @@ export interface Utxo {
 export interface MiningSlice {
   isMining: boolean
   minerHashrate: number
-  toggleMining: () => void
   setIsMining: (isMining: boolean) => void
   setMinerHashrate: (hashrate: number) => void
+  mode: 'solo' | 'pool'
+  setMode: (mode: 'solo' | 'pool') => void
 }
 
 export interface SettingsSlice {

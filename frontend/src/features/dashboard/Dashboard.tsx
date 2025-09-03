@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/store'
+import { useMiner } from '@/hooks/useMiner'
 import './dashboard.css'
 
 export default function Dashboard() {
@@ -13,7 +14,6 @@ export default function Dashboard() {
     transactions,
     isMining,
     minerHashrate,
-    toggleMining,
     setHeight,
     setDifficulty,
     setNetHashrate,
@@ -29,7 +29,6 @@ export default function Dashboard() {
     transactions: s.transactions,
     isMining: s.isMining,
     minerHashrate: s.minerHashrate,
-    toggleMining: s.toggleMining,
     setHeight: s.setHeight,
     setDifficulty: s.setDifficulty,
     setNetHashrate: s.setNetHashrate,
@@ -38,6 +37,8 @@ export default function Dashboard() {
     setIsMining: s.setIsMining,
     setMinerHashrate: s.setMinerHashrate,
   }))
+
+  const { start, stop } = useMiner()
 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8080/ws')
@@ -84,7 +85,7 @@ export default function Dashboard() {
           {t('balance')}: {balance}
         </div>
         <div className="mining">
-          <button onClick={toggleMining} aria-label="toggle mining">
+          <button onClick={isMining ? stop : start} aria-label="toggle mining">
             {isMining ? t('stopMining') : t('startMining')}
           </button>
           {isMining && (

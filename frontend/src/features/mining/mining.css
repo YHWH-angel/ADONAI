@@ -1,0 +1,11 @@
+.mining-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.mining-page .controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
