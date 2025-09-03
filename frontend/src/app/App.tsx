@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import Onboarding from '@/features/onboarding'
 import Dashboard from '@/features/dashboard'
 import Wallet from '@/features/wallet'
+import Mining from '@/features/mining'
 import Network from '@/features/network'
 import { useTheme } from '@/lib/theme'
 import { useWalletStore } from '@/store/wallet'
@@ -12,7 +13,9 @@ export default function App() {
   const { t, i18n } = useTranslation()
   const { theme, toggle } = useTheme()
   const isLoaded = useWalletStore((s) => s.isLoaded)
+  const [page, setPage] = useState<'dashboard' | 'wallet' | 'mining'>(
   const [page, setPage] = useState<'dashboard' | 'wallet' | 'network'>(
+
     'dashboard',
   )
 
@@ -41,6 +44,17 @@ export default function App() {
         <button onClick={() => setPage('wallet')} aria-label="wallet">
           {t('wallet')}
         </button>
+        <button onClick={() => setPage('mining')} aria-label="mining">
+          {t('mining')}
+        </button>
+      </nav>
+      {page === 'dashboard' ? (
+        <Dashboard />
+      ) : page === 'wallet' ? (
+        <Wallet />
+      ) : (
+        <Mining />
+      )}
         <button onClick={() => setPage('network')} aria-label="network">
           {t('network')}
         </button>
