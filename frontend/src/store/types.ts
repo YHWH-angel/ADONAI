@@ -11,11 +11,11 @@ export interface NodeSlice {
 
 export interface WalletSlice {
   balance: number
-  transactions: string[]
+  transactions: Tx[]
   address: string
   utxos: Utxo[]
   setBalance: (balance: number) => void
-  setTransactions: (txs: string[]) => void
+  setTransactions: (txs: Tx[]) => void
   setAddress: (address: string) => void
   setUtxos: (utxos: Utxo[]) => void
 }
@@ -24,6 +24,12 @@ export interface Utxo {
   txid: string
   vout: number
   amount: number
+}
+
+export interface Tx {
+  txid: string
+  amount: number
+  confirmations?: number
 }
 
 export interface MiningSlice {
@@ -76,9 +82,17 @@ export interface NetworkSlice {
   setBlocks: (blocks: Block[]) => void
 }
 
+export interface AuthSlice {
+  isAuthenticated: boolean
+  csrfToken: string
+  login: (username: string, password: string) => Promise<boolean>
+  logout: () => void
+}
+
 export type AppState = NodeSlice &
   WalletSlice &
   MiningSlice &
   SettingsSlice &
-  NetworkSlice
+  NetworkSlice &
+  AuthSlice
 export type AppSlice<T> = StateCreator<AppState, [], [], T>

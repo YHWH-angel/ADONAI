@@ -7,7 +7,7 @@ export default function History() {
   const transactions = useAppStore((s) => s.transactions)
   const [filter, setFilter] = useState('')
 
-  const filtered = transactions.filter((tx) => tx.includes(filter))
+  const filtered = transactions.filter((tx) => tx.txid.includes(filter))
 
   return (
     <div className="history">
@@ -19,7 +19,9 @@ export default function History() {
       />
       <ul>
         {filtered.map((tx) => (
-          <li key={tx}>{tx}</li>
+          <li key={tx.txid}>
+            {tx.txid} - {tx.amount}
+          </li>
         ))}
       </ul>
     </div>

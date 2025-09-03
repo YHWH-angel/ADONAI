@@ -1,42 +1,12 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useWalletStore } from '@/store/wallet'
+import { useAppStore } from '@/store'
+import * as bip39 from 'bip39'
 import './onboarding.css'
 
-const WORDS = [
-  'apple',
-  'banana',
-  'cherry',
-  'dog',
-  'eagle',
-  'frog',
-  'grape',
-  'house',
-  'ice',
-  'jungle',
-  'kite',
-  'lemon',
-  'moon',
-  'night',
-  'orange',
-  'pumpkin',
-  'queen',
-  'rocket',
-  'sun',
-  'tree',
-  'umbrella',
-  'violin',
-  'whale',
-  'xray',
-  'yellow',
-  'zebra',
-]
-
 function generateSeed() {
-  return Array.from(
-    { length: 12 },
-    () => WORDS[Math.floor(Math.random() * WORDS.length)],
-  )
+  return bip39.generateMnemonic().split(' ')
 }
 
 enum Step {
@@ -49,6 +19,7 @@ enum Step {
 export default function Onboarding() {
   const { t } = useTranslation()
   const loadWallet = useWalletStore((s) => s.loadWallet)
+  const csrfToken = useAppStore((s) => s.csrfToken)
 
   const [step, setStep] = useState<Step>(Step.CHOOSE)
   const [seed, setSeed] = useState<string[]>([])
@@ -60,18 +31,35 @@ export default function Onboarding() {
     setStep(Step.SHOW)
   }
 
-  const handleVerify = () => {
+  const initWallet = async (mnemonic: string[]) => {
+    await fetch('/wallets/init', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken,
+      },
+      credentials: 'include',
+      body: JSON.stringify({ mnemonic: mnemonic.join(' ') }),
+    })
+  }
+
+  const handleVerify = async () => {
     const words = input.trim().split(/\s+/)
-    if (words.join(' ') === seed.join(' ')) {
-      loadWallet(seed)
+    if (
+      words.join(' ') === seed.join(' ') &&
+      bip39.validateMnemonic(words.join(' '))
+    ) {
+      await initWallet(words)
+      loadWallet(words)
     } else {
       alert(t('seedMismatch'))
     }
   }
 
-  const handleImport = () => {
+  const handleImport = async () => {
     const words = input.trim().split(/\s+/)
-    if (words.length >= 12) {
+    if (bip39.validateMnemonic(words.join(' '))) {
+      await initWallet(words)
       loadWallet(words)
     } else {
       alert(t('seedInvalid'))

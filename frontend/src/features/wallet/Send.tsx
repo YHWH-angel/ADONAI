@@ -1,39 +1,34 @@
 import { useState, FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/store'
+import { useWallet } from '@/hooks/useWallet'
 
 export default function Send() {
   const { t } = useTranslation()
-  const { balance, transactions, utxos, setTransactions, setBalance } =
-    useAppStore((s) => ({
-      balance: s.balance,
-      transactions: s.transactions,
-      utxos: s.utxos,
-      setTransactions: s.setTransactions,
-      setBalance: s.setBalance,
-    }))
+  const { balance } = useAppStore((s) => ({ balance: s.balance }))
+  const { send } = useWallet()
 
   const [to, setTo] = useState('')
   const [amount, setAmount] = useState('')
   const [memo, setMemo] = useState('')
   const [fee, setFee] = useState('0.001')
 
-  const handleSend = (e: FormEvent) => {
+  const handleSend = async (e: FormEvent) => {
     e.preventDefault()
     const amt = parseFloat(amount)
-    const feeValue = parseFloat(fee)
-    const available = utxos.reduce((s, u) => s + u.amount, 0)
-    if (!to || isNaN(amt) || amt <= 0 || amt + feeValue > available) {
+    if (!to || isNaN(amt) || amt <= 0 || amt > balance) {
       alert(t('invalidAmount'))
       return
     }
-    const txid = `${Date.now()}`
-    setTransactions([...transactions, txid])
-    setBalance(balance - amt - feeValue)
-    setTo('')
-    setAmount('')
-    setMemo('')
-    alert(t('sent'))
+    try {
+      await send(to, amt)
+      setTo('')
+      setAmount('')
+      setMemo('')
+      alert(t('sent'))
+    } catch {
+      alert(t('sendFailed'))
+    }
   }
 
   return (

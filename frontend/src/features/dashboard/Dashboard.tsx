@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/store'
 import { useMiner } from '@/hooks/useMiner'
+import { useNode } from '@/hooks/useNode'
 import './dashboard.css'
 
 export default function Dashboard() {
@@ -14,7 +15,6 @@ export default function Dashboard() {
     transactions,
     isMining,
     minerHashrate,
-    setHeight,
     setTransactions,
   } = useAppStore((s) => ({
     height: s.height,
@@ -24,14 +24,15 @@ export default function Dashboard() {
     transactions: s.transactions,
     isMining: s.isMining,
     minerHashrate: s.minerHashrate,
-    setHeight: s.setHeight,
     setTransactions: s.setTransactions,
   }))
 
   const { start, stop } = useMiner()
+  const { refresh: refreshNode } = useNode()
 
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8080/ws')
+    refreshNode()
+    const ws = new WebSocket('ws://localhost:17001/ws')
     ws.onopen = () => {
       ws.send(JSON.stringify({ subscribe: 'newBlock' }))
       ws.send(JSON.stringify({ subscribe: 'newTx' }))
@@ -39,16 +40,16 @@ export default function Dashboard() {
     ws.onmessage = (e) => {
       try {
         const { event, data } = JSON.parse(e.data)
-        if (event === 'newBlock') setHeight((h) => h + 1)
+        if (event === 'newBlock') refreshNode()
         if (event === 'newTx' && data.txid) {
-          setTransactions((t) => [data.txid, ...t])
+          setTransactions((t) => [{ txid: data.txid, amount: 0 }, ...t])
         }
       } catch (err) {
         console.error('ws message error', err)
       }
     }
     return () => ws.close()
-  }, [setHeight, setTransactions])
+  }, [refreshNode, setTransactions])
 
   return (
     <div className="dashboard">
@@ -80,7 +81,7 @@ export default function Dashboard() {
         <h2>{t('latestTransactions')}</h2>
         <ul>
           {transactions.slice(0, 5).map((tx) => (
-            <li key={tx}>{tx}</li>
+            <li key={tx.txid}>{tx.txid}</li>
           ))}
         </ul>
       </section>

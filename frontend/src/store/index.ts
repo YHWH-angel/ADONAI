@@ -5,6 +5,7 @@ import { createWalletSlice } from './wallet'
 import { createMiningSlice } from './mining'
 import { createSettingsSlice } from './settings'
 import { createNetworkSlice } from './network'
+import { createAuthSlice } from './auth'
 import { logger } from './middleware/logger'
 import type { AppState } from './types'
 
@@ -18,6 +19,7 @@ export const useAppStore = create<AppState>()(
           ...createMiningSlice(set, get, api),
           ...createSettingsSlice(set, get, api),
           ...createNetworkSlice(set, get, api),
+          ...createAuthSlice(set, get, api),
         }),
         { name: 'app-state' },
       ),
