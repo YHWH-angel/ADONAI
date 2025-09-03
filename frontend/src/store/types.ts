@@ -12,8 +12,18 @@ export interface NodeSlice {
 export interface WalletSlice {
   balance: number
   transactions: string[]
+  address: string
+  utxos: Utxo[]
   setBalance: (balance: number) => void
   setTransactions: (txs: string[]) => void
+  setAddress: (address: string) => void
+  setUtxos: (utxos: Utxo[]) => void
+}
+
+export interface Utxo {
+  txid: string
+  vout: number
+  amount: number
 }
 
 export interface MiningSlice {
