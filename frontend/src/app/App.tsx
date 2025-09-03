@@ -11,7 +11,6 @@ import './App.css'
 export default function App() {
   const isLoaded = useWalletStore((s) => s.isLoaded)
   const [page, setPage] = useState<Page>('dashboard')
-
   if (!isLoaded) {
     return <Onboarding />
   }
