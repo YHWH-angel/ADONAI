@@ -1,17 +1,21 @@
 import { useCallback } from 'react'
 import { useAppStore } from '@/store'
+import { shallow } from 'zustand/shallow'
 
 const WALLET_NAME = 'adonai'
 
 export function useWallet() {
   const { setBalance, setTransactions, setAddress, setUtxos, csrfToken } =
-    useAppStore((s) => ({
-      setBalance: s.setBalance,
-      setTransactions: s.setTransactions,
-      setAddress: s.setAddress,
-      setUtxos: s.setUtxos,
-      csrfToken: s.csrfToken,
-    }))
+    useAppStore(
+      (s) => ({
+        setBalance: s.setBalance,
+        setTransactions: s.setTransactions,
+        setAddress: s.setAddress,
+        setUtxos: s.setUtxos,
+        csrfToken: s.csrfToken,
+      }),
+      shallow,
+    )
 
   const refresh = useCallback(async () => {
     try {
