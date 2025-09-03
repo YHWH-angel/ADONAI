@@ -100,6 +100,16 @@ components:
         time:
           type: integer
       additionalProperties: true
+    Utxo:
+      type: object
+      properties:
+        txid:
+          type: string
+        vout:
+          type: integer
+        amount:
+          type: number
+      required: [txid, vout, amount]
     TxIdList:
       type: array
       items:
@@ -136,7 +146,53 @@ components:
         threads:
           type: integer
       required: [generate]
+    WalletInitRequest:
+      type: object
+      properties:
+        mnemonic:
+          type: string
+      required: [mnemonic]
 paths:
+  /login:
+    post:
+      summary: Login to gateway
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+  /csrf-token:
+    get:
+      summary: Get CSRF token
+      operationId: getCsrfToken
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  csrfToken:
+                    type: string
   /blockchain/info:
     get:
       summary: Get blockchain information
@@ -254,6 +310,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WalletDescriptor'
+  /wallets/init:
+    post:
+      summary: Initialize wallet from mnemonic
+      operationId: initWallet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletInitRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletDescriptor'
   /wallets/{wallet}/newaddress:
     post:
       summary: Get a new address from wallet
@@ -288,6 +361,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Balance'
+  /wallets/{wallet}/utxos:
+    get:
+      summary: List unspent outputs
+      operationId: listUnspent
+      parameters:
+        - in: path
+          name: wallet
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Utxo'
   /wallets/{wallet}/transactions:
     get:
       summary: List wallet transactions

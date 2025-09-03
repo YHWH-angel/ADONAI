@@ -20,15 +20,15 @@ export default function Network() {
   const [selectedTx, setSelectedTx] = useState<MempoolTx | null>(null)
 
   useEffect(() => {
-    fetch('/api/peers')
+    fetch('/api/peers', { credentials: 'include' })
       .then((r) => r.json())
       .then((d: Peer[]) => setPeers(d))
       .catch(() => {})
-    fetch('/api/mempool')
+    fetch('/api/mempool', { credentials: 'include' })
       .then((r) => r.json())
       .then((d: MempoolTx[]) => setMempool(d))
       .catch(() => {})
-    fetch('/api/blocks')
+    fetch('/api/blocks', { credentials: 'include' })
       .then((r) => r.json())
       .then((d: Block[]) => setBlocks(d))
       .catch(() => {})

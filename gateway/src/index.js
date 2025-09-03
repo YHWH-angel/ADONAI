@@ -9,6 +9,7 @@ const WebSocket = require('ws');
 const zmq = require('zeromq');
 const http = require('http');
 const path = require('path');
+const bip39 = require('bip39');
 
 // RPC client configuration
 const rpcClient = new BitcoinClient({
@@ -17,6 +18,16 @@ const rpcClient = new BitcoinClient({
   password: process.env.RPC_PASSWORD || 'pass',
   port: Number(process.env.RPC_PORT || 18443),
 });
+
+function getWalletClient(wallet) {
+  return new BitcoinClient({
+    network: process.env.ADONAI_NETWORK || 'regtest',
+    username: process.env.RPC_USER || 'user',
+    password: process.env.RPC_PASSWORD || 'pass',
+    port: Number(process.env.RPC_PORT || 18443),
+    wallet,
+  });
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -55,10 +66,14 @@ app.post('/login', loginLimiter, (req, res) => {
     password === (process.env.GATEWAY_PASSWORD || 'password');
   if (valid) {
     req.session.user = username;
-    res.json({ ok: true, csrfToken: req.csrfToken ? req.csrfToken() : undefined });
+    res.json({ ok: true });
   } else {
     res.status(401).json({ error: 'invalid credentials' });
   }
+});
+
+app.get('/csrf-token', requireAuth, csrfProtection, (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
 });
 
 // RPC whitelist
@@ -79,6 +94,10 @@ const RPC_WHITELIST = [
   'setgenerate',
   'stop',
   'logging',
+  'getbalance',
+  'listunspent',
+  'getnewaddress',
+  'sendtoaddress',
 ];
 
 // REST -> RPC mapping
@@ -156,6 +175,101 @@ app.post('/api/miner/stop', apiLimiter, requireAuth, csrfProtection, async (_req
     res.status(500).json({ error: e.message });
   }
 });
+
+// Wallet endpoints
+app.post(
+  '/wallets/init',
+  apiLimiter,
+  requireAuth,
+  csrfProtection,
+  async (req, res) => {
+    const { mnemonic } = req.body || {};
+    if (!mnemonic || !bip39.validateMnemonic(mnemonic)) {
+      return res.status(400).json({ error: 'invalid mnemonic' });
+    }
+    const seed = bip39.mnemonicToSeedSync(mnemonic).toString('hex');
+    const walletName = 'adonai';
+    try {
+      await rpcClient.command('createwallet', walletName, false, true);
+    } catch (e) {
+      if (!e.message.includes('already exists')) {
+        return res.status(500).json({ error: e.message });
+      }
+    }
+    const wClient = getWalletClient(walletName);
+    try {
+      await wClient.command('sethdseed', true, seed);
+      res.json({ name: walletName, loaded: true });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  },
+);
+
+app.get('/wallets/:wallet/balance', apiLimiter, requireAuth, async (req, res) => {
+  const client = getWalletClient(req.params.wallet);
+  try {
+    const balance = await client.command('getbalance');
+    res.json({ balance });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/wallets/:wallet/utxos', apiLimiter, requireAuth, async (req, res) => {
+  const client = getWalletClient(req.params.wallet);
+  try {
+    const utxos = await client.command('listunspent');
+    res.json(utxos.map((u) => ({ txid: u.txid, vout: u.vout, amount: u.amount })));
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/wallets/:wallet/transactions', apiLimiter, requireAuth, async (req, res) => {
+  const client = getWalletClient(req.params.wallet);
+  try {
+    const txs = await client.command('listtransactions', '*', 50);
+    res.json(
+      txs.map((t) => ({ txid: t.txid, amount: t.amount, confirmations: t.confirmations })),
+    );
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post(
+  '/wallets/:wallet/newaddress',
+  apiLimiter,
+  requireAuth,
+  csrfProtection,
+  async (req, res) => {
+    const client = getWalletClient(req.params.wallet);
+    try {
+      const address = await client.command('getnewaddress');
+      res.json({ address });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  },
+);
+
+app.post(
+  '/wallets/:wallet/sendtoaddress',
+  apiLimiter,
+  requireAuth,
+  csrfProtection,
+  async (req, res) => {
+    const client = getWalletClient(req.params.wallet);
+    const { address, amount } = req.body || {};
+    try {
+      const txid = await client.command('sendtoaddress', address, amount);
+      res.json({ txid });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  },
+);
 
 // Serve OpenAPI spec for clients
 app.get('/openapi.yaml', (_req, res) => {

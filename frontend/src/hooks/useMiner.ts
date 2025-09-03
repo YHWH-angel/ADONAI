@@ -2,17 +2,17 @@ import { useCallback, useEffect } from 'react'
 import { useAppStore } from '@/store'
 
 export function useMiner() {
-  const { isMining, mode, setIsMining, setMinerHashrate } = useAppStore(
-    (s) => ({
+  const { isMining, mode, csrfToken, setIsMining, setMinerHashrate } =
+    useAppStore((s) => ({
       isMining: s.isMining,
       mode: s.mode,
+      csrfToken: s.csrfToken,
       setIsMining: s.setIsMining,
       setMinerHashrate: s.setMinerHashrate,
-    }),
-  )
+    }))
 
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8080/ws')
+    const ws = new WebSocket('ws://localhost:17001/ws')
     ws.onopen = () => {
       ws.send(JSON.stringify({ subscribe: 'miner' }))
     }
@@ -34,23 +34,31 @@ export function useMiner() {
     try {
       await fetch('/api/miner/start', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+        },
+        credentials: 'include',
         body: JSON.stringify({ mode }),
       })
       setIsMining(true)
     } catch (err) {
       console.error('start mining failed', err)
     }
-  }, [mode, setIsMining])
+  }, [mode, csrfToken, setIsMining])
 
   const stop = useCallback(async () => {
     try {
-      await fetch('/api/miner/stop', { method: 'POST' })
+      await fetch('/api/miner/stop', {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': csrfToken },
+        credentials: 'include',
+      })
       setIsMining(false)
     } catch (err) {
       console.error('stop mining failed', err)
     }
-  }, [setIsMining])
+  }, [csrfToken, setIsMining])
 
   return { isMining, mode, start, stop }
 }
