@@ -70,6 +70,12 @@ const RPC_WHITELIST = [
   'listtransactions',
   'decoderawtransaction',
   'getblocktemplate',
+  'getpeerinfo',
+  'getrawmempool',
+  'getblock',
+  'getblockhash',
+  'getblockcount',
+  'generatetoaddress',
   'setgenerate',
   'stop',
   'logging',
@@ -85,6 +91,67 @@ app.post('/api/:method', apiLimiter, requireAuth, csrfProtection, async (req, re
     const params = Array.isArray(req.body) ? req.body : Object.values(req.body || {});
     const result = await rpcClient.command([{ method, parameters: params }]);
     res.json(result[0]);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Explicit REST endpoints for frontend
+app.get('/api/peers', apiLimiter, requireAuth, async (_req, res) => {
+  try {
+    const peers = await rpcClient.command('getpeerinfo');
+    res.json(
+      peers.map((p) => ({
+        id: p.id,
+        address: p.addr,
+        ping: p.pingtime,
+        type: p.connection_type || (p.inbound ? 'inbound' : 'outbound'),
+      })),
+    );
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/mempool', apiLimiter, requireAuth, async (_req, res) => {
+  try {
+    const txids = await rpcClient.command('getrawmempool');
+    res.json(txids.map((txid) => ({ txid })));
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/blocks', apiLimiter, requireAuth, async (_req, res) => {
+  try {
+    const height = await rpcClient.command('getblockcount');
+    const blocks = [];
+    const count = Math.min(height + 1, 10);
+    for (let i = 0; i < count; i++) {
+      const h = height - i;
+      const hash = await rpcClient.command('getblockhash', h);
+      const block = await rpcClient.command('getblock', hash);
+      blocks.push({ hash: block.hash, height: block.height, txs: block.tx });
+    }
+    res.json(blocks);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/miner/start', apiLimiter, requireAuth, csrfProtection, async (req, res) => {
+  try {
+    await rpcClient.command('setgenerate', true, 1);
+    res.json({ started: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/miner/stop', apiLimiter, requireAuth, csrfProtection, async (_req, res) => {
+  try {
+    await rpcClient.command('setgenerate', false);
+    res.json({ stopped: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
