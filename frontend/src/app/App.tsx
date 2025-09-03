@@ -17,18 +17,16 @@ export default function App() {
   const isLoaded = useWalletStore((s) => s.isLoaded)
   const { refresh, newAddress } = useWallet()
   const [page, setPage] = useState<Page>('dashboard')
+
   useEffect(() => {
     if (isLoaded) {
       refresh()
       newAddress()
     }
   }, [isLoaded, refresh, newAddress])
-  if (!isAuthenticated) {
-    return <Login />
-  }
-  if (!isLoaded) {
-    return <Onboarding />
-  }
+
+  if (!isAuthenticated) return <Login />
+  if (!isLoaded) return <Onboarding />
 
   return (
     <Layout header={<Header onNavigate={setPage} />}>
