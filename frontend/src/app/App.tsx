@@ -10,13 +10,22 @@ import { useTheme } from '@/lib/theme'
 import { useWalletStore } from '@/store/wallet'
 import './App.css'
 
+const PAGES = ['dashboard', 'wallet', 'mining', 'network', 'settings'] as const
+type Page = (typeof PAGES)[number]
+
+const PAGE_COMPONENTS: Record<Page, JSX.Element> = {
+  dashboard: <Dashboard />,
+  wallet: <Wallet />,
+  mining: <Mining />,
+  network: <Network />,
+  settings: <Settings />,
+}
+
 export default function App() {
   const { t, i18n } = useTranslation()
   const { theme, toggle } = useTheme()
   const isLoaded = useWalletStore((s) => s.isLoaded)
-  const [page, setPage] = useState<
-    'dashboard' | 'wallet' | 'mining' | 'network' | 'settings'
-  >('dashboard')
+  const [page, setPage] = useState<Page>('dashboard')
 
   const switchLang = () => {
     i18n.changeLanguage(i18n.language === 'en' ? 'es' : 'en')
@@ -37,27 +46,13 @@ export default function App() {
         </button>
       </div>
       <nav className="main-nav">
-        <button onClick={() => setPage('dashboard')} aria-label="dashboard">
-          {t('dashboard')}
-        </button>
-        <button onClick={() => setPage('wallet')} aria-label="wallet">
-          {t('wallet')}
-        </button>
-        <button onClick={() => setPage('mining')} aria-label="mining">
-          {t('mining')}
-        </button>
-        <button onClick={() => setPage('network')} aria-label="network">
-          {t('network')}
-        </button>
-        <button onClick={() => setPage('settings')} aria-label="settings">
-          {t('settings')}
-        </button>
+        {PAGES.map((p) => (
+          <button key={p} onClick={() => setPage(p)} aria-label={p}>
+            {t(p)}
+          </button>
+        ))}
       </nav>
-      {page === 'dashboard' && <Dashboard />}
-      {page === 'wallet' && <Wallet />}
-      {page === 'mining' && <Mining />}
-      {page === 'network' && <Network />}
-      {page === 'settings' && <Settings />}
+      {PAGE_COMPONENTS[page]}
     </div>
   )
 }
