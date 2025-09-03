@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import type { AppSlice, WalletSlice } from './types'
 
 interface WalletState {
   seed: string[]
@@ -22,3 +23,10 @@ export const useWalletStore = create<WalletState>()(
     },
   ),
 )
+
+export const createWalletSlice: AppSlice<WalletSlice> = (set) => ({
+  balance: 0,
+  transactions: [],
+  setBalance: (balance) => set({ balance }),
+  setTransactions: (transactions) => set({ transactions }),
+})
