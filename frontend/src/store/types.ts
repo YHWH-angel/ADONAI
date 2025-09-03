@@ -37,7 +37,15 @@ export interface MiningSlice {
 
 export interface SettingsSlice {
   darkMode: boolean
+  datadir: string
+  logs: string
+  verbosity: number
+  zmqEndpoint: string
   toggleDarkMode: () => void
+  setDatadir: (dir: string) => void
+  setLogs: (dir: string) => void
+  setVerbosity: (v: number) => void
+  setZmqEndpoint: (e: string) => void
 }
 
 export interface Peer {

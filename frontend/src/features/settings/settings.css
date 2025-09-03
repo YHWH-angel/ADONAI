@@ -1,0 +1,17 @@
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settings label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.wallet-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

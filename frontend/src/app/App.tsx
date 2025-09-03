@@ -5,6 +5,7 @@ import Dashboard from '@/features/dashboard'
 import Wallet from '@/features/wallet'
 import Mining from '@/features/mining'
 import Network from '@/features/network'
+import Settings from '@/features/settings'
 import { useTheme } from '@/lib/theme'
 import { useWalletStore } from '@/store/wallet'
 import './App.css'
@@ -13,11 +14,9 @@ export default function App() {
   const { t, i18n } = useTranslation()
   const { theme, toggle } = useTheme()
   const isLoaded = useWalletStore((s) => s.isLoaded)
-  const [page, setPage] = useState<'dashboard' | 'wallet' | 'mining'>(
-  const [page, setPage] = useState<'dashboard' | 'wallet' | 'network'>(
-
-    'dashboard',
-  )
+  const [page, setPage] = useState<
+    'dashboard' | 'wallet' | 'mining' | 'network' | 'settings'
+  >('dashboard')
 
   const switchLang = () => {
     i18n.changeLanguage(i18n.language === 'en' ? 'es' : 'en')
@@ -47,21 +46,18 @@ export default function App() {
         <button onClick={() => setPage('mining')} aria-label="mining">
           {t('mining')}
         </button>
-      </nav>
-      {page === 'dashboard' ? (
-        <Dashboard />
-      ) : page === 'wallet' ? (
-        <Wallet />
-      ) : (
-        <Mining />
-      )}
         <button onClick={() => setPage('network')} aria-label="network">
           {t('network')}
+        </button>
+        <button onClick={() => setPage('settings')} aria-label="settings">
+          {t('settings')}
         </button>
       </nav>
       {page === 'dashboard' && <Dashboard />}
       {page === 'wallet' && <Wallet />}
+      {page === 'mining' && <Mining />}
       {page === 'network' && <Network />}
+      {page === 'settings' && <Settings />}
     </div>
   )
 }
