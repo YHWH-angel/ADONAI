@@ -85,7 +85,7 @@ export interface NetworkSlice {
 export interface AuthSlice {
   isAuthenticated: boolean
   csrfToken: string
-  login: (username: string, password: string) => Promise<boolean>
+  login: () => Promise<boolean>
   logout: () => void
 }
 
