@@ -19,7 +19,7 @@ export const useWalletStore = create<WalletState>()(
     }),
     {
       name: 'wallet',
-      partialize: (state) => ({ seed: state.seed }),
+      partialize: (state) => ({ seed: state.seed, isLoaded: state.isLoaded }),
     },
   ),
 )
