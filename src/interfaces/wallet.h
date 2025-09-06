@@ -250,7 +250,9 @@ public:
 
     //! Get minimum fee.
     virtual CAmount getMinimumFee(unsigned int tx_bytes,
+        CAmount tx_value,
         const wallet::CCoinControl& coin_control,
+        bool consolidation,
         int* returned_target,
         FeeReason* reason) = 0;
 

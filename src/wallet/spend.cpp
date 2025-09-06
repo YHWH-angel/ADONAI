@@ -25,6 +25,7 @@
 #include <util/transaction_identifier.h>
 #include <wallet/coincontrol.h>
 #include <wallet/fees.h>
+#include <policy/feemodel.h>
 #include <wallet/receive.h>
 #include <wallet/spend.h>
 #include <wallet/transaction.h>
@@ -1260,8 +1261,12 @@ static util::Result<CreatedTransactionResult> CreateTransactionInternal(
     if (nBytes == -1) {
         return util::Error{_("Missing solving data for estimating transaction size")};
     }
-    CAmount fee_needed = coin_selection_params.m_effective_feerate.GetFee(nBytes) + result.GetTotalBumpFees();
     const CAmount output_value = CalculateOutputValue(txNew);
+    FeeModel model = g_fee_model;
+    if (coin_selection_params.m_effective_feerate > model.alpha) {
+        model.alpha = coin_selection_params.m_effective_feerate;
+    }
+    CAmount fee_needed = CalculateFee(model, nBytes, output_value) + result.GetTotalBumpFees();
     Assume(recipients_sum + change_amount == output_value);
     CAmount current_fee = result.GetSelectedValue() - output_value;
 
