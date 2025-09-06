@@ -34,6 +34,8 @@ add_library(adonai_wallet STATIC EXCLUDE_FROM_ALL
   wallet.cpp
   walletdb.cpp
   walletutil.cpp
+  bip39.cpp
+  bip32.cpp
 )
 target_link_libraries(adonai_wallet
   PRIVATE
