@@ -13,12 +13,14 @@ import {
 } from 'lucide-react'
 import Onboarding from '@/features/onboarding'
 import { useWalletStore } from '@/store/wallet'
+import CreateWalletModal from './CreateWalletModal'
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('overview')
   const [now, setNow] = useState(new Date())
   const [nodesConnected] = useState(0)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [showCreateWallet, setShowCreateWallet] = useState(false)
   const isWalletLoaded = useWalletStore((s) => s.isLoaded)
 
   useEffect(() => {
@@ -191,7 +193,7 @@ export default function Dashboard() {
               <p className="text-sm text-slate-600 mb-4">- OR -</p>
               <button
                 type="button"
-                onClick={() => setShowOnboarding(true)}
+                onClick={() => setShowCreateWallet(true)}
                 className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-white text-sm hover:bg-sky-700 transition-colors"
               >
                 Create a new wallet
@@ -209,6 +211,14 @@ export default function Dashboard() {
             <ShieldCheck className="h-4 w-4" /> ADO HD
           </div>
         </footer>
+        <CreateWalletModal
+          open={showCreateWallet}
+          onClose={() => setShowCreateWallet(false)}
+          onCreate={() => {
+            setShowCreateWallet(false)
+            setShowOnboarding(true)
+          }}
+        />
       </div>
     </div>
   )
