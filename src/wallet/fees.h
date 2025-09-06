@@ -24,9 +24,9 @@ CAmount GetRequiredFee(const CWallet& wallet, unsigned int nTxBytes);
 
 /**
  * Estimate the minimum fee considering user set parameters
- * and the required fee
+ * and the required fee. The fee depends on transaction size and value.
  */
-CAmount GetMinimumFee(const CWallet& wallet, unsigned int nTxBytes, const CCoinControl& coin_control, FeeCalculation* feeCalc);
+CAmount GetMinimumFee(const CWallet& wallet, unsigned int nTxBytes, CAmount txValue, const CCoinControl& coin_control, bool consolidation, FeeCalculation* feeCalc);
 
 /**
  * Return the minimum required feerate taking into account the

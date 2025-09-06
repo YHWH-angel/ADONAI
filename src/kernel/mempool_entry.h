@@ -81,6 +81,7 @@ private:
     mutable Parents m_parents;
     mutable Children m_children;
     const CAmount nFee;             //!< Cached to avoid expensive parent-transaction lookups
+    const CAmount nValue;           //!< Total value of outputs
     const int32_t nTxWeight;         //!< ... and avoid recomputing tx weight (also used for GetTxSize())
     const size_t nUsageSize;        //!< ... and total memory usage
     const int64_t nTime;            //!< Local time when entering the mempool
@@ -113,6 +114,7 @@ public:
                     int64_t sigops_cost, LockPoints lp)
         : tx{tx},
           nFee{fee},
+          nValue{tx->GetValueOut()},
           nTxWeight{GetTransactionWeight(*tx)},
           nUsageSize{RecursiveDynamicUsage(tx)},
           nTime{time},
@@ -138,6 +140,7 @@ public:
     const CTransaction& GetTx() const { return *this->tx; }
     CTransactionRef GetSharedTx() const { return this->tx; }
     const CAmount& GetFee() const { return nFee; }
+    CAmount GetValue() const { return nValue; }
     int32_t GetTxSize() const
     {
         return GetVirtualTransactionSize(nTxWeight, sigOpCost, ::nBytesPerSigOp);

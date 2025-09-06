@@ -70,7 +70,8 @@ FUZZ_TARGET(wallet_fees, .init = initialize_setup)
     FeeCalculation fee_calculation;
     FeeCalculation* maybe_fee_calculation{fuzzed_data_provider.ConsumeBool() ? nullptr : &fee_calculation};
     (void)GetMinimumFeeRate(wallet, coin_control, maybe_fee_calculation);
-    (void)GetMinimumFee(wallet, tx_bytes, coin_control, maybe_fee_calculation);
+    CAmount tx_value = ConsumeMoney(fuzzed_data_provider, /*max=*/COIN);
+    (void)GetMinimumFee(wallet, tx_bytes, tx_value, coin_control, false, maybe_fee_calculation);
 }
 } // namespace
 } // namespace wallet

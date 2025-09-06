@@ -25,6 +25,7 @@
 #include <util/transaction_identifier.h>
 #include <wallet/coincontrol.h>
 #include <wallet/fees.h>
+#include <policy/feemodel.h>
 #include <wallet/receive.h>
 #include <wallet/spend.h>
 #include <wallet/transaction.h>
@@ -1137,7 +1138,11 @@ static util::Result<CreatedTransactionResult> CreateTransactionInternal(
     coin_selection_params.min_viable_change = std::max(change_spend_fee + 1, dust);
 
     // Include the fees for things that aren't inputs, excluding the change output
-    const CAmount not_input_fees = coin_selection_params.m_effective_feerate.GetFee(coin_selection_params.m_subtract_fee_outputs ? 0 : coin_selection_params.tx_noinputs_size);
+    FeeModel fee_model = g_fee_model;
+    if (coin_selection_params.m_effective_feerate > fee_model.alpha) {
+        fee_model.alpha = coin_selection_params.m_effective_feerate;
+    }
+    const CAmount not_input_fees = coin_selection_params.m_subtract_fee_outputs ? 0 : CalculateFee(fee_model, coin_selection_params.tx_noinputs_size, recipients_sum);
     CAmount selection_target = recipients_sum + not_input_fees;
 
     // This can only happen if feerate is 0, and requested destinations are value of 0 (e.g. OP_RETURN)
@@ -1260,8 +1265,12 @@ static util::Result<CreatedTransactionResult> CreateTransactionInternal(
     if (nBytes == -1) {
         return util::Error{_("Missing solving data for estimating transaction size")};
     }
-    CAmount fee_needed = coin_selection_params.m_effective_feerate.GetFee(nBytes) + result.GetTotalBumpFees();
     const CAmount output_value = CalculateOutputValue(txNew);
+    FeeModel model = g_fee_model;
+    if (coin_selection_params.m_effective_feerate > model.alpha) {
+        model.alpha = coin_selection_params.m_effective_feerate;
+    }
+    CAmount fee_needed = CalculateFee(model, nBytes, output_value) + result.GetTotalBumpFees();
     Assume(recipients_sum + change_amount == output_value);
     CAmount current_fee = result.GetSelectedValue() - output_value;
 
@@ -1320,9 +1329,11 @@ static util::Result<CreatedTransactionResult> CreateTransactionInternal(
     }
 
     // fee_needed should now always be less than or equal to the current fees that we pay.
-    // If it is not, it is a bug.
+    // If it is greater, the user-selected fee is insufficient.
     if (fee_needed > current_fee) {
-        return util::Error{Untranslated(STR_INTERNAL_BUG("Fee needed > fee paid"))};
+        return util::Error{strprintf(_("Fee too low (paid %s, required %s)"),
+                                     FormatMoney(current_fee),
+                                     FormatMoney(fee_needed))};
     }
 
     // Give up if change keypool ran out and change is required

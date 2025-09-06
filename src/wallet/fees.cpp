@@ -8,6 +8,7 @@
 
 #include <wallet/coincontrol.h>
 #include <wallet/wallet.h>
+#include <policy/feemodel.h>
 
 
 namespace wallet {
@@ -17,9 +18,12 @@ CAmount GetRequiredFee(const CWallet& wallet, unsigned int nTxBytes)
 }
 
 
-CAmount GetMinimumFee(const CWallet& wallet, unsigned int nTxBytes, const CCoinControl& coin_control, FeeCalculation* feeCalc)
+CAmount GetMinimumFee(const CWallet& wallet, unsigned int nTxBytes, CAmount txValue, const CCoinControl& coin_control, bool consolidation, FeeCalculation* feeCalc)
 {
-    return GetMinimumFeeRate(wallet, coin_control, feeCalc).GetFee(nTxBytes);
+    CFeeRate feerate = GetMinimumFeeRate(wallet, coin_control, feeCalc);
+    FeeModel model = g_fee_model;
+    if (feerate > model.alpha) model.alpha = feerate;
+    return CalculateFee(model, nTxBytes, txValue, consolidation);
 }
 
 CFeeRate GetRequiredFeeRate(const CWallet& wallet)

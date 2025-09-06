@@ -196,6 +196,7 @@ add_library(adonai_common STATIC EXCLUDE_FROM_ALL
   netbase.cpp
   outputtype.cpp
   policy/feerate.cpp
+  policy/feemodel.cpp
   policy/policy.cpp
   pow.cpp
   protocol.cpp

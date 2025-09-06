@@ -486,13 +486,14 @@ public:
     }
     CAmount getRequiredFee(unsigned int tx_bytes) override { return GetRequiredFee(*m_wallet, tx_bytes); }
     CAmount getMinimumFee(unsigned int tx_bytes,
+        CAmount tx_value,
         const CCoinControl& coin_control,
+        bool consolidation,
         int* returned_target,
         FeeReason* reason) override
     {
         FeeCalculation fee_calc;
-        CAmount result;
-        result = GetMinimumFee(*m_wallet, tx_bytes, coin_control, &fee_calc);
+        CAmount result = GetMinimumFee(*m_wallet, tx_bytes, tx_value, coin_control, consolidation, &fee_calc);
         if (returned_target) *returned_target = fee_calc.returnedTarget;
         if (reason) *reason = fee_calc.reason;
         return result;

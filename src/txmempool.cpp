@@ -5,6 +5,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <txmempool.h>
+#include <node/miner.h>
 
 #include <chain.h>
 #include <coins.h>
@@ -37,6 +38,21 @@
 
 TRACEPOINT_SEMAPHORE(mempool, added);
 TRACEPOINT_SEMAPHORE(mempool, removed);
+
+static bool IsConsolidationTx(const CTransaction& tx)
+{
+    return tx.vin.size() > 5 && tx.vout.size() <= 1;
+}
+
+CAmount MempoolEntryFee(const CTxMemPoolEntry& entry, int64_t size)
+{
+    return CalculateFee(g_fee_model, size, entry.GetValue(), IsConsolidationTx(entry.GetTx()));
+}
+
+CAmount MempoolEntryFee(const node::CTxMemPoolModifiedEntry& entry, int64_t size)
+{
+    return MempoolEntryFee(*entry.iter, size);
+}
 
 bool TestLockPointValidity(CChain& active_chain, const LockPoints& lp)
 {

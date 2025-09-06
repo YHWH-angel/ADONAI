@@ -114,7 +114,28 @@ La emisión de ADONAI sigue una política de halving similar a la de Bitcoin:
 - **Emisión primer año:** ~12,61 millones de ADO.
 - **Duración prevista:** ~124 años (31 reducciones).
 
-## 7. Parámetros del génesis
+## 7. Modelo de tarifas híbrido
+
+Adonai calcula las comisiones con una fórmula híbrida
+`fee = α·peso + β·valor` con límites mínimos y máximos.
+Los valores por defecto son:
+
+- α = `0.000001 ADO/kvB`
+- β = `0.0005%`
+- mínimo = `0.000001 ADO`
+- máximo = `0.01 ADO`
+
+Consulta los parámetros actuales con:
+
+```bash
+adonai-cli getfeemodel
+```
+
+En redes de prueba pueden modificarse en caliente con
+`adonai-cli setfeemodel`. Para más detalles consulta
+[`doc/feemodel.md`](doc/feemodel.md).
+
+## 8. Parámetros del génesis
 
 Consulta `GENESIS.adonai.txt` (inclúyelo en la raíz del repo).
 Contiene:
@@ -130,7 +151,7 @@ Contiene:
 
 ---
 
-## 8. Licencia
+## 9. Licencia
 
 Este repositorio se publica bajo **MIT**. Consulta el archivo [`LICENSE`](LICENSE) para los términos completos.  
 Mantén los avisos de copyright originales de Bitcoin Core al redistribuir.
