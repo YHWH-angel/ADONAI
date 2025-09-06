@@ -131,7 +131,6 @@ void MineGenesis(CBlock& genesis)
 /**
  * Main network on which people trade goods and services.
  */
-// TODO ANGEL
 class CMainParams : public CChainParams
 {
 public:
@@ -206,16 +205,18 @@ public:
         m_assumed_chain_state_size = 14;
 
         genesis = CreateGenesisBlock(
-            /* nTime */ 1754122572,
-            /* nNonce */ 119040,
+            /* nTime */ 1723502400,
+            /* nNonce */ 1534261,
             /* nBits */ 0x1e0fffff,
             /* nVersion */ 1,
             /* genesisReward */ 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
         // Asegura tus asserts (usa el formato de tu uint256, aquí es con llaves):
-        assert(consensus.hashGenesisBlock == uint256{"000008358709fae09230a75838c2c30b15eff28790d530c2d8b0fd5739e0cd06"});
+        assert(consensus.hashGenesisBlock == uint256{"00000d250c9c1bfdfd933cabc32268b39d1556f6a29db879025019976f287d1e"});
         assert(genesis.hashMerkleRoot == uint256{"3c27610446c91576f0f18fa4e758b72565f678ae063346fe6d271d6d850783b6"});
+
+        
 
 
         // --- BEGIN: Génesis miner (temporal) ---
