@@ -6,8 +6,10 @@
 
 #include <common/messages.h>
 #include <core_io.h>
+#include <chainparams.h>
 #include <node/context.h>
 #include <policy/feerate.h>
+#include <policy/feemodel.h>
 #include <policy/fees.h>
 #include <rpc/protocol.h>
 #include <rpc/request.h>
@@ -92,6 +94,84 @@ static RPCHelpMan estimatesmartfee()
             }
             result.pushKV("blocks", feeCalc.returnedTarget);
             return result;
+        },
+    };
+}
+
+static RPCHelpMan getfeemodel()
+{
+    return RPCHelpMan{
+        "getfeemodel",
+        "Returns the current hybrid fee model parameters.",
+        {},
+        RPCResult{
+            RPCResult::Type::OBJ, "", "",
+            {
+                {RPCResult::Type::NUM, "alpha", "base fee rate in " + CURRENCY_UNIT + "/kvB"},
+                {RPCResult::Type::NUM, "beta", "value proportional fee factor"},
+                {RPCResult::Type::NUM, "min", "minimum absolute fee in " + CURRENCY_UNIT},
+                {RPCResult::Type::NUM, "max", "maximum absolute fee in " + CURRENCY_UNIT},
+            }
+        },
+        RPCExamples{HelpExampleCli("getfeemodel", "") + HelpExampleRpc("getfeemodel", "")},
+        [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue {
+            const FeeModel& model = g_fee_model;
+            UniValue obj(UniValue::VOBJ);
+            obj.pushKV("alpha", ValueFromAmount(model.alpha.GetFeePerK()));
+            obj.pushKV("beta", model.beta);
+            obj.pushKV("min", ValueFromAmount(model.min_fee));
+            obj.pushKV("max", ValueFromAmount(model.max_fee));
+            return obj;
+        },
+    };
+}
+
+static RPCHelpMan setfeemodel()
+{
+    return RPCHelpMan{
+        "setfeemodel",
+        "Set the hybrid fee model parameters. Only for testing on regtest or testnet.",
+        {
+            {"alpha", RPCArg::Type::NUM, RPCArg::Optional::OMITTED, "base fee rate in " + CURRENCY_UNIT + "/kvB"},
+            {"beta", RPCArg::Type::NUM, RPCArg::Optional::OMITTED, "value proportional fee factor"},
+            {"min", RPCArg::Type::NUM, RPCArg::Optional::OMITTED, "minimum absolute fee in " + CURRENCY_UNIT},
+            {"max", RPCArg::Type::NUM, RPCArg::Optional::OMITTED, "maximum absolute fee in " + CURRENCY_UNIT},
+        },
+        RPCResult{
+            RPCResult::Type::OBJ, "", "",
+            {
+                {RPCResult::Type::NUM, "alpha", "base fee rate in " + CURRENCY_UNIT + "/kvB"},
+                {RPCResult::Type::NUM, "beta", "value proportional fee factor"},
+                {RPCResult::Type::NUM, "min", "minimum absolute fee in " + CURRENCY_UNIT},
+                {RPCResult::Type::NUM, "max", "maximum absolute fee in " + CURRENCY_UNIT},
+            }
+        },
+        RPCExamples{HelpExampleCli("setfeemodel", "0.000002 0.00001 0.000001 0.1") +
+                    HelpExampleRpc("setfeemodel", "0.000002,0.00001,0.000001,0.1")},
+        [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue {
+            if (!Params().IsTestChain()) {
+                throw std::runtime_error("setfeemodel is for testing only (-testnet or -regtest)");
+            }
+            FeeModel model = g_fee_model;
+            if (!request.params[0].isNull()) {
+                model.alpha = CFeeRate{AmountFromValue(request.params[0])};
+            }
+            if (!request.params[1].isNull()) {
+                model.beta = request.params[1].get_real();
+            }
+            if (!request.params[2].isNull()) {
+                model.min_fee = AmountFromValue(request.params[2]);
+            }
+            if (!request.params[3].isNull()) {
+                model.max_fee = AmountFromValue(request.params[3]);
+            }
+            g_fee_model = model;
+            UniValue obj(UniValue::VOBJ);
+            obj.pushKV("alpha", ValueFromAmount(g_fee_model.alpha.GetFeePerK()));
+            obj.pushKV("beta", g_fee_model.beta);
+            obj.pushKV("min", ValueFromAmount(g_fee_model.min_fee));
+            obj.pushKV("max", ValueFromAmount(g_fee_model.max_fee));
+            return obj;
         },
     };
 }
@@ -221,6 +301,8 @@ void RegisterFeeRPCCommands(CRPCTable& t)
 {
     static const CRPCCommand commands[]{
         {"util", &estimatesmartfee},
+        {"util", &getfeemodel},
+        {"hidden", &setfeemodel},
         {"hidden", &estimaterawfee},
     };
     for (const auto& c : commands) {

@@ -15,6 +15,7 @@
 #include <kernel/mempool_limits.h>         // IWYU pragma: export
 #include <kernel/mempool_options.h>        // IWYU pragma: export
 #include <kernel/mempool_removal_reason.h> // IWYU pragma: export
+#include <policy/feemodel.h>
 #include <policy/feerate.h>
 #include <policy/packages.h>
 #include <primitives/transaction.h>
@@ -85,6 +86,13 @@ struct mempoolentry_wtxid
     }
 };
 
+namespace node {
+struct CTxMemPoolModifiedEntry;
+}
+
+CAmount MempoolEntryFee(const CTxMemPoolEntry& entry, int64_t size);
+CAmount MempoolEntryFee(const node::CTxMemPoolModifiedEntry& entry, int64_t size);
+
 
 /** \class CompareTxMemPoolEntryByDescendantScore
  *
@@ -95,24 +103,16 @@ class CompareTxMemPoolEntryByDescendantScore
 public:
     bool operator()(const CTxMemPoolEntry& a, const CTxMemPoolEntry& b) const
     {
-        FeeFrac f1 = GetModFeeAndSize(a);
-        FeeFrac f2 = GetModFeeAndSize(b);
-
-        if (FeeRateCompare(f1, f2) == 0) {
+        CAmount f1 = std::max(
+            MempoolEntryFee(a, a.GetSizeWithDescendants()),
+            MempoolEntryFee(a, a.GetTxSize()));
+        CAmount f2 = std::max(
+            MempoolEntryFee(b, b.GetSizeWithDescendants()),
+            MempoolEntryFee(b, b.GetTxSize()));
+        if (f1 == f2) {
             return a.GetTime() >= b.GetTime();
         }
         return f1 < f2;
-    }
-
-    // Return the fee/size we're using for sorting this entry.
-    FeeFrac GetModFeeAndSize(const CTxMemPoolEntry &a) const
-    {
-        // Compare feerate with descendants to feerate of the transaction, and
-        // return the fee/size for the max.
-        return std::max<FeeFrac>(
-            FeeFrac(a.GetModFeesWithDescendants(), a.GetSizeWithDescendants()),
-            FeeFrac(a.GetModifiedFee(), a.GetTxSize())
-        );
     }
 };
 
@@ -128,9 +128,9 @@ class CompareTxMemPoolEntryByScore
 public:
     bool operator()(const CTxMemPoolEntry& a, const CTxMemPoolEntry& b) const
     {
-        FeeFrac f1(a.GetFee(), a.GetTxSize());
-        FeeFrac f2(b.GetFee(), b.GetTxSize());
-        if (FeeRateCompare(f1, f2) == 0) {
+        CAmount f1 = MempoolEntryFee(a, a.GetTxSize());
+        CAmount f2 = MempoolEntryFee(b, b.GetTxSize());
+        if (f1 == f2) {
             return b.GetTx().GetHash() < a.GetTx().GetHash();
         }
         return f1 > f2;
@@ -156,25 +156,16 @@ public:
     template<typename T>
     bool operator()(const T& a, const T& b) const
     {
-        FeeFrac f1 = GetModFeeAndSize(a);
-        FeeFrac f2 = GetModFeeAndSize(b);
-
-        if (FeeRateCompare(f1, f2) == 0) {
+        CAmount f1 = std::min(
+            MempoolEntryFee(a, a.GetSizeWithAncestors()),
+            MempoolEntryFee(a, a.GetTxSize()));
+        CAmount f2 = std::min(
+            MempoolEntryFee(b, b.GetSizeWithAncestors()),
+            MempoolEntryFee(b, b.GetTxSize()));
+        if (f1 == f2) {
             return a.GetTx().GetHash() < b.GetTx().GetHash();
         }
         return f1 > f2;
-    }
-
-    // Return the fee/size we're using for sorting this entry.
-    template <typename T>
-    FeeFrac GetModFeeAndSize(const T &a) const
-    {
-        // Compare feerate with ancestors to feerate of the transaction, and
-        // return the fee/size for the min.
-        return std::min<FeeFrac>(
-            FeeFrac(a.GetModFeesWithAncestors(), a.GetSizeWithAncestors()),
-            FeeFrac(a.GetModifiedFee(), a.GetTxSize())
-        );
     }
 };
 

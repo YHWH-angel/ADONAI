@@ -20,6 +20,7 @@
 #include <node/context.h>
 #include <node/kernel_notifications.h>
 #include <policy/feerate.h>
+#include <policy/feemodel.h>
 #include <policy/policy.h>
 #include <pow.h>
 #include <primitives/transaction.h>
@@ -32,6 +33,11 @@
 #include <utility>
 
 namespace node {
+
+static bool IsConsolidationTx(const CTransaction& tx)
+{
+    return tx.vin.size() > 5 && tx.vout.size() <= 1;
+}
 
 int64_t GetMinimumTime(const CBlockIndex* pindexPrev, const int64_t difficulty_adjustment_interval)
 {
@@ -383,7 +389,8 @@ void BlockAssembler::addPackageTxs(int& nPackagesSelected, int& nDescendantsUpda
             packageSigOpsCost = modit->nSigOpCostWithAncestors;
         }
 
-        if (packageFees < m_options.blockMinFeeRate.GetFee(packageSize)) {
+        CAmount min_fee = CalculateFee(g_fee_model, packageSize, iter->GetValue(), IsConsolidationTx(iter->GetTx()));
+        if (packageFees < min_fee) {
             // Everything else we might consider has a lower fee rate
             return;
         }
