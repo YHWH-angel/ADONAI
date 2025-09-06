@@ -1,36 +1,5 @@
-import { useState, useEffect } from 'react'
-import Onboarding from '@/features/onboarding'
-import Dashboard from '@/features/dashboard'
-import Wallet from '@/features/wallet'
-import Mining from '@/features/mining'
-import Network from '@/features/network'
-import Settings from '@/features/settings'
-import { useWalletStore } from '@/store/wallet'
-import { Layout, Header, type Page } from '@/components'
-import { useWallet } from '@/hooks/useWallet'
-import './App.css'
+import AdonaiWalletUI from '@/components/AdonaiWalletUI'
 
 export default function App() {
-  const isLoaded = useWalletStore((s) => s.isLoaded)
-  const { refresh, newAddress } = useWallet()
-  const [page, setPage] = useState<Page>('dashboard')
-
-  useEffect(() => {
-    if (isLoaded) {
-      refresh()
-      newAddress()
-    }
-  }, [isLoaded, refresh, newAddress])
-
-  if (!isLoaded) return <Onboarding />
-
-  return (
-    <Layout header={<Header onNavigate={setPage} />}>
-      {page === 'dashboard' && <Dashboard />}
-      {page === 'wallet' && <Wallet />}
-      {page === 'mining' && <Mining />}
-      {page === 'network' && <Network />}
-      {page === 'settings' && <Settings />}
-    </Layout>
-  )
+  return <AdonaiWalletUI />
 }
