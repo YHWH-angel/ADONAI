@@ -1329,9 +1329,11 @@ static util::Result<CreatedTransactionResult> CreateTransactionInternal(
     }
 
     // fee_needed should now always be less than or equal to the current fees that we pay.
-    // If it is not, it is a bug.
+    // If it is greater, the user-selected fee is insufficient.
     if (fee_needed > current_fee) {
-        return util::Error{Untranslated(STR_INTERNAL_BUG("Fee needed > fee paid"))};
+        return util::Error{strprintf(_("Fee too low (paid %s, required %s)"),
+                                     FormatMoney(current_fee),
+                                     FormatMoney(fee_needed))};
     }
 
     // Give up if change keypool ran out and change is required
