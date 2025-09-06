@@ -7,9 +7,10 @@ import {
   Pickaxe,
   Wifi,
   ShieldCheck,
-  ChevronDown,
-  ChevronRight,
-  Play
+  AlertTriangle,
+  Play,
+  Clock,
+  Network,
 } from 'lucide-react'
 
 export default function AdonaiWalletUI() {
@@ -26,154 +27,236 @@ export default function AdonaiWalletUI() {
     available: 0,
     pending: 0,
     immature: 1458,
-    total: 1458
+    total: 1458,
   }
 
   const txs = useMemo(
     () => [
-      { id: 1, dt: '5 Sep 2025 22:30', amount: '+18.00000000 ADO', addr: 'ad1q7d9x6fa46pr50fn4vxxyx4682fc7qcfhu5xf' },
-      { id: 2, dt: '5 Sep 2025 22:30', amount: '+18.00000000 ADO', addr: 'ad1qx4fzd9va75yvqzqy8tww4ad9ohg8nuuk3' },
-      { id: 3, dt: '5 Sep 2025 22:30', amount: '+18.00000000 ADO', addr: 'ad1qkwtujmy2k9e4llgdptlgg8esde4z4p2psed' },
-      { id: 4, dt: '5 Sep 2025 22:30', amount: '+18.00000000 ADO', addr: 'ad1qtuaxwkfmqs64gpspfpdm8v0uklz86gk23d' },
-      { id: 5, dt: '1 Sep 2025 01:22', amount: '+18.00000000 ADO', addr: 'ad1qt2axxqhf8ehpn3aak30mwq62rt6nwfjlzt6' }
+      {
+        id: 1,
+        dt: '5 Sep 2025 22:30',
+        amount: '+18.00000000 ADO',
+        addr: 'ad1q7d9x6fa46pr50fn4vxxyx4682fc7qcfhu5xf',
+      },
+      {
+        id: 2,
+        dt: '5 Sep 2025 22:30',
+        amount: '+18.00000000 ADO',
+        addr: 'ad1qx4fzd9va75yvqzqy8tww4ad9ohg8nuuk3',
+      },
+      {
+        id: 3,
+        dt: '5 Sep 2025 22:30',
+        amount: '+18.00000000 ADO',
+        addr: 'ad1qkwtujmy2k9e4llgdptlgg8esde4z4p2psed',
+      },
+      {
+        id: 4,
+        dt: '5 Sep 2025 22:30',
+        amount: '+18.00000000 ADO',
+        addr: 'ad1qtuaxwkfmqs64gpspfpdm8v0uklz86gk23d',
+      },
+      {
+        id: 5,
+        dt: '1 Sep 2025 01:22',
+        amount: '+18.00000000 ADO',
+        addr: 'ad1qt2axxqhf8ehpn3aak30mwq62rt6nwfjlzt6',
+      },
     ],
-    []
+    [],
   )
 
   return (
-    <div className='min-h-screen w-full bg-neutral-100 text-neutral-900 flex items-start justify-center py-6'>
-      <div className='w-[760px] rounded-lg bg-[#e9e9e9] shadow-xl ring-1 ring-black/10 overflow-hidden'>
-        {/* Title bar */}
-        <div className='bg-[#dbdbdb] text-[13px] px-3 py-1.5 flex items-center justify-center border-b border-black/10'>
-          <span className='font-medium tracking-tight'>ADONAI - miwallet</span>
-        </div>
+    <div className="min-h-screen w-full bg-gradient-to-b from-slate-50 to-slate-100 text-slate-900 flex items-start justify-center py-10 px-4">
+      <div className="w-full max-w-5xl">
+        {/* App header */}
+        <header className="flex items-center justify-between mb-4">
+          <h1 className="text-xl md:text-2xl font-semibold tracking-tight">
+            ADONAI Wallet
+          </h1>
+          <div className="text-xs md:text-sm text-slate-500">m iwallet</div>
+        </header>
 
-        {/* Menu bar */}
-        <div className='bg-[#efefef] text-[13px] px-2 border-b border-black/10'>
-          <div className='flex gap-6 py-1.5 select-none'>
-            {['File', 'Settings', 'Window', 'Help'].map((m) => (
-              <button key={m} className='hover:bg-black/5 px-1.5 py-0.5 rounded focus:outline-none' type='button'>
-                {m}
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* Nav tabs */}
+        <nav className="flex items-center gap-2 mb-4">
+          {[
+            {
+              key: 'overview',
+              label: 'Overview',
+              icon: <Home className="h-4 w-4" />,
+            },
+            { key: 'send', label: 'Send', icon: <Send className="h-4 w-4" /> },
+            {
+              key: 'receive',
+              label: 'Receive',
+              icon: <Inbox className="h-4 w-4" />,
+            },
+            {
+              key: 'txs',
+              label: 'Transactions',
+              icon: <List className="h-4 w-4" />,
+            },
+          ].map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setActiveTab(t.key)}
+              className={[
+                'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm',
+                activeTab === t.key
+                  ? 'bg-white shadow-sm ring-1 ring-slate-200'
+                  : 'bg-slate-100 hover:bg-white hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200',
+              ].join(' ')}
+            >
+              {t.icon}
+              <span>{t.label}</span>
+            </button>
+          ))}
+        </nav>
 
-        {/* Toolbar Tabs */}
-        <div className='bg-[#f7f7f7] px-2 border-b border-black/10'>
-          <div className='flex gap-1 py-1.5'>
-            <ToolbarTab icon={<Home className='h-4 w-4' />} label='Overview' active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
-            <ToolbarTab icon={<Send className='h-4 w-4' />} label='Send' active={activeTab === 'send'} onClick={() => setActiveTab('send')} />
-            <ToolbarTab icon={<Inbox className='h-4 w-4' />} label='Receive' active={activeTab === 'receive'} onClick={() => setActiveTab('receive')} />
-            <ToolbarTab icon={<List className='h-4 w-4' />} label='Transactions' active={activeTab === 'txs'} onClick={() => setActiveTab('txs')} />
-          </div>
-        </div>
-
-        {/* Warning banner */}
-        <div className='bg-[#fff5cc] text-[12px] text-neutral-900 px-3 py-2 border-y border-[#e7c74d]'>
-          This is a pre-release test build - use at your own risk - do not use for mining or merchant applications
+        {/* Warning */}
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-900 text-sm flex items-start gap-2">
+          <AlertTriangle className="h-4 w-4 mt-0.5" />
+          <p>
+            This is a{' '}
+            <span className="font-medium">pre-release test build</span> — use at
+            your own risk. Do not use for mining or merchant applications.
+          </p>
         </div>
 
         {/* Content */}
-        <div className='p-3'>
-          {activeTab === 'overview' && (
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-              {/* Balances */}
-              <div className='bg-white rounded border border-black/10 flex flex-col'>
-                <div className='px-3 py-2 border-b border-black/10 text-[13px] font-semibold'>Balances</div>
-                <div className='p-3 text-[13px]'>
-                  <BalanceRow label='Available:' value={`${balances.available.toFixed(8)} ADO`} />
-                  <BalanceRow label='Pending:' value={`${balances.pending.toFixed(8)} ADO`} />
-                  <BalanceRow label='Immature:' value={`${balances.immature.toLocaleString()} .00000000 ADO`.replace(' .', '.')} />
-                  <div className='my-2 border-t border-dashed border-black/20' />
-                  <BalanceRow label='Total:' value={`${balances.total.toLocaleString()} .00000000 ADO`.replace(' .', '.')} bold />
-                </div>
-                <div className='px-3 pb-3'>
-                  <button type='button' className='w-full flex items-center justify-center gap-2 rounded bg-sky-600 text-white text-[13px] px-3 py-1.5 hover:bg-sky-700'>
-                    <Play className='h-4 w-4' />
-                    Empezar a minar
-                  </button>
-                </div>
-                <div className='px-3 pb-3 text-[12px] text-neutral-700 space-y-1'>
-                  <div>Fecha y hora actual: {now.toLocaleString()}</div>
-                  <div>Nodos conectados: {nodesConnected}</div>
-                </div>
-              </div>
+        <main className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Balances Card */}
+          <Card>
+            <SectionTitle title="Balances" />
+            <div className="p-4">
+              <BalanceRow
+                label="Available"
+                value={`${balances.available.toFixed(8)} ADO`}
+              />
+              <BalanceRow
+                label="Pending"
+                value={`${balances.pending.toFixed(8)} ADO`}
+              />
+              <BalanceRow
+                label="Immature"
+                value={`${balances.immature.toLocaleString()} .00000000 ADO`.replace(
+                  ' .',
+                  '.',
+                )}
+              />
+              <div className="my-3 h-px bg-slate-200" />
+              <BalanceRow
+                label="Total"
+                value={`${balances.total.toLocaleString()} .00000000 ADO`.replace(
+                  ' .',
+                  '.',
+                )}
+                bold
+              />
+            </div>
 
-              {/* Recent transactions */}
-              <div className='bg-white rounded border border-black/10 flex flex-col'>
-                <div className='px-3 py-2 border-b border-black/10 text-[13px] font-semibold'>Recent transactions</div>
-                <div className='p-2'>
-                  <ul className='space-y-2'>
-                    {txs.map((t) => (
-                      <li key={t.id} className='flex items-start gap-2'>
-                        <div className='pt-0.5'>
-                          <Pickaxe className='h-5 w-5 text-sky-600' />
-                        </div>
-                        <div className='flex-1 text-[12px] leading-tight'>
-                          <div className='flex items-center gap-2'>
-                            <span className='text-[13px]'>{t.dt}</span>
-                            <span className='ml-auto text-[13px]'>[{t.amount}]</span>
-                          </div>
-                          <div className='text-neutral-500 truncate'>{t.addr}</div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+            <div className="px-4 pb-4">
+              <button
+                type="button"
+                className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-sky-600 text-white text-sm px-4 py-2.5 hover:bg-sky-700 transition-colors shadow-sm"
+              >
+                <Play className="h-4 w-4" />
+                Empezar a minar
+              </button>
+            </div>
+
+            <div className="px-4 pb-4 text-sm text-slate-700 grid sm:grid-cols-2 gap-2">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                <span>Fecha y hora:</span>
+                <span className="ml-auto font-mono text-slate-900">
+                  {now.toLocaleString()}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Network className="h-4 w-4" />
+                <span>Nodos conectados:</span>
+                <span className="ml-auto font-semibold">{nodesConnected}</span>
               </div>
             </div>
-          )}
+          </Card>
 
-          {activeTab === 'send' && <Placeholder title='Send' />}
-          {activeTab === 'receive' && <Placeholder title='Receive' />}
-          {activeTab === 'txs' && <Placeholder title='Transactions' />}
-        </div>
+          {/* Recent transactions */}
+          <Card>
+            <SectionTitle title="Recent transactions" />
+            <ul className="p-2 sm:p-3 divide-y divide-slate-100">
+              {txs.map((t) => (
+                <li
+                  key={t.id}
+                  className="flex items-start gap-3 p-2 sm:p-3 hover:bg-slate-50 rounded-lg"
+                >
+                  <div className="mt-0.5">
+                    <Pickaxe className="h-5 w-5 text-sky-600" />
+                  </div>
+                  <div className="flex-1 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-slate-900">{t.dt}</span>
+                      <span className="ml-auto text-slate-700">
+                        [{t.amount}]
+                      </span>
+                    </div>
+                    <div className="text-slate-500 truncate text-xs">
+                      {t.addr}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </main>
 
-        {/* Status bar */}
-        <div className='bg-[#efefef] border-t border-black/10 text-[12px] px-3 py-1.5 flex items-center justify-end gap-3'>
-          <div className='flex items-center gap-1 text-neutral-700'>
-            <Wifi className='h-4 w-4' />
-            <span>8</span>
+        {/* Footer / status */}
+        <footer className="mt-6 flex items-center justify-end gap-4 text-sm text-slate-600">
+          <div className="flex items-center gap-1">
+            <Wifi className="h-4 w-4" /> 8
           </div>
-          <div className='flex items-center gap-1 text-neutral-700'>
-            <ShieldCheck className='h-4 w-4' />
-            <span>ADO HD</span>
+          <div className="flex items-center gap-1">
+            <ShieldCheck className="h-4 w-4" /> ADO HD
           </div>
-        </div>
+        </footer>
       </div>
     </div>
   )
 }
 
-function ToolbarTab({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void }) {
+function Card({ children }: { children: React.ReactNode }) {
   return (
-    <button type='button' onClick={onClick} className={['flex items-center gap-1.5 rounded px-2 py-1 text-[13px]', active ? 'bg-white shadow-inner border border-black/10' : 'hover:bg-black/5'].join(' ')}>
-      {icon}
-      <span>{label}</span>
-    </button>
+    <section className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden">
+      {children}
+    </section>
   )
 }
 
-function BalanceRow({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
+function SectionTitle({ title }: { title: string }) {
   return (
-    <div className='flex items-baseline justify-between py-1'>
-      <span className='text-neutral-700'>{label}</span>
-      <span className={bold ? 'font-semibold' : ''}>{value}</span>
+    <div className="px-4 py-3 border-b border-slate-200 bg-slate-50/50">
+      <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
     </div>
   )
 }
 
-function Placeholder({ title }: { title: string }) {
+function BalanceRow({
+  label,
+  value,
+  bold,
+}: {
+  label: string
+  value: string
+  bold?: boolean
+}) {
   return (
-    <div className='bg-white border border-dashed border-black/20 rounded p-6 text-center text-sm text-neutral-600'>
-      <div className='flex items-center justify-center gap-1 mb-1'>
-        <ChevronRight className='h-4 w-4' />
-        <span className='font-medium'>{title}</span>
-        <ChevronDown className='h-4 w-4' />
-      </div>
-      <p>Content not implemented in this mock. Replace with real functionality.</p>
+    <div className="flex items-baseline justify-between py-1.5">
+      <span className="text-slate-600">{label}</span>
+      <span
+        className={bold ? 'font-semibold text-slate-900' : 'text-slate-900'}
+      >
+        {value}
+      </span>
     </div>
   )
 }
-
