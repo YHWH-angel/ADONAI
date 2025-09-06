@@ -1,5 +1,5 @@
-import AdonaiWalletUI from '@/components/AdonaiWalletUI'
+import Dashboard from '@/components/Dashboard'
 
 export default function App() {
-  return <AdonaiWalletUI />
+  return <Dashboard />
 }
