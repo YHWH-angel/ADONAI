@@ -28,6 +28,7 @@
 #include <QIcon>
 #include <QSettings>
 #include <QTreeWidget>
+#include <algorithm>
 
 using wallet::CCoinControl;
 
@@ -463,7 +464,13 @@ void CoinControlDialog::updateLabels(CCoinControl& m_coin_control, WalletModel *
                 nBytes -= 34;
 
         // Fee
-        nPayFee = model->wallet().getMinimumFee(nBytes, nPayAmount, m_coin_control, false, /*returned_target=*/nullptr, /*reason=*/nullptr);
+        CAmount txValue = nAmount;
+        CAmount prev_fee = -1;
+        for (int i = 0; i < 10 && nPayFee != prev_fee; ++i) {
+            prev_fee = nPayFee;
+            nPayFee = model->wallet().getMinimumFee(nBytes, txValue, m_coin_control, false, /*returned_target=*/nullptr, /*reason=*/nullptr);
+            txValue = std::max<CAmount>(nAmount - nPayFee, 0);
+        }
 
         if (nPayAmount > 0)
         {
