@@ -1138,7 +1138,11 @@ static util::Result<CreatedTransactionResult> CreateTransactionInternal(
     coin_selection_params.min_viable_change = std::max(change_spend_fee + 1, dust);
 
     // Include the fees for things that aren't inputs, excluding the change output
-    const CAmount not_input_fees = coin_selection_params.m_effective_feerate.GetFee(coin_selection_params.m_subtract_fee_outputs ? 0 : coin_selection_params.tx_noinputs_size);
+    FeeModel fee_model = g_fee_model;
+    if (coin_selection_params.m_effective_feerate > fee_model.alpha) {
+        fee_model.alpha = coin_selection_params.m_effective_feerate;
+    }
+    const CAmount not_input_fees = coin_selection_params.m_subtract_fee_outputs ? 0 : CalculateFee(fee_model, coin_selection_params.tx_noinputs_size, recipients_sum);
     CAmount selection_target = recipients_sum + not_input_fees;
 
     // This can only happen if feerate is 0, and requested destinations are value of 0 (e.g. OP_RETURN)
