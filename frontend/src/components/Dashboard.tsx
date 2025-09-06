@@ -7,7 +7,6 @@ import {
   Pickaxe,
   Wifi,
   ShieldCheck,
-  AlertTriangle,
   Play,
   Clock,
   Network,
@@ -74,11 +73,15 @@ export default function Dashboard() {
             <button
               key={t.key}
               onClick={() => setActiveTab(t.key)}
+              disabled={!isWalletLoaded}
               className={[
-                'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm',
-                activeTab === t.key
+                'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed',
+                activeTab === t.key && isWalletLoaded
                   ? 'bg-white shadow-sm ring-1 ring-slate-200'
-                  : 'bg-slate-100 hover:bg-white hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200',
+                  : 'bg-slate-100 ring-1 ring-transparent',
+                isWalletLoaded
+                  ? 'hover:bg-white hover:shadow-sm hover:ring-slate-200'
+                  : '',
               ].join(' ')}
             >
               {t.icon}
@@ -86,16 +89,6 @@ export default function Dashboard() {
             </button>
           ))}
         </nav>
-
-        {/* Warning */}
-        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-900 text-sm flex items-start gap-2">
-          <AlertTriangle className="h-4 w-4 mt-0.5" />
-          <p>
-            This is a{' '}
-            <span className="font-medium">pre-release test build</span> — use at
-            your own risk. Do not use for mining or merchant applications.
-          </p>
-        </div>
 
         {/* Content */}
         <main className="grid grid-cols-1 lg:grid-cols-2 gap-4">
