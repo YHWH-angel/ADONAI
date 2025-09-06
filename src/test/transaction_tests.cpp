@@ -854,7 +854,7 @@ BOOST_AUTO_TEST_CASE(test_IsStandard)
     // not dust:
     t.vout[0].nValue = 674;
     CheckIsStandard(t);
-    g_dust = g_fee_model.min_fee;
+    g_dust = CFeeRate{g_fee_model.min_fee};
 
     t.vout[0].scriptPubKey = CScript() << OP_1;
     CheckIsNotStandard(t, "scriptpubkey");

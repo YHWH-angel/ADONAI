@@ -13,18 +13,13 @@
 #include <script/interpreter.h>
 #include <script/solver.h>
 #include <policy/feerate.h>
+#include <policy/feemodel.h>
 
 #include <cstdint>
 #include <string>
 
 class CCoinsViewCache;
 class CScript;
-
-struct FeeModel {
-    CFeeRate min_fee;
-};
-
-extern FeeModel g_fee_model;
 
 /** Default for -blockmaxweight, which controls the range of block weights the mining code will create **/
 static constexpr unsigned int DEFAULT_BLOCK_MAX_WEIGHT{MAX_BLOCK_WEIGHT};

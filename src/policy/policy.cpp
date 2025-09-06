@@ -25,8 +25,6 @@
 #include <cstddef>
 #include <vector>
 
-FeeModel g_fee_model{CFeeRate{DEFAULT_MIN_RELAY_TX_FEE}};
-
 CAmount GetDustThreshold(const CTxOut& txout, const CFeeRate& dustRelayFeeIn)
 {
     // "Dust" is defined in terms of dustRelayFee,
@@ -63,7 +61,7 @@ CAmount GetDustThreshold(const CTxOut& txout, const CFeeRate& dustRelayFeeIn)
         nSize += (32 + 4 + 1 + 107 + 4); // the 148 mentioned above
     }
 
-    const CFeeRate dust_fee{std::max(dustRelayFeeIn, g_fee_model.min_fee)};
+    const CFeeRate dust_fee{std::max(dustRelayFeeIn, CFeeRate{g_fee_model.min_fee})};
     return dust_fee.GetFee(nSize);
 }
 
