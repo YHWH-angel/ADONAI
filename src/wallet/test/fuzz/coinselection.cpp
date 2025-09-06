@@ -233,7 +233,7 @@ void FuzzCoinSelectionAlgorithm(std::span<const uint8_t> buffer) {
     const CFeeRate long_term_fee_rate{ConsumeMoney(fuzzed_data_provider, /*max=*/COIN)};
     const CFeeRate effective_fee_rate{ConsumeMoney(fuzzed_data_provider, /*max=*/COIN)};
     // Discard feerate must be at least dust relay feerate
-    const CFeeRate discard_fee_rate{fuzzed_data_provider.ConsumeIntegralInRange<CAmount>(DUST_RELAY_TX_FEE, COIN)};
+    const CFeeRate discard_fee_rate{fuzzed_data_provider.ConsumeIntegralInRange<CAmount>(g_fee_model.min_fee.GetFeePerK(), COIN)};
     const CAmount target{fuzzed_data_provider.ConsumeIntegralInRange<CAmount>(1, MAX_MONEY)};
     const bool subtract_fee_outputs{fuzzed_data_provider.ConsumeBool()};
 
