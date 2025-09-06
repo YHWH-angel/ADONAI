@@ -33,6 +33,20 @@ $ adonai-cli setfeemodel 0.000002 0.000007 0.000001 0.01
 Command line options `-feemodelalpha`, `-feemodelbeta`,
 `-feemodelmin` and `-feemodelmax` allow setting the values at startup.
 
+## Anti-spam protections
+
+- Outputs smaller than the dust threshold derived from `fee_min` are
+  rejected to prevent UTXO bloat.
+- Peers are rate-limited on transaction relay to reduce spam.
+- Consolidation transactions without fresh change outputs receive a
+  50% fee discount.
+
+## Security notes
+
+The block subsidy (one block every ~45 s) remains the main incentive
+for miners. Fees are a small complement. See
+[fee_security.md](fee_security.md) for monitoring guidance.
+
 ## Examples
 
 - Sending 1 ADO → fee ≈ `0.000006 ADO`.
