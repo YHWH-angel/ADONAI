@@ -113,13 +113,6 @@ export default function Dashboard() {
             />
           </div>
         </div>
-
-        {/* Warning banner */}
-        <div className="bg-[#fff5cc] text-[12px] text-neutral-900 px-3 py-2 border-y border-[#e7c74d]">
-          This is a pre-release test build - use at your own risk - do not use
-          for mining or merchant applications
-        </div>
-
         {/* Content */}
         <div className="p-3">
           {activeTab === 'overview' && (
