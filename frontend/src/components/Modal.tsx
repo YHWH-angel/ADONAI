@@ -11,16 +11,13 @@ export default function Modal({ open, onClose, children }: ModalProps) {
 
   return (
     <div
-      className="modal-overlay"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
     >
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="relative" onClick={(e) => e.stopPropagation()}>
         {children}
-        <button onClick={onClose} aria-label="close modal">
-          ×
-        </button>
       </div>
     </div>
   )
