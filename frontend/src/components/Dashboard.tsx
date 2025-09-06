@@ -12,11 +12,15 @@ import {
   Clock,
   Network,
 } from 'lucide-react'
+import Onboarding from '@/features/onboarding'
+import { useWalletStore } from '@/store/wallet'
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('overview')
   const [now, setNow] = useState(new Date())
   const [nodesConnected] = useState(0)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const isWalletLoaded = useWalletStore((s) => s.isLoaded)
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000)
@@ -31,6 +35,10 @@ export default function Dashboard() {
   }
 
   const txs = useMemo(() => [], [])
+
+  if (showOnboarding) {
+    return <Onboarding />
+  }
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-slate-50 to-slate-100 text-slate-900 flex items-start justify-center py-10 px-4">
@@ -91,89 +99,112 @@ export default function Dashboard() {
 
         {/* Content */}
         <main className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Balances Card */}
-          <Card>
-            <SectionTitle title="Balances" />
-            <div className="p-4">
-              <BalanceRow
-                label="Available"
-                value={`${balances.available.toFixed(8)} ADO`}
-              />
-              <BalanceRow
-                label="Pending"
-                value={`${balances.pending.toFixed(8)} ADO`}
-              />
-              <BalanceRow
-                label="Immature"
-                value={`${balances.immature.toLocaleString()} .00000000 ADO`.replace(
-                  ' .',
-                  '.',
-                )}
-              />
-              <div className="my-3 h-px bg-slate-200" />
-              <BalanceRow
-                label="Total"
-                value={`${balances.total.toLocaleString()} .00000000 ADO`.replace(
-                  ' .',
-                  '.',
-                )}
-                bold
-              />
-            </div>
+          {isWalletLoaded ? (
+            <>
+              {/* Balances Card */}
+              <Card>
+                <SectionTitle title="Balances" />
+                <div className="p-4">
+                  <BalanceRow
+                    label="Available"
+                    value={`${balances.available.toFixed(8)} ADO`}
+                  />
+                  <BalanceRow
+                    label="Pending"
+                    value={`${balances.pending.toFixed(8)} ADO`}
+                  />
+                  <BalanceRow
+                    label="Immature"
+                    value={`${balances.immature.toLocaleString()} .00000000 ADO`.replace(
+                      ' .',
+                      '.',
+                    )}
+                  />
+                  <div className="my-3 h-px bg-slate-200" />
+                  <BalanceRow
+                    label="Total"
+                    value={`${balances.total.toLocaleString()} .00000000 ADO`.replace(
+                      ' .',
+                      '.',
+                    )}
+                    bold
+                  />
+                </div>
 
-            <div className="px-4 pb-4">
+                <div className="px-4 pb-4">
+                  <button
+                    type="button"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-sky-600 text-white text-sm px-4 py-2.5 hover:bg-sky-700 transition-colors shadow-sm"
+                  >
+                    <Play className="h-4 w-4" />
+                    Empezar a minar
+                  </button>
+                </div>
+
+                <div className="px-4 pb-4 text-sm text-slate-700 grid sm:grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    <span>Fecha y hora:</span>
+                    <span className="ml-auto font-mono text-slate-900">
+                      {now.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Network className="h-4 w-4" />
+                    <span>Nodos conectados:</span>
+                    <span className="ml-auto font-semibold">
+                      {nodesConnected}
+                    </span>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Recent transactions */}
+              <Card>
+                <SectionTitle title="Recent transactions" />
+                <ul className="p-2 sm:p-3 divide-y divide-slate-100">
+                  {txs.map((t) => (
+                    <li
+                      key={t.id}
+                      className="flex items-start gap-3 p-2 sm:p-3 hover:bg-slate-50 rounded-lg"
+                    >
+                      <div className="mt-0.5">
+                        <Pickaxe className="h-5 w-5 text-sky-600" />
+                      </div>
+                      <div className="flex-1 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-slate-900">
+                            {t.dt}
+                          </span>
+                          <span className="ml-auto text-slate-700">
+                            [{t.amount}]
+                          </span>
+                        </div>
+                        <div className="text-slate-500 truncate text-xs">
+                          {t.addr}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            </>
+          ) : (
+            <div className="col-span-1 lg:col-span-2 flex flex-col items-center justify-center py-20">
+              <p className="text-sm text-slate-600 mb-2 text-center">
+                No wallet has been loaded. Go to File &gt; Open Wallet to load a
+                wallet.
+              </p>
+              <p className="text-sm text-slate-600 mb-4">- OR -</p>
               <button
                 type="button"
-                className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-sky-600 text-white text-sm px-4 py-2.5 hover:bg-sky-700 transition-colors shadow-sm"
+                onClick={() => setShowOnboarding(true)}
+                className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-white text-sm hover:bg-sky-700 transition-colors"
               >
-                <Play className="h-4 w-4" />
-                Empezar a minar
+                Create a new wallet
               </button>
             </div>
-
-            <div className="px-4 pb-4 text-sm text-slate-700 grid sm:grid-cols-2 gap-2">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                <span>Fecha y hora:</span>
-                <span className="ml-auto font-mono text-slate-900">
-                  {now.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Network className="h-4 w-4" />
-                <span>Nodos conectados:</span>
-                <span className="ml-auto font-semibold">{nodesConnected}</span>
-              </div>
-            </div>
-          </Card>
-
-          {/* Recent transactions */}
-          <Card>
-            <SectionTitle title="Recent transactions" />
-            <ul className="p-2 sm:p-3 divide-y divide-slate-100">
-              {txs.map((t) => (
-                <li
-                  key={t.id}
-                  className="flex items-start gap-3 p-2 sm:p-3 hover:bg-slate-50 rounded-lg"
-                >
-                  <div className="mt-0.5">
-                    <Pickaxe className="h-5 w-5 text-sky-600" />
-                  </div>
-                  <div className="flex-1 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-slate-900">{t.dt}</span>
-                      <span className="ml-auto text-slate-700">
-                        [{t.amount}]
-                      </span>
-                    </div>
-                    <div className="text-slate-500 truncate text-xs">
-                      {t.addr}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </Card>
+          )}
         </main>
 
         {/* Footer / status */}
