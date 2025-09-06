@@ -38,6 +38,7 @@
 #include <policy/rbf.h>
 #include <policy/settings.h>
 #include <policy/truc_policy.h>
+#include <policy/hybridfee.h>
 #include <pow.h>
 #include <primitives/block.h>
 #include <primitives/transaction.h>
@@ -651,6 +652,8 @@ private:
         CAmount m_base_fees;
         /** Base fees + any fee delta set by the user with prioritisetransaction. */
         CAmount m_modified_fees;
+        /** Total value of the transaction outputs. */
+        CAmount m_value_out{0};
 
         /** If we're doing package validation (i.e. m_package_feerates=true), the "effective"
          * package feerate of this transaction is the total fees divided by the total size of
@@ -702,8 +705,8 @@ private:
                        std::map<Wtxid, MempoolAcceptResult>& results)
          EXCLUSIVE_LOCKS_REQUIRED(cs_main, m_pool.cs);
 
-    // Compare a package's feerate against minimum allowed.
-    bool CheckFeeRate(size_t package_size, CAmount package_fee, TxValidationState& state) EXCLUSIVE_LOCKS_REQUIRED(::cs_main, m_pool.cs)
+    // Compare a package's fee against the minimum allowed.
+    bool CheckFeeRate(size_t package_size, CAmount package_fee, CAmount package_value_out, TxValidationState& state) EXCLUSIVE_LOCKS_REQUIRED(::cs_main, m_pool.cs)
     {
         AssertLockHeld(::cs_main);
         AssertLockHeld(m_pool.cs);
@@ -711,10 +714,10 @@ private:
         if (mempoolRejectFee > 0 && package_fee < mempoolRejectFee) {
             return state.Invalid(TxValidationResult::TX_RECONSIDERABLE, "mempool min fee not met", strprintf("%d < %d", package_fee, mempoolRejectFee));
         }
-
-        if (package_fee < m_pool.m_opts.min_relay_feerate.GetFee(package_size)) {
-            return state.Invalid(TxValidationResult::TX_RECONSIDERABLE, "min relay fee not met",
-                                 strprintf("%d < %d", package_fee, m_pool.m_opts.min_relay_feerate.GetFee(package_size)));
+        const CAmount required_fee{CalculateFee(package_size, package_value_out)};
+        if (package_fee < required_fee) {
+            return state.Invalid(TxValidationResult::TX_RECONSIDERABLE, "required fee not met",
+                                 strprintf("%d < %d", package_fee, required_fee));
         }
         return true;
     }
@@ -739,6 +742,8 @@ private:
         CAmount m_total_modified_fees{0};
         /** Aggregated virtual size of all transactions, used to calculate package feerate. */
         int64_t m_total_vsize{0};
+        /** Aggregated output value of all transactions in the subpackage. */
+        CAmount m_total_value_out{0};
 
         // RBF-related members
         /** Whether the transaction(s) would replace any mempool transactions and/or evict any siblings.
@@ -915,6 +920,7 @@ bool MemPoolAccept::PreChecks(ATMPArgs& args, Workspace& ws)
     ws.m_modified_fees = ws.m_tx_handle->GetModifiedFee();
 
     ws.m_vsize = ws.m_tx_handle->GetTxSize();
+    ws.m_value_out = ws.m_ptx->GetValueOut();
 
     // Enforces 0-fee for dust transactions, no incentive to be mined alone
     if (m_pool.m_opts.require_standard) {
@@ -927,22 +933,19 @@ bool MemPoolAccept::PreChecks(ATMPArgs& args, Workspace& ws)
         return state.Invalid(TxValidationResult::TX_NOT_STANDARD, "bad-txns-too-many-sigops",
                 strprintf("%d", nSigOpsCost));
 
-    // No individual transactions are allowed below the min relay feerate except from disconnected blocks.
-    // This requirement, unlike CheckFeeRate, cannot be bypassed using m_package_feerates because,
-    // while a tx could be package CPFP'd when entering the mempool, we do not have a DoS-resistant
-    // method of ensuring the tx remains bumped. For example, the fee-bumping child could disappear
-    // due to a replacement.
-    // The only exception is TRUC transactions.
-    if (!bypass_limits && ws.m_ptx->version != TRUC_VERSION && ws.m_modified_fees < m_pool.m_opts.min_relay_feerate.GetFee(ws.m_vsize)) {
-        // Even though this is a fee-related failure, this result is TX_MEMPOOL_POLICY, not
-        // TX_RECONSIDERABLE, because it cannot be bypassed using package validation.
-        return state.Invalid(TxValidationResult::TX_MEMPOOL_POLICY, "min relay fee not met",
-                             strprintf("%d < %d", ws.m_modified_fees, m_pool.m_opts.min_relay_feerate.GetFee(ws.m_vsize)));
+    // Determine whether this transaction qualifies for the consolidation discount.
+    const bool consolidation{tx.vin.size() > 1 && tx.vout.size() == 1};
+    // No individual transactions are allowed below the required hybrid fee except from disconnected
+    // blocks. TRUC transactions are exempt from this rule.
+    const CAmount required_fee{CalculateFee(ws.m_vsize, ws.m_value_out, consolidation)};
+    if (!bypass_limits && ws.m_ptx->version != TRUC_VERSION && ws.m_modified_fees < required_fee) {
+        return state.Invalid(TxValidationResult::TX_MEMPOOL_POLICY, "required fee not met",
+                             strprintf("%d < %d", ws.m_modified_fees, required_fee));
     }
-    // No individual transactions are allowed below the mempool min feerate except from disconnected
-    // blocks and transactions in a package. Package transactions will be checked using package
-    // feerate later.
-    if (!bypass_limits && !args.m_package_feerates && !CheckFeeRate(ws.m_vsize, ws.m_modified_fees, state)) return false;
+    // No individual transactions are allowed below the mempool minimum fee except from disconnected
+    // blocks and transactions in a package. Package transactions will be checked using package fee
+    // later.
+    if (!bypass_limits && !args.m_package_feerates && !CheckFeeRate(ws.m_vsize, ws.m_modified_fees, ws.m_value_out, state)) return false;
 
     ws.m_iters_conflicting = m_pool.GetIterSet(ws.m_conflicts);
 
@@ -1431,6 +1434,7 @@ MempoolAcceptResult MemPoolAccept::AcceptSingleTransaction(const CTransactionRef
 
     m_subpackage.m_total_vsize = ws.m_vsize;
     m_subpackage.m_total_modified_fees = ws.m_modified_fees;
+    m_subpackage.m_total_value_out = ws.m_value_out;
 
     // Individual modified feerate exceeded caller-defined max; abort
     if (args.m_client_maxfeerate && CFeeRate(ws.m_modified_fees, ws.m_vsize) > args.m_client_maxfeerate.value()) {
@@ -1571,6 +1575,8 @@ PackageMempoolAcceptResult MemPoolAccept::AcceptMultipleTransactions(const std::
         [](int64_t sum, auto& ws) { return sum + ws.m_vsize; });
     m_subpackage.m_total_modified_fees = std::accumulate(workspaces.cbegin(), workspaces.cend(), CAmount{0},
         [](CAmount sum, auto& ws) { return sum + ws.m_modified_fees; });
+    m_subpackage.m_total_value_out = std::accumulate(workspaces.cbegin(), workspaces.cend(), CAmount{0},
+        [](CAmount sum, auto& ws) { return sum + ws.m_value_out; });
     const CFeeRate package_feerate(m_subpackage.m_total_modified_fees, m_subpackage.m_total_vsize);
     std::vector<Wtxid> all_package_wtxids;
     all_package_wtxids.reserve(workspaces.size());
@@ -1578,7 +1584,7 @@ PackageMempoolAcceptResult MemPoolAccept::AcceptMultipleTransactions(const std::
                    [](const auto& ws) { return ws.m_ptx->GetWitnessHash(); });
     TxValidationState placeholder_state;
     if (args.m_package_feerates &&
-        !CheckFeeRate(m_subpackage.m_total_vsize, m_subpackage.m_total_modified_fees, placeholder_state)) {
+        !CheckFeeRate(m_subpackage.m_total_vsize, m_subpackage.m_total_modified_fees, m_subpackage.m_total_value_out, placeholder_state)) {
         package_state.Invalid(PackageValidationResult::PCKG_TX, "transaction failed");
         return PackageMempoolAcceptResult(package_state, {{workspaces.back().m_ptx->GetWitnessHash(),
             MempoolAcceptResult::FeeFailure(placeholder_state, CFeeRate(m_subpackage.m_total_modified_fees, m_subpackage.m_total_vsize), all_package_wtxids)}});
