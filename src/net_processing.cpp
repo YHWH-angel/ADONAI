@@ -194,6 +194,12 @@ static constexpr double MAX_ADDR_RATE_PER_SECOND{0.1};
  *  based increments won't go above this, but the MAX_ADDR_TO_SEND increment following GETADDR
  *  is exempt from this limit). */
 static constexpr size_t MAX_ADDR_PROCESSING_TOKEN_BUCKET{MAX_ADDR_TO_SEND};
+/** The maximum rate of transactions we're willing to process on average. */
+static constexpr double MAX_TX_RATE_PER_SECOND{1.0};
+/** The soft limit of the transaction processing token bucket. */
+static constexpr size_t MAX_TX_PROCESSING_TOKEN_BUCKET{100};
+/** Threshold for number of rate-limited transactions before discouraging a peer. */
+static constexpr uint64_t TX_RATE_LIMIT_THRESHOLD{1000};
 /** The compactblocks version we support. See BIP 152. */
 static constexpr uint64_t CMPCTBLOCKS_VERSION{2};
 
@@ -382,6 +388,14 @@ struct Peer {
     std::atomic<uint64_t> m_addr_rate_limited{0};
     /** Total number of addresses that were processed (excludes rate-limited ones). */
     std::atomic<uint64_t> m_addr_processed{0};
+    /** Number of transactions that can be processed from this peer. */
+    double m_tx_token_bucket GUARDED_BY(NetEventsInterface::g_msgproc_mutex){1.0};
+    /** When m_tx_token_bucket was last updated */
+    std::chrono::microseconds m_tx_token_timestamp GUARDED_BY(NetEventsInterface::g_msgproc_mutex){GetTime<std::chrono::microseconds>()};
+    /** Total number of transactions that were dropped due to rate limiting. */
+    std::atomic<uint64_t> m_tx_rate_limited{0};
+    /** Total number of transactions that were processed (excludes rate-limited ones). */
+    std::atomic<uint64_t> m_tx_processed{0};
 
     /** Whether we've sent this peer a getheaders in response to an inv prior to initial-headers-sync completing */
     bool m_inv_triggered_getheaders_before_sync GUARDED_BY(NetEventsInterface::g_msgproc_mutex){false};
@@ -1744,6 +1758,8 @@ bool PeerManagerImpl::GetNodeStateStats(NodeId nodeid, CNodeStateStats& stats) c
     stats.m_addr_processed = peer->m_addr_processed.load();
     stats.m_addr_rate_limited = peer->m_addr_rate_limited.load();
     stats.m_addr_relay_enabled = peer->m_addr_relay_enabled.load();
+    stats.m_tx_processed = peer->m_tx_processed.load();
+    stats.m_tx_rate_limited = peer->m_tx_rate_limited.load();
     {
         LOCK(peer->m_headers_sync_mutex);
         if (peer->m_headers_sync) {
@@ -4285,6 +4301,23 @@ void PeerManagerImpl::ProcessMessage(CNode& pfrom, const std::string& msg_type, 
         // is not considered a protocol violation, so don't punish the peer.
         if (m_chainman.IsInitialBlockDownload()) return;
 
+        // Update/increment tx rate limiting bucket.
+        const auto current_time{GetTime<std::chrono::microseconds>()};
+        if (peer->m_tx_token_bucket < MAX_TX_PROCESSING_TOKEN_BUCKET) {
+            const auto time_diff = std::max(current_time - peer->m_tx_token_timestamp, 0us);
+            const double increment = Ticks<SecondsDouble>(time_diff) * MAX_TX_RATE_PER_SECOND;
+            peer->m_tx_token_bucket = std::min<double>(peer->m_tx_token_bucket + increment, MAX_TX_PROCESSING_TOKEN_BUCKET);
+        }
+        peer->m_tx_token_timestamp = current_time;
+        if (peer->m_tx_token_bucket < 1.0) {
+            const uint64_t drops{++peer->m_tx_rate_limited};
+            if (drops > TX_RATE_LIMIT_THRESHOLD) {
+                Misbehaving(*peer, "tx rate-limited");
+            }
+            return;
+        }
+        peer->m_tx_token_bucket -= 1.0;
+
         CTransactionRef ptx;
         vRecv >> TX_WITH_WITNESS(ptx);
         const CTransaction& tx = *ptx;
@@ -4325,6 +4358,7 @@ void PeerManagerImpl::ProcessMessage(CNode& pfrom, const std::string& msg_type, 
         // ReceivedTx should not be telling us to validate the tx and a package.
         Assume(!package_to_validate.has_value());
 
+        ++peer->m_tx_processed;
         const MempoolAcceptResult result = m_chainman.ProcessTransaction(ptx);
         const TxValidationState& state = result.m_state;
 

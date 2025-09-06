@@ -170,6 +170,8 @@ static RPCHelpMan getpeerinfo()
                     {RPCResult::Type::BOOL, "addr_relay_enabled", "Whether we participate in address relay with this peer"},
                     {RPCResult::Type::NUM, "addr_processed", "The total number of addresses processed, excluding those dropped due to rate limiting"},
                     {RPCResult::Type::NUM, "addr_rate_limited", "The total number of addresses dropped due to rate limiting"},
+                    {RPCResult::Type::NUM, "tx_processed", "The total number of transactions processed, excluding those dropped due to rate limiting"},
+                    {RPCResult::Type::NUM, "tx_rate_limited", "The total number of transactions dropped due to rate limiting"},
                     {RPCResult::Type::ARR, "permissions", "Any special permissions that have been granted to this peer",
                     {
                         {RPCResult::Type::STR, "permission_type", Join(NET_PERMISSIONS_DOC, ",\n") + ".\n"},
@@ -276,6 +278,8 @@ static RPCHelpMan getpeerinfo()
         obj.pushKV("addr_relay_enabled", statestats.m_addr_relay_enabled);
         obj.pushKV("addr_processed", statestats.m_addr_processed);
         obj.pushKV("addr_rate_limited", statestats.m_addr_rate_limited);
+        obj.pushKV("tx_processed", statestats.m_tx_processed);
+        obj.pushKV("tx_rate_limited", statestats.m_tx_rate_limited);
         UniValue permissions(UniValue::VARR);
         for (const auto& permission : NetPermissions::ToStrings(stats.m_permission_flags)) {
             permissions.push_back(permission);
