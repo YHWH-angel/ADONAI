@@ -344,7 +344,7 @@ public:
     bool getNetworkActive() override { return m_context->connman && m_context->connman->GetNetworkActive(); }
     CFeeRate getDustRelayFee() override
     {
-        if (!m_context->mempool) return CFeeRate{DUST_RELAY_TX_FEE};
+        if (!m_context->mempool) return g_fee_model.min_fee;
         return m_context->mempool->m_opts.dust_relay_feerate;
     }
     UniValue executeRpc(const std::string& command, const UniValue& params, const std::string& uri) override
@@ -763,7 +763,7 @@ public:
     }
     CFeeRate relayDustFee() override
     {
-        if (!m_node.mempool) return CFeeRate{DUST_RELAY_TX_FEE};
+        if (!m_node.mempool) return g_fee_model.min_fee;
         return m_node.mempool->m_opts.dust_relay_feerate;
     }
     bool havePruned() override

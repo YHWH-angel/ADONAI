@@ -12,6 +12,7 @@
 #include <consensus/amount.h>
 #include <consensus/consensus.h>
 #include <consensus/validation.h>
+#include <policy/fees.h>
 #include <policy/feerate.h>
 #include <primitives/transaction.h>
 #include <script/interpreter.h>
@@ -23,6 +24,8 @@
 #include <algorithm>
 #include <cstddef>
 #include <vector>
+
+FeeModel g_fee_model{CFeeRate{DEFAULT_MIN_RELAY_TX_FEE}};
 
 CAmount GetDustThreshold(const CTxOut& txout, const CFeeRate& dustRelayFeeIn)
 {
@@ -60,12 +63,13 @@ CAmount GetDustThreshold(const CTxOut& txout, const CFeeRate& dustRelayFeeIn)
         nSize += (32 + 4 + 1 + 107 + 4); // the 148 mentioned above
     }
 
-    return dustRelayFeeIn.GetFee(nSize);
+    const CFeeRate dust_fee{std::max(dustRelayFeeIn, g_fee_model.min_fee)};
+    return dust_fee.GetFee(nSize);
 }
 
 bool IsDust(const CTxOut& txout, const CFeeRate& dustRelayFeeIn)
 {
-    return (txout.nValue < GetDustThreshold(txout, dustRelayFeeIn));
+    return txout.nValue < GetDustThreshold(txout, dustRelayFeeIn);
 }
 
 std::vector<uint32_t> GetDust(const CTransaction& tx, CFeeRate dust_relay_rate)

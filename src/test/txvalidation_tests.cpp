@@ -122,7 +122,7 @@ BOOST_FIXTURE_TEST_CASE(ephemeral_tests, RegTestingSetup)
     Wtxid child_wtxid;
 
     // Arbitrary non-0 feerate for these tests
-    CFeeRate dustrelay(DUST_RELAY_TX_FEE);
+    CFeeRate dustrelay(g_fee_model.min_fee);
 
     // Basic transaction with dust
     auto grandparent_tx_1 = make_ephemeral_tx(random_outpoints(1), /*version=*/2);
