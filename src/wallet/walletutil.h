@@ -8,8 +8,11 @@
 
 #include <script/descriptor.h>
 #include <util/fs.h>
+#include <pubkey.h>
 
 #include <vector>
+#include <string>
+#include <ios>
 
 namespace interfaces {
 class Chain;
@@ -97,6 +100,9 @@ public:
     int32_t range_end = 0; // Item after the last; end of range, exclusive, i.e. [range_start, range_end). This will increment with each TopUp()
     int32_t next_index = 0; // Position of the next item to generate
     DescriptorCache cache;
+    uint32_t fingerprint = 0; // BIP32 master key fingerprint
+    CKeyID hd_seed_id;        // Hash160 of the master public key
+    std::string derivation_path; // Full derivation path used in descriptor
 
     void DeserializeDescriptor(const std::string& str)
     {
@@ -118,6 +124,17 @@ public:
         std::string descriptor_str;
         SER_WRITE(obj, descriptor_str = obj.descriptor->ToString());
         READWRITE(descriptor_str, obj.creation_time, obj.next_index, obj.range_start, obj.range_end);
+        try {
+            READWRITE(obj.fingerprint, obj.hd_seed_id, obj.derivation_path);
+        } catch (const std::ios_base::failure&) {
+            if (ser_action.ForRead()) {
+                obj.fingerprint = 0;
+                obj.hd_seed_id.SetNull();
+                obj.derivation_path.clear();
+            } else {
+                throw;
+            }
+        }
         SER_READ(obj, obj.DeserializeDescriptor(descriptor_str));
     }
 

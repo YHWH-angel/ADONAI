@@ -109,7 +109,10 @@ WalletDescriptor GenerateWalletDescriptor(const CExtPubKey& master_key, const Ou
     FlatSigningProvider keys;
     std::string error;
     std::vector<std::unique_ptr<Descriptor>> desc = Parse(desc_str, keys, error, false);
-WalletDescriptor w_desc(std::move(desc.at(0)), creation_time, 0, 0, 0);
+    WalletDescriptor w_desc(std::move(desc.at(0)), creation_time, 0, 0, 0);
+    w_desc.fingerprint = ReadBE32(master_key.vchFingerprint);
+    w_desc.hd_seed_id = master_key.pubkey.GetID();
+    w_desc.derivation_path = "m" + desc_prefix.substr(desc_prefix.find("/")) + "/0h" + internal_path + "/*";
     return w_desc;
 }
 
@@ -179,6 +182,9 @@ std::shared_ptr<CWallet> CreateWalletFromMnemonic(
                 auto descs = Parse(desc, keys, desc_error, false);
                 if (descs.empty()) return false;
                 WalletDescriptor w_desc(std::move(descs[0]), GetTime(), 0, 0, 0);
+                w_desc.fingerprint = root.fingerprint;
+                w_desc.hd_seed_id = master_ext.key.GetPubKey().GetID();
+                w_desc.derivation_path = "m" + path + "/" + (internal ? "1" : "0") + "/*"; 
                 DescriptorScriptPubKeyMan& spk_manager = wallet->LoadDescriptorScriptPubKeyMan(w_desc.id, w_desc);
                 if (!disable_private_keys) {
                     spk_manager.AddDescriptorKey(master_ext.key, master_ext.key.GetPubKey());
