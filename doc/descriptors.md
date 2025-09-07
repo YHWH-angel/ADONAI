@@ -19,6 +19,8 @@ Supporting RPCs are:
 - `importdescriptors` takes as input descriptors to import into a descriptor wallet
   (since v0.21).
 - `listdescriptors` outputs descriptors imported into a descriptor wallet (since v22).
+- `dumpwallet` includes wallet descriptors when called with `listdescriptors=true`,
+  allowing backups of descriptor wallets.
 - `scanblocks` takes as input descriptors to scan for in blocks and returns the
    relevant blockhashes (since v25).
 - `getdescriptoractivity` takes as input descriptors and blockhashes (as output
