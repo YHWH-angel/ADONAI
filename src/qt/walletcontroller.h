@@ -22,6 +22,7 @@
 #include <QThread>
 #include <QTimer>
 #include <QString>
+#include <QStringList>
 
 class ClientModel;
 class OptionsModel;
@@ -178,6 +179,29 @@ Q_SIGNALS:
     void restored(WalletModel* wallet_model);
 
 private:
+    void finish();
+};
+
+class RestoreMnemonicActivity : public WalletControllerActivity
+{
+    Q_OBJECT
+
+public:
+    RestoreMnemonicActivity(WalletController* wallet_controller, QWidget* parent_widget);
+
+    void restore(const std::string& name,
+                 const std::string& mnemonic,
+                 const std::string& passphrase,
+                 const std::string& derivation,
+                 int rescan_height,
+                 bool disable_private_keys);
+
+Q_SIGNALS:
+    void restored(WalletModel* wallet_model);
+
+private:
+    QString m_fingerprint;
+    QStringList m_addresses;
     void finish();
 };
 

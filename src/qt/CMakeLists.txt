@@ -162,6 +162,8 @@ if(ENABLE_WALLET)
       coincontroltreewidget.h
       createwalletdialog.cpp
       createwalletdialog.h
+      restoremnemonicdialog.cpp
+      restoremnemonicdialog.h
       editaddressdialog.cpp
       editaddressdialog.h
       openuridialog.cpp
