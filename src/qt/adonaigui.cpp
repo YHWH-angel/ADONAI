@@ -314,6 +314,10 @@ void BitcoinGUI::createActions()
     encryptWalletAction->setCheckable(true);
     backupWalletAction = new QAction(tr("&Backup Wallet…"), this);
     backupWalletAction->setStatusTip(tr("Backup wallet to another location"));
+    m_export_descriptors_action = new QAction(tr("Export &Descriptors…"), this);
+    m_export_descriptors_action->setStatusTip(tr("Dump wallet descriptors to a file"));
+    m_import_descriptors_action = new QAction(tr("&Import Descriptors…"), this);
+    m_import_descriptors_action->setStatusTip(tr("Import wallet descriptors from a file"));
     changePassphraseAction = new QAction(tr("&Change Passphrase…"), this);
     changePassphraseAction->setStatusTip(tr("Change the passphrase used for wallet encryption"));
     signMessageAction = new QAction(tr("Sign &message…"), this);
@@ -392,6 +396,8 @@ void BitcoinGUI::createActions()
     {
         connect(encryptWalletAction, &QAction::triggered, walletFrame, &WalletFrame::encryptWallet);
         connect(backupWalletAction, &QAction::triggered, walletFrame, &WalletFrame::backupWallet);
+        connect(m_export_descriptors_action, &QAction::triggered, walletFrame, &WalletFrame::exportDescriptors);
+        connect(m_import_descriptors_action, &QAction::triggered, walletFrame, &WalletFrame::importDescriptors);
         connect(changePassphraseAction, &QAction::triggered, walletFrame, &WalletFrame::changePassphrase);
         connect(signMessageAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
         connect(signMessageAction, &QAction::triggered, [this]{ gotoSignMessageTab(); });
@@ -518,6 +524,8 @@ void BitcoinGUI::createMenuBar()
         file->addAction(m_migrate_wallet_action);
         file->addSeparator();
         file->addAction(backupWalletAction);
+        file->addAction(m_export_descriptors_action);
+        file->addAction(m_import_descriptors_action);
         file->addAction(m_restore_wallet_action);
         file->addAction(m_restore_mnemonic_action);
         file->addSeparator();
@@ -834,6 +842,8 @@ void BitcoinGUI::setWalletActionsEnabled(bool enabled)
     historyAction->setEnabled(enabled);
     encryptWalletAction->setEnabled(enabled);
     backupWalletAction->setEnabled(enabled);
+    m_export_descriptors_action->setEnabled(enabled);
+    m_import_descriptors_action->setEnabled(enabled);
     changePassphraseAction->setEnabled(enabled);
     signMessageAction->setEnabled(enabled);
     verifyMessageAction->setEnabled(enabled);
@@ -1247,6 +1257,16 @@ void BitcoinGUI::restoreFromMnemonic()
     std::string passphrase = dlg.passphrase().toStdString();
     std::string derivation = dlg.derivationPath().toStdString();
     int rescan = dlg.rescanHeight();
+    if (rescan < 0) {
+        auto ret = QMessageBox::warning(this, tr("Rescan disabled"),
+            tr("Without rescanning, funds sent to this wallet before restoration may be missing. Continue?"),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (ret != QMessageBox::Yes) {
+            memory_cleanse(mnemonic.data(), mnemonic.size());
+            memory_cleanse(passphrase.data(), passphrase.size());
+            return;
+        }
+    }
     bool disable = dlg.disablePrivateKeys();
 
     auto activity = new RestoreMnemonicActivity(getWalletController(), this);

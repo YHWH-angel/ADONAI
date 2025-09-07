@@ -25,10 +25,14 @@
 
 #include <QAction>
 #include <QFileDialog>
+#include <QFile>
+#include <QTextStream>
+#include <QUrl>
 #include <QHBoxLayout>
 #include <QProgressDialog>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <univalue.h>
 
 WalletView::WalletView(WalletModel* wallet_model, const PlatformStyle* _platformStyle, QWidget* parent)
     : QStackedWidget(parent),
@@ -226,6 +230,96 @@ void WalletView::backupWallet()
     else {
         Q_EMIT message(tr("Backup Successful"), tr("The wallet data was successfully saved to %1.").arg(filename),
             CClientUIInterface::MSG_INFORMATION);
+    }
+}
+
+void WalletView::exportDescriptors()
+{
+    QString filename = GUIUtil::getSaveFileName(this,
+        tr("Export Wallet Descriptors"), QString(),
+        tr("JSON Files") + QLatin1String(" (*.json)"), nullptr);
+    if (filename.isEmpty()) return;
+
+    UniValue params(UniValue::VARR);
+    params.push_back(true);
+    QByteArray encoded = QUrl::toPercentEncoding(walletModel->getWalletName());
+    std::string uri = "/wallet/" + std::string(encoded.constData(), encoded.length());
+    UniValue result;
+    try {
+        result = walletModel->node().executeRpc("listdescriptors", params, uri);
+    } catch (UniValue& objError) {
+        try {
+            int code = objError["code"].getInt<int>();
+            std::string msg = objError["message"].get_str();
+            Q_EMIT message(tr("Export Failed"), QString::fromStdString(msg) + " (code " + QString::number(code) + ")", CClientUIInterface::MSG_ERROR);
+        } catch (const std::exception&) {
+            Q_EMIT message(tr("Export Failed"), QString::fromStdString(objError.write()), CClientUIInterface::MSG_ERROR);
+        }
+        return;
+    } catch (const std::exception& e) {
+        Q_EMIT message(tr("Export Failed"), tr("Error: %1").arg(QString::fromStdString(e.what())), CClientUIInterface::MSG_ERROR);
+        return;
+    }
+
+    QFile file(filename);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        Q_EMIT message(tr("Export Failed"), tr("Could not open %1 for writing").arg(filename), CClientUIInterface::MSG_ERROR);
+        return;
+    }
+    QTextStream out(&file);
+    out << QString::fromStdString(result.write(2));
+    file.close();
+    Q_EMIT message(tr("Export Successful"), tr("Wallet descriptors were saved to %1.").arg(filename), CClientUIInterface::MSG_INFORMATION);
+}
+
+void WalletView::importDescriptors()
+{
+    QString filename = GUIUtil::getOpenFileName(this,
+        tr("Import Wallet Descriptors"), QString(),
+        tr("JSON Files") + QLatin1String(" (*.json)"), nullptr);
+    if (filename.isEmpty()) return;
+
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly)) {
+        Q_EMIT message(tr("Import Failed"), tr("Could not open %1 for reading").arg(filename), CClientUIInterface::MSG_ERROR);
+        return;
+    }
+    QByteArray data = file.readAll();
+    file.close();
+
+    UniValue descs = UniValue::read(std::string(data.constData(), data.size()));
+    if (!descs.isArray()) {
+        Q_EMIT message(tr("Import Failed"), tr("File did not contain a descriptor array"), CClientUIInterface::MSG_ERROR);
+        return;
+    }
+    UniValue params(UniValue::VARR);
+    params.push_back(descs);
+    QByteArray encoded = QUrl::toPercentEncoding(walletModel->getWalletName());
+    std::string uri = "/wallet/" + std::string(encoded.constData(), encoded.length());
+    try {
+        UniValue res = walletModel->node().executeRpc("importdescriptors", params, uri);
+        bool ok = true;
+        for (const UniValue& r : res.get_array().getValues()) {
+            if (!r["success"].isBool() || !r["success"].get_bool()) {
+                ok = false;
+                break;
+            }
+        }
+        if (ok) {
+            Q_EMIT message(tr("Import Successful"), tr("Wallet descriptors were imported from %1.").arg(filename), CClientUIInterface::MSG_INFORMATION);
+        } else {
+            Q_EMIT message(tr("Import Failed"), tr("Some descriptors could not be imported"), CClientUIInterface::MSG_ERROR);
+        }
+    } catch (UniValue& objError) {
+        try {
+            int code = objError["code"].getInt<int>();
+            std::string msg = objError["message"].get_str();
+            Q_EMIT message(tr("Import Failed"), QString::fromStdString(msg) + " (code " + QString::number(code) + ")", CClientUIInterface::MSG_ERROR);
+        } catch (const std::exception&) {
+            Q_EMIT message(tr("Import Failed"), QString::fromStdString(objError.write()), CClientUIInterface::MSG_ERROR);
+        }
+    } catch (const std::exception& e) {
+        Q_EMIT message(tr("Import Failed"), tr("Error: %1").arg(QString::fromStdString(e.what())), CClientUIInterface::MSG_ERROR);
     }
 }
 

@@ -16,6 +16,7 @@ BIP32Root BIP32_FromSeed(const std::vector<uint8_t>& seed)
     std::copy(ext.chaincode.begin(), ext.chaincode.end(), root.chain_code.begin());
     CKeyID id = root.master_key.GetPubKey().GetID();
     root.fingerprint = ReadBE32(id.begin());
+    memory_cleanse(&ext, sizeof(ext));
     return root;
 }
 
@@ -51,9 +52,11 @@ bool BIP32_Derive(const BIP32Root& root, const std::string& path, CKey& out_priv
         CExtKey derived;
         if (!ext.Derive(derived, index)) {
             memory_cleanse(&derived, sizeof(derived));
+            memory_cleanse(&ext, sizeof(ext));
             return false;
         }
         ext = derived;
+        memory_cleanse(&derived, sizeof(derived));
         pos = (next == std::string::npos) ? path.size() : next;
     }
     out_priv = ext.key;

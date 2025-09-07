@@ -88,6 +88,8 @@ The Bitcoin repo's [root README](/README.md) contains relevant information on th
 - [Tor Support](tor.md)
 - [Transaction Relay Policy](policy/README.md)
 - [ZMQ](zmq.md)
+- [Restoring a Wallet from a Seed](recover-from-seed.md)
+- [Exporting and Importing Wallet Descriptors](export-descriptors.md)
 
 License
 ---------------------

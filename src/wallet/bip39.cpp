@@ -53,12 +53,19 @@ bool BIP39_ValidateMnemonic(const std::string& mnemonic, const std::vector<std::
         words.push_back(word);
     }
     const size_t words_len = words.size();
-    if (words_len % 3 != 0 || words_len < 12 || words_len > 24) return false;
+    if (words_len % 3 != 0 || words_len < 12 || words_len > 24) {
+        for (auto& w : words) memory_cleanse(w.data(), w.size());
+        return false;
+    }
     std::vector<int> indices;
     indices.reserve(words_len);
     for (const auto& w : words) {
         auto it = std::find(wordlist.begin(), wordlist.end(), w);
-        if (it == wordlist.end()) return false;
+        if (it == wordlist.end()) {
+            for (auto& ww : words) memory_cleanse(ww.data(), ww.size());
+            memory_cleanse(indices.data(), indices.size() * sizeof(int));
+            return false;
+        }
         indices.push_back(it - wordlist.begin());
     }
     std::vector<uint8_t> bits(words_len * 11);
@@ -79,10 +86,18 @@ bool BIP39_ValidateMnemonic(const std::string& mnemonic, const std::vector<std::
         uint8_t bit = (hash[i / 8] >> (7 - (i % 8))) & 1;
         if (bits[entropy_bits + i] != bit) {
             memory_cleanse(entropy.data(), entropy.size());
+            memory_cleanse(hash, sizeof(hash));
+            for (auto& ww : words) memory_cleanse(ww.data(), ww.size());
+            memory_cleanse(indices.data(), indices.size() * sizeof(int));
+            memory_cleanse(bits.data(), bits.size());
             return false;
         }
     }
     memory_cleanse(entropy.data(), entropy.size());
+    memory_cleanse(hash, sizeof(hash));
+    for (auto& ww : words) memory_cleanse(ww.data(), ww.size());
+    memory_cleanse(indices.data(), indices.size() * sizeof(int));
+    memory_cleanse(bits.data(), bits.size());
     return true;
 }
 
@@ -90,10 +105,13 @@ std::vector<uint8_t> BIP39_MnemonicToSeed(const std::string& mnemonic, const std
 {
     std::string salt = std::string("mnemonic") + passphrase;
     std::vector<uint8_t> salt_bytes(salt.begin(), salt.end());
+    std::vector<uint8_t> mnemonic_bytes(mnemonic.begin(), mnemonic.end());
     std::vector<uint8_t> seed(64);
-    PBKDF2_HMAC_SHA512((const unsigned char*)mnemonic.data(), mnemonic.size(),
+    PBKDF2_HMAC_SHA512(mnemonic_bytes.data(), mnemonic_bytes.size(),
                        salt_bytes.data(), salt_bytes.size(), 2048,
                        seed.data(), seed.size());
+    memory_cleanse(salt.data(), salt.size());
     memory_cleanse(salt_bytes.data(), salt_bytes.size());
+    memory_cleanse(mnemonic_bytes.data(), mnemonic_bytes.size());
     return seed;
 }

@@ -30,11 +30,13 @@
 
 #include <algorithm>
 #include <chrono>
+#include <boost/signals2/connection.hpp>
 
 #include <QApplication>
 #include <QMessageBox>
 #include <QMetaObject>
 #include <QMutexLocker>
+#include <QString>
 #include <QThread>
 #include <QTimer>
 #include <QWindow>
@@ -206,21 +208,22 @@ WalletControllerActivity::WalletControllerActivity(WalletController* wallet_cont
 
 void WalletControllerActivity::showProgressDialog(const QString& title_text, const QString& label_text, bool show_minimized)
 {
-    auto progress_dialog = new QProgressDialog(m_parent_widget);
-    progress_dialog->setAttribute(Qt::WA_DeleteOnClose);
-    connect(this, &WalletControllerActivity::finished, progress_dialog, &QWidget::close);
+    m_progress_dialog = new QProgressDialog(m_parent_widget);
+    m_progress_dialog->setAttribute(Qt::WA_DeleteOnClose);
+    connect(this, &WalletControllerActivity::finished, m_progress_dialog, &QWidget::close);
+    connect(m_progress_dialog, &QObject::destroyed, [this] { m_progress_dialog = nullptr; });
 
-    progress_dialog->setWindowTitle(title_text);
-    progress_dialog->setLabelText(label_text);
-    progress_dialog->setRange(0, 0);
-    progress_dialog->setCancelButton(nullptr);
-    progress_dialog->setWindowModality(Qt::ApplicationModal);
-    GUIUtil::PolishProgressDialog(progress_dialog);
+    m_progress_dialog->setWindowTitle(title_text);
+    m_progress_dialog->setLabelText(label_text);
+    m_progress_dialog->setRange(0, 100);
+    m_progress_dialog->setCancelButton(nullptr);
+    m_progress_dialog->setWindowModality(Qt::ApplicationModal);
+    GUIUtil::PolishProgressDialog(m_progress_dialog);
     // The setValue call forces QProgressDialog to start the internal duration estimation.
     // See details in https://bugreports.qt.io/browse/QTBUG-47042.
-    progress_dialog->setValue(0);
+    m_progress_dialog->setValue(0);
     // When requested, launch dialog minimized
-    if (show_minimized) progress_dialog->showMinimized();
+    if (show_minimized) m_progress_dialog->showMinimized();
 }
 
 CreateWalletActivity::CreateWalletActivity(WalletController* wallet_controller, QWidget* parent_widget)
@@ -501,6 +504,17 @@ void RestoreMnemonicActivity::restore(const std::string& name,
                     if (rescan_height > tip_height || !wallet->chain().findAncestorByHeight(wallet->GetLastBlockHash(), rescan_height, FoundBlock().hash(start_block))) {
                         m_error_message = Untranslated("Failed to determine rescan start block");
                     } else {
+                        boost::signals2::scoped_connection handler;
+                        if (m_progress_dialog) {
+                            handler = wallet->ShowProgress.connect([this](const std::string& title, int progress) {
+                                QMetaObject::invokeMethod(m_progress_dialog, [this, title, progress] {
+                                    if (m_progress_dialog) {
+                                        m_progress_dialog->setLabelText(QString::fromStdString(title));
+                                        m_progress_dialog->setValue(progress);
+                                    }
+                                }, Qt::QueuedConnection);
+                            });
+                        }
                         CWallet::ScanResult result = wallet->ScanForWalletTransactions(start_block, rescan_height, std::nullopt, reserver, /*fUpdate=*/true, /*save_progress=*/false);
                         if (result.status != CWallet::ScanResult::SUCCESS) {
                             m_error_message = Untranslated("Rescan failed");

@@ -250,6 +250,18 @@ void WalletFrame::backupWallet()
         walletView->backupWallet();
 }
 
+void WalletFrame::exportDescriptors()
+{
+    WalletView* walletView = currentWalletView();
+    if (walletView) walletView->exportDescriptors();
+}
+
+void WalletFrame::importDescriptors()
+{
+    WalletView* walletView = currentWalletView();
+    if (walletView) walletView->importDescriptors();
+}
+
 void WalletFrame::changePassphrase()
 {
     WalletView *walletView = currentWalletView();
