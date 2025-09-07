@@ -52,23 +52,32 @@
      <item row="4" column="1">
       <widget class="QLineEdit" name="derivation_edit"/>
      </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="label_rescan">
-       <property name="text"><string>Rescan height</string></property>
+    <item row="5" column="0">
+      <widget class="QCheckBox" name="rescan_checkbox">
+       <property name="text"><string>Rescan blockchain</string></property>
       </widget>
      </item>
      <item row="5" column="1">
+      <widget class="QLabel" name="label_dummy"/>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_rescan_height">
+       <property name="text"><string>Rescan height</string></property>
+      </widget>
+     </item>
+     <item row="6" column="1">
       <widget class="QSpinBox" name="rescan_spinbox">
+       <property name="enabled"><bool>false</bool></property>
        <property name="minimum"><number>0</number></property>
        <property name="maximum"><number>2100000000</number></property>
       </widget>
      </item>
-     <item row="6" column="0">
+     <item row="7" column="0">
       <widget class="QLabel" name="label_watchonly">
        <property name="text"><string>Watch-only</string></property>
       </widget>
      </item>
-     <item row="6" column="1">
+     <item row="7" column="1">
       <widget class="QCheckBox" name="watchonly_checkbox">
        <property name="text"><string>Disable private keys</string></property>
       </widget>

@@ -6,6 +6,7 @@
 #define BITCOIN_QT_RESTOREMNEMONICDIALOG_H
 
 #include <QDialog>
+#include <QEvent>
 
 namespace Ui {
 class RestoreMnemonicDialog;
@@ -25,6 +26,9 @@ public:
     QString derivationPath() const;
     int rescanHeight() const;
     bool disablePrivateKeys() const;
+
+protected:
+    bool eventFilter(QObject* obj, QEvent* event) override;
 
 private:
     Ui::RestoreMnemonicDialog* ui;

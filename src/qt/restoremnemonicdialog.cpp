@@ -13,6 +13,9 @@
 #include <util/memory.h>
 
 #include <QPushButton>
+#include <QKeyEvent>
+#include <QMessageBox>
+#include <QCheckBox>
 
 RestoreMnemonicDialog::RestoreMnemonicDialog(QWidget* parent) :
     QDialog(parent, GUIUtil::dialog_flags),
@@ -30,6 +33,15 @@ RestoreMnemonicDialog::RestoreMnemonicDialog(QWidget* parent) :
     ui->derivation_edit->setText("m/84'/5353'/0'");
     ui->derivation_edit->setVisible(false);
 
+    ui->rescan_checkbox->setChecked(false);
+    ui->label_rescan_height->setEnabled(false);
+    ui->rescan_spinbox->setEnabled(false);
+
+    connect(ui->rescan_checkbox, &QCheckBox::toggled, this, [this](bool checked) {
+        ui->label_rescan_height->setEnabled(checked);
+        ui->rescan_spinbox->setEnabled(checked);
+    });
+
     connect(ui->preset_combo, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index){
         ui->derivation_edit->setVisible(index == 2);
         if (index == 0) ui->derivation_edit->setText("m/84'/5353'/0'");
@@ -38,6 +50,9 @@ RestoreMnemonicDialog::RestoreMnemonicDialog(QWidget* parent) :
 
     connect(ui->wallet_name_edit, &QLineEdit::textChanged, this, &RestoreMnemonicDialog::updateOkButton);
     connect(ui->mnemonic_edit, &QPlainTextEdit::textChanged, this, &RestoreMnemonicDialog::updateOkButton);
+
+    ui->mnemonic_edit->setContextMenuPolicy(Qt::NoContextMenu);
+    ui->mnemonic_edit->installEventFilter(this);
 }
 
 RestoreMnemonicDialog::~RestoreMnemonicDialog()
@@ -77,10 +92,22 @@ QString RestoreMnemonicDialog::derivationPath() const
 
 int RestoreMnemonicDialog::rescanHeight() const
 {
-    return ui->rescan_spinbox->value();
+    return ui->rescan_checkbox->isChecked() ? ui->rescan_spinbox->value() : -1;
 }
 
 bool RestoreMnemonicDialog::disablePrivateKeys() const
 {
     return ui->watchonly_checkbox->isChecked();
+}
+
+bool RestoreMnemonicDialog::eventFilter(QObject* obj, QEvent* event)
+{
+    if (obj == ui->mnemonic_edit && event->type() == QEvent::KeyPress) {
+        QKeyEvent* key = static_cast<QKeyEvent*>(event);
+        if (key->matches(QKeySequence::Copy) || key->matches(QKeySequence::Cut)) {
+            QMessageBox::warning(this, tr("Security warning"), tr("Copying the seed to the clipboard is disabled."));
+            return true;
+        }
+    }
+    return QDialog::eventFilter(obj, event);
 }

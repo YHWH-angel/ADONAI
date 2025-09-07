@@ -24,5 +24,6 @@ target_sources(test_adonai
     wallet_transaction_tests.cpp
     walletdb_tests.cpp
     walletload_tests.cpp
+    mnemonic_tests.cpp
 )
 target_link_libraries(test_adonai adonai_wallet)

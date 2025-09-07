@@ -112,6 +112,7 @@ protected:
     WalletController* const m_wallet_controller;
     QWidget* const m_parent_widget;
     WalletModel* m_wallet_model{nullptr};
+    QProgressDialog* m_progress_dialog{nullptr};
     bilingual_str m_error_message;
     std::vector<bilingual_str> m_warning_message;
 };
