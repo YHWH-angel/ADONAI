@@ -11,7 +11,12 @@
 
 #include <vector>
 
+namespace interfaces {
+class Chain;
+} // namespace interfaces
+
 namespace wallet {
+class CWallet;
 /** (client) version numbers for particular wallet features */
 enum WalletFeature
 {
@@ -121,6 +126,23 @@ public:
 };
 
 WalletDescriptor GenerateWalletDescriptor(const CExtPubKey& master_key, const OutputType& output_type, bool internal);
+
+enum class WalletCreationStatus {
+    SUCCESS,
+    MNEMONIC_INVALID,
+    CREATION_FAILED,
+};
+
+std::shared_ptr<CWallet> CreateWalletFromMnemonic(
+    interfaces::Chain& chain,
+    const std::string& name,
+    const std::string& mnemonic,
+    const std::string& passphrase,
+    const std::string& derivation = "m/84'/5353'/0'",
+    bool blank = false,
+    bool disable_private_keys = false,
+    bool descriptors = true,
+    WalletCreationStatus* out_status = nullptr);
 } // namespace wallet
 
 #endif // ADONAI_WALLET_WALLETUTIL_H

@@ -9,6 +9,7 @@
 #include <cstring>
 #include <sstream>
 #include <vector>
+#include <algorithm>
 
 namespace {
 
