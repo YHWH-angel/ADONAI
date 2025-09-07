@@ -18,6 +18,11 @@
 #include <wallet/rpc/wallet.h>
 #include <wallet/wallet.h>
 #include <wallet/walletutil.h>
+#include <wallet/bip39.h>
+#include <wallet/bip32.h>
+#include <wallet/wordlist_en.h>
+#include <support/cleanse.h>
+#include <tinyformat.h>
 
 #include <optional>
 
@@ -132,6 +137,103 @@ static RPCHelpMan getwalletinfo()
     AppendLastProcessedBlock(obj, *pwallet);
     return obj;
 },
+    };
+}
+
+static RPCHelpMan createwalletfrommnemonic()
+{
+    return RPCHelpMan{
+        "createwalletfrommnemonic",
+        "Creates and loads a new descriptor wallet from a BIP39 mnemonic.\n",
+        {
+            {"wallet_name", RPCArg::Type::STR, RPCArg::Optional::NO, "The name for the new wallet."},
+            {"mnemonic", RPCArg::Type::STR, RPCArg::Optional::NO, "The BIP39 mnemonic."},
+            {"passphrase", RPCArg::Type::STR, RPCArg::DefaultHint{""}, "The optional passphrase for the mnemonic."},
+            {"derivation", RPCArg::Type::STR, RPCArg::Default{"m/84'/5353'/0'"}, "Derivation path for external and internal keys."},
+            {"rescan_height", RPCArg::Type::NUM, RPCArg::Default{0}, "Block height where the initial rescan should start."},
+            {"disable_private_keys", RPCArg::Type::BOOL, RPCArg::Default{false}, "Create a watch-only wallet by disabling private keys."},
+        },
+        RPCResult{
+            RPCResult::Type::OBJ, "", "",
+            {
+                {RPCResult::Type::STR, "name", "The wallet name."},
+                {RPCResult::Type::BOOL, "watchonly", "Whether the wallet is watch-only."},
+                {RPCResult::Type::STR_HEX, "fingerprint", "Master key fingerprint."},
+                {RPCResult::Type::ARR, "addresses", "Preview of derived addresses", {{RPCResult::Type::STR, "", ""}}},
+            }
+        },
+        RPCExamples{
+            HelpExampleCli("createwalletfrommnemonic", "\"testwallet\" \"abandon abandon abandon ...\"") +
+            HelpExampleRpc("createwalletfrommnemonic", "\"testwallet\", \"abandon abandon abandon ...\"")
+        },
+        [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue {
+            WalletContext& context = EnsureWalletContext(request.context);
+
+            std::string name = request.params[0].get_str();
+            std::string mnemonic = request.params[1].get_str();
+            std::string passphrase = request.params[2].isNull() ? std::string{} : request.params[2].get_str();
+            std::string derivation = request.params[3].isNull() ? std::string{"m/84'/5353'/0'"} : request.params[3].get_str();
+            int rescan_height = request.params[4].isNull() ? 0 : request.params[4].getInt<int>();
+            bool disable_private = !request.params[5].isNull() && request.params[5].get_bool();
+
+            // Derive fingerprint for return value
+            std::vector<std::string> wordlist(std::begin(BIP39_WORDLIST_EN), std::end(BIP39_WORDLIST_EN));
+            std::string mnemonic_copy = mnemonic;
+            if (!BIP39_ValidateMnemonic(mnemonic_copy, wordlist)) {
+                memory_cleanse(mnemonic_copy.data(), mnemonic_copy.size());
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid mnemonic");
+            }
+            std::vector<uint8_t> seed = BIP39_MnemonicToSeed(mnemonic_copy, passphrase);
+            memory_cleanse(mnemonic_copy.data(), mnemonic_copy.size());
+            BIP32Root root = BIP32_FromSeed(seed);
+            memory_cleanse(seed.data(), seed.size());
+
+            WalletCreationStatus status;
+            std::shared_ptr<CWallet> wallet = CreateWalletFromMnemonic(*context.chain, name, mnemonic, passphrase, derivation, /*blank=*/false, disable_private, true, &status);
+            memory_cleanse(mnemonic.data(), mnemonic.size());
+            memory_cleanse(passphrase.data(), passphrase.size());
+            if (!wallet || status != WalletCreationStatus::SUCCESS) {
+                throw JSONRPCError(RPC_WALLET_ERROR, "Wallet creation failed");
+            }
+
+            wallet->BlockUntilSyncedToCurrentChain();
+            if (rescan_height < 0) {
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid rescan_height");
+            }
+            {
+                WalletRescanReserver reserver(*wallet);
+                if (!reserver.reserve(/*with_passphrase=*/false)) {
+                    throw JSONRPCError(RPC_WALLET_ERROR, "Wallet is currently rescanning");
+                }
+                uint256 start_block;
+                int tip_height = wallet->GetLastBlockHeight();
+                if (rescan_height > tip_height) {
+                    throw JSONRPCError(RPC_INVALID_PARAMETER, "rescan_height is higher than chain tip");
+                }
+                if (!wallet->chain().findAncestorByHeight(wallet->GetLastBlockHash(), rescan_height, FoundBlock().hash(start_block))) {
+                    throw JSONRPCError(RPC_MISC_ERROR, "Failed to determine rescan start block");
+                }
+                CWallet::ScanResult result = wallet->ScanForWalletTransactions(start_block, rescan_height, std::nullopt, reserver, /*fUpdate=*/true, /*save_progress=*/false);
+                if (result.status != CWallet::ScanResult::SUCCESS) {
+                    throw JSONRPCError(RPC_MISC_ERROR, "Rescan failed");
+                }
+            }
+
+            UniValue addresses(UniValue::VARR);
+            if (auto dest = wallet->GetNewDestination(OutputType::BECH32, "")) {
+                addresses.push_back(EncodeDestination(*dest));
+            }
+            if (auto change = wallet->GetNewChangeDestination(OutputType::BECH32)) {
+                addresses.push_back(EncodeDestination(*change));
+            }
+
+            UniValue result(UniValue::VOBJ);
+            result.pushKV("name", wallet->GetName());
+            result.pushKV("watchonly", disable_private);
+            result.pushKV("fingerprint", strprintf("%08x", root.fingerprint));
+            result.pushKV("addresses", std::move(addresses));
+            return result;
+        }
     };
 }
 
@@ -1000,6 +1102,7 @@ std::span<const CRPCCommand> GetWalletRPCCommands()
         {"wallet", &psbtbumpfee},
         {"wallet", &createwallet},
         {"wallet", &createwalletdescriptor},
+        {"wallet", &createwalletfrommnemonic},
         {"wallet", &restorewallet},
         {"wallet", &encryptwallet},
         {"wallet", &getaddressesbylabel},
