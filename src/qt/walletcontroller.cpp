@@ -15,10 +15,18 @@
 #include <external_signer.h>
 #include <interfaces/handler.h>
 #include <interfaces/node.h>
+#include <interfaces/chain.h>
 #include <util/string.h>
 #include <util/threadnames.h>
 #include <util/translation.h>
 #include <wallet/wallet.h>
+#include <wallet/walletutil.h>
+#include <wallet/bip39.h>
+#include <wallet/bip32.h>
+#include <wallet/wordlist_en.h>
+#include <util/memory.h>
+#include <key_io.h>
+#include <outputtype.h>
 
 #include <algorithm>
 #include <chrono>
@@ -436,6 +444,103 @@ void RestoreWalletActivity::finish()
     }
 
     if (m_wallet_model) Q_EMIT restored(m_wallet_model);
+
+    Q_EMIT finished();
+}
+
+RestoreMnemonicActivity::RestoreMnemonicActivity(WalletController* wallet_controller, QWidget* parent_widget)
+    : WalletControllerActivity(wallet_controller, parent_widget)
+{
+}
+
+void RestoreMnemonicActivity::restore(const std::string& name,
+                                      const std::string& mnemonic,
+                                      const std::string& passphrase,
+                                      const std::string& derivation,
+                                      int rescan_height,
+                                      bool disable_private_keys)
+{
+    QString qname = QString::fromStdString(name);
+    showProgressDialog(
+        tr("Restore from seed"),
+        tr("Restoring Wallet <b>%1</b>…").arg(qname.toHtmlEscaped()));
+
+    QTimer::singleShot(0, worker(), [this, name, mnemonic, passphrase, derivation, rescan_height, disable_private_keys] {
+        WalletContext& context = *node().walletLoader().context();
+        std::vector<std::string> wordlist(std::begin(BIP39_WORDLIST_EN), std::end(BIP39_WORDLIST_EN));
+        std::string mnemonic_copy = mnemonic;
+        if (!BIP39_ValidateMnemonic(mnemonic_copy, wordlist)) {
+            memory_cleanse(mnemonic_copy.data(), mnemonic_copy.size());
+            m_error_message = Untranslated("Invalid mnemonic");
+            QTimer::singleShot(0, this, &RestoreMnemonicActivity::finish);
+            return;
+        }
+        std::vector<uint8_t> seed = BIP39_MnemonicToSeed(mnemonic_copy, passphrase);
+        memory_cleanse(mnemonic_copy.data(), mnemonic_copy.size());
+        BIP32Root root = BIP32_FromSeed(seed);
+        memory_cleanse(seed.data(), seed.size());
+        m_fingerprint = QString::fromStdString(strprintf("%08x", root.fingerprint));
+
+        WalletCreationStatus status;
+        std::shared_ptr<CWallet> wallet = CreateWalletFromMnemonic(*context.chain, name, mnemonic, passphrase, derivation, /*blank=*/false, disable_private_keys, true, &status);
+        memory_cleanse(const_cast<char*>(mnemonic.data()), mnemonic.size());
+        memory_cleanse(const_cast<char*>(passphrase.data()), passphrase.size());
+        if (!wallet || status != WalletCreationStatus::SUCCESS) {
+            m_error_message = Untranslated("Wallet creation failed");
+        } else {
+            wallet::AddWallet(context, wallet);
+            auto handle = wallet::MakeWallet(context, wallet);
+            wallet->BlockUntilSyncedToCurrentChain();
+            if (rescan_height >= 0) {
+                WalletRescanReserver reserver(*wallet);
+                if (!reserver.reserve(false)) {
+                    m_error_message = Untranslated("Wallet is currently rescanning");
+                } else {
+                    uint256 start_block;
+                    int tip_height = wallet->GetLastBlockHeight();
+                    if (rescan_height > tip_height || !wallet->chain().findAncestorByHeight(wallet->GetLastBlockHash(), rescan_height, FoundBlock().hash(start_block))) {
+                        m_error_message = Untranslated("Failed to determine rescan start block");
+                    } else {
+                        CWallet::ScanResult result = wallet->ScanForWalletTransactions(start_block, rescan_height, std::nullopt, reserver, /*fUpdate=*/true, /*save_progress=*/false);
+                        if (result.status != CWallet::ScanResult::SUCCESS) {
+                            m_error_message = Untranslated("Rescan failed");
+                        }
+                    }
+                }
+            }
+            if (m_error_message.empty()) {
+                m_wallet_model = m_wallet_controller->getOrCreateWallet(std::move(handle));
+            }
+        }
+
+        QTimer::singleShot(0, this, &RestoreMnemonicActivity::finish);
+    });
+}
+
+void RestoreMnemonicActivity::finish()
+{
+    if (!m_error_message.empty()) {
+        QMessageBox::critical(m_parent_widget, tr("Restore wallet failed"), QString::fromStdString(m_error_message.translated));
+    } else if (m_wallet_model) {
+        QStringList addresses;
+        if (auto dest1 = m_wallet_model->wallet().getNewDestination(OutputType::BECH32, "")) {
+            addresses << QString::fromStdString(EncodeDestination(*dest1));
+        }
+        if (auto dest2 = m_wallet_model->wallet().getNewDestination(OutputType::BECH32, "")) {
+            addresses << QString::fromStdString(EncodeDestination(*dest2));
+        }
+        if (auto change = m_wallet_model->wallet().getNewChangeDestination(OutputType::BECH32)) {
+            addresses << QString::fromStdString(EncodeDestination(*change));
+        }
+        m_addresses = addresses;
+        QString info = tr("Fingerprint: %1\n%2\n%3\n%4")
+                            .arg(m_fingerprint,
+                                 addresses.value(0),
+                                 addresses.value(1),
+                                 addresses.value(2));
+        QMessageBox::information(m_parent_widget, tr("Restore wallet message"), info);
+        Q_EMIT restored(m_wallet_model);
+    }
 
     Q_EMIT finished();
 }

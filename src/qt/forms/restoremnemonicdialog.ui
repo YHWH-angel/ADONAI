@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>RestoreMnemonicDialog</class>
+ <widget class="QDialog" name="RestoreMnemonicDialog">
+  <property name="windowTitle">
+   <string>Restore from seed</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_wallet_name">
+       <property name="text"><string>Wallet name</string></property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="wallet_name_edit"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_mnemonic">
+       <property name="text"><string>Mnemonic</string></property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QPlainTextEdit" name="mnemonic_edit">
+       <property name="minimumHeight"><number>80</number></property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_passphrase">
+       <property name="text"><string>Passphrase</string></property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="passphrase_edit">
+       <property name="echoMode"><enum>QLineEdit::Password</enum></property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_preset">
+       <property name="text"><string>Derivation preset</string></property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QComboBox" name="preset_combo"/>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_derivation">
+       <property name="text"><string>Derivation path</string></property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="derivation_edit"/>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_rescan">
+       <property name="text"><string>Rescan height</string></property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QSpinBox" name="rescan_spinbox">
+       <property name="minimum"><number>0</number></property>
+       <property name="maximum"><number>2100000000</number></property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_watchonly">
+       <property name="text"><string>Watch-only</string></property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QCheckBox" name="watchonly_checkbox">
+       <property name="text"><string>Disable private keys</string></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons"><set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set></property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

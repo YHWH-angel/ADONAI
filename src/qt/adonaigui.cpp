@@ -27,6 +27,7 @@
 #include <qt/walletframe.h>
 #include <qt/walletmodel.h>
 #include <qt/walletview.h>
+#include <qt/restoremnemonicdialog.h>
 #endif // ENABLE_WALLET
 
 #ifdef Q_OS_MACOS
@@ -38,6 +39,7 @@
 #include <common/system.h>
 #include <interfaces/handler.h>
 #include <interfaces/node.h>
+#include <util/memory.h>
 #include <node/interface_ui.h>
 #include <util/translation.h>
 #include <validation.h>
@@ -355,6 +357,10 @@ void BitcoinGUI::createActions()
     //: Status tip for Restore Wallet menu item
     m_restore_wallet_action->setStatusTip(tr("Restore a wallet from a backup file"));
 
+    m_restore_mnemonic_action = new QAction(tr("Restore from seed…"), this);
+    m_restore_mnemonic_action->setEnabled(false);
+    m_restore_mnemonic_action->setStatusTip(tr("Restore a wallet from a BIP39 seed phrase"));
+
     m_close_all_wallets_action = new QAction(tr("Close All Wallets…"), this);
     m_close_all_wallets_action->setStatusTip(tr("Close all wallets"));
 
@@ -454,6 +460,7 @@ void BitcoinGUI::createActions()
             auto backup_file_path = fs::PathFromString(backup_file.toStdString());
             activity->restore(backup_file_path, wallet_name.toStdString());
         });
+        connect(m_restore_mnemonic_action, &QAction::triggered, this, &BitcoinGUI::restoreFromMnemonic);
         connect(m_close_wallet_action, &QAction::triggered, [this] {
             m_wallet_controller->closeWallet(walletFrame->currentWalletModel(), this);
         });
@@ -512,6 +519,7 @@ void BitcoinGUI::createMenuBar()
         file->addSeparator();
         file->addAction(backupWalletAction);
         file->addAction(m_restore_wallet_action);
+        file->addAction(m_restore_mnemonic_action);
         file->addSeparator();
         file->addAction(openAction);
         file->addAction(signMessageAction);
@@ -718,6 +726,7 @@ void BitcoinGUI::setWalletController(WalletController* wallet_controller, bool s
     m_open_wallet_action->setEnabled(true);
     m_open_wallet_action->setMenu(m_open_wallet_menu);
     m_restore_wallet_action->setEnabled(true);
+    m_restore_mnemonic_action->setEnabled(true);
     m_migrate_wallet_action->setEnabled(true);
     m_migrate_wallet_action->setMenu(m_migrate_wallet_menu);
 
@@ -1224,6 +1233,29 @@ void BitcoinGUI::createWallet()
     connect(activity, &CreateWalletActivity::created, this, &BitcoinGUI::setCurrentWallet);
     connect(activity, &CreateWalletActivity::created, rpcConsole, &RPCConsole::setCurrentWallet);
     activity->create();
+#endif // ENABLE_WALLET
+}
+
+void BitcoinGUI::restoreFromMnemonic()
+{
+#ifdef ENABLE_WALLET
+    RestoreMnemonicDialog dlg(this);
+    if (dlg.exec() != QDialog::Accepted) return;
+
+    std::string name = dlg.walletName().toStdString();
+    std::string mnemonic = dlg.mnemonic().toStdString();
+    std::string passphrase = dlg.passphrase().toStdString();
+    std::string derivation = dlg.derivationPath().toStdString();
+    int rescan = dlg.rescanHeight();
+    bool disable = dlg.disablePrivateKeys();
+
+    auto activity = new RestoreMnemonicActivity(getWalletController(), this);
+    connect(activity, &RestoreMnemonicActivity::restored, this, &BitcoinGUI::setCurrentWallet, Qt::QueuedConnection);
+    connect(activity, &RestoreMnemonicActivity::restored, rpcConsole, &RPCConsole::setCurrentWallet, Qt::QueuedConnection);
+    activity->restore(name, mnemonic, passphrase, derivation, rescan, disable);
+
+    memory_cleanse(mnemonic.data(), mnemonic.size());
+    memory_cleanse(passphrase.data(), passphrase.size());
 #endif // ENABLE_WALLET
 }
 
