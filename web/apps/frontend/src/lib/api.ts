@@ -9,8 +9,12 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
     ...options,
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error((err as { message?: string }).message ?? 'API error');
+    const err = await res.json().catch(() => ({}));
+    const msg = (err as { message?: string; error?: string }).message
+      ?? (err as { error?: string }).error
+      ?? res.statusText
+      ?? 'API error';
+    throw new Error(msg);
   }
   return res.json() as Promise<T>;
 }

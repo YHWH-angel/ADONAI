@@ -269,12 +269,19 @@ export interface LightUTXO {
 }
 
 /** Parse derivation info from scantxoutset desc field.
- *  e.g. "wpkh(xpub.../0/5)#checksum"  → { isChange: false, index: 5 }
+ *
+ * Two formats are returned by the node:
+ *   New: "wpkh([fingerprint/change/index]pubkey)#checksum"
+ *   Old: "wpkh(xpub.../change/index)#checksum"
  */
 export function parseDescPath(desc: string): { isChange: boolean; index: number } | null {
-  const m = desc.match(/\/(\d+)\/(\d+)\)/);
-  if (!m) return null;
-  return { isChange: m[1] === '1', index: parseInt(m[2], 10) };
+  // New format: [fingerprint/change/index] — used by scantxoutset for derived keys
+  const m1 = desc.match(/\[[0-9a-f]+\/(\d+)\/(\d+)\]/);
+  if (m1) return { isChange: m1[1] === '1', index: parseInt(m1[2], 10) };
+  // Legacy format: xpub.../change/index)
+  const m2 = desc.match(/\/(\d+)\/(\d+)\)/);
+  if (m2) return { isChange: m2[1] === '1', index: parseInt(m2[2], 10) };
+  return null;
 }
 
 export interface BuildTxParams {
@@ -301,9 +308,11 @@ export function buildAndSignTx(params: BuildTxParams): string {
 
   if (changeSats < 0n) throw new Error('Insufficient funds');
 
-  // Decode recipient address pubkey hash
-  const recipientHash = bech32.decodeToBytes(recipientAddress).bytes.slice(1); // strip witness version
-  const changeHash = bech32.decodeToBytes(changeAddress).bytes.slice(1);
+  // Decode recipient address pubkey hash.
+  // bech32.decode().words = [witnessVersion=0, ...5bit-encoded-hash]
+  // We strip the witness version word and convert the remaining words to 20 bytes.
+  const recipientHash = new Uint8Array(bech32.fromWords(bech32.decode(recipientAddress).words.slice(1)));
+  const changeHash = new Uint8Array(bech32.fromWords(bech32.decode(changeAddress).words.slice(1)));
 
   const recipientScript = p2wpkhScript(new Uint8Array(recipientHash));
   const changeScript = p2wpkhScript(new Uint8Array(changeHash));
