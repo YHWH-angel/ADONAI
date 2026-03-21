@@ -82,13 +82,16 @@ export default function MiningPage() {
     );
   }
 
-  const confirmedRewards =
-    rewards?.rewards.filter((r) => r.category === 'generate') ?? [];
-  const immatureRewards =
-    rewards?.rewards.filter((r) => r.category === 'immature') ?? [];
-  const immatureTotal = immatureRewards.reduce((s, r) => s + r.amount, 0);
+  const allRewards = rewards?.rewards ?? [];
+  const confirmedRewards = allRewards.filter((r) => r.category === 'generate');
+  const immatureRewards  = allRewards.filter((r) => r.category === 'immature');
+  const immatureTotal  = immatureRewards.reduce((s, r)  => s + r.amount, 0);
   const confirmedTotal = confirmedRewards.reduce((s, r) => s + r.amount, 0);
   const isMining = minerStatus?.active ?? false;
+  const [rewardFilter, setRewardFilter] = useState<'all' | 'generate' | 'immature'>('all');
+  const visibleRewards = rewardFilter === 'all' ? allRewards
+    : rewardFilter === 'generate' ? confirmedRewards
+    : immatureRewards;
 
   return (
     <div className="space-y-4 py-4">
@@ -219,48 +222,70 @@ export default function MiningPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div>
-            <p className="text-xs text-muted-foreground">Total confirmado</p>
-            <p className="text-2xl font-bold text-yellow-400">
-              {isLoading ? '...' : formatAdo(confirmedTotal)}
-            </p>
-          </div>
-          {immatureTotal > 0 && (
-            <div className="flex items-center justify-between rounded-lg bg-yellow-500/10 p-3">
-              <div className="flex items-center gap-2 text-xs text-yellow-400">
-                <Clock size={12} />
-                Madurando (inmaduro)
-              </div>
-              <span className="font-mono text-sm font-semibold text-yellow-400">
-                {formatAdo(immatureTotal)}
-              </span>
+          {/* Two stat boxes side by side */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-lg bg-yellow-500/10 p-3">
+              <p className="text-[10px] text-muted-foreground mb-0.5">
+                Confirmado · {confirmedRewards.length} bloques
+              </p>
+              <p className="text-lg font-bold text-yellow-400 font-mono">
+                {isLoading ? '...' : formatAdo(confirmedTotal)}
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Gastable ahora</p>
             </div>
-          )}
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <Coins size={12} />
-            <span>{confirmedRewards.length} bloques confirmados</span>
-            {immatureRewards.length > 0 && (
-              <span className="text-yellow-400">
-                + {immatureRewards.length} madurando
-              </span>
-            )}
+            <div className="rounded-lg bg-yellow-500/5 border border-yellow-500/20 p-3">
+              <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-0.5">
+                <Clock size={10} />
+                Madurando · {immatureRewards.length} bloques
+              </div>
+              <p className="text-lg font-bold text-yellow-400/60 font-mono">
+                {isLoading ? '...' : formatAdo(immatureTotal)}
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Disponible tras 100 conf.</p>
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Rewards List */}
-      {!isLoading && rewards?.rewards && rewards.rewards.length > 0 && (
+      {!isLoading && allRewards.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Historial de recompensas
-          </h3>
-          {rewards.rewards.slice(0, 100).map((tx) => (
-            <RewardCard key={tx.txid} tx={tx} />
-          ))}
+          {/* Header + filter tabs */}
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Historial · {allRewards.length} bloques
+            </h3>
+            <div className="flex gap-1">
+              {([
+                ['all',      `Todos (${allRewards.length})`],
+                ['generate', `✓ ${confirmedRewards.length}`],
+                ['immature', `⏳ ${immatureRewards.length}`],
+              ] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setRewardFilter(key)}
+                  className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium transition-colors ${
+                    rewardFilter === key
+                      ? 'bg-yellow-500/20 text-yellow-400'
+                      : 'bg-secondary text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Scrollable list — all visible, no truncation */}
+          <div className="space-y-2 max-h-[32rem] overflow-y-auto pr-1">
+            {visibleRewards.map((tx) => (
+              <RewardCard key={tx.txid + tx.category} tx={tx} />
+            ))}
+          </div>
         </div>
       )}
 
-      {!isLoading && (rewards?.rewards.length ?? 0) === 0 && (
+      {!isLoading && allRewards.length === 0 && (
         <div className="py-12 text-center text-sm text-muted-foreground">
           <Pickaxe className="mx-auto mb-3 h-8 w-8 opacity-40" />
           No hay recompensas de minado en esta wallet

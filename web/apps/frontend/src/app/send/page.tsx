@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatAdo } from '@/lib/utils';
-import { Send, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Send, Loader2, CheckCircle2, AlertCircle, HelpCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SendPage() {
@@ -174,8 +174,23 @@ export default function SendPage() {
                   ~{estimatedFee?.toFixed(8) ?? '—'} ADO
                 </span>
               </div>
-              <div className="flex justify-between text-[10px]">
-                <span>Modelo: α×peso + β×valor</span>
+              <div className="flex justify-between items-center text-[10px]">
+                <div className="flex items-center gap-1">
+                  <span>Modelo: α×peso + β×valor</span>
+                  <div className="relative group/fee">
+                    <HelpCircle size={11} className="text-muted-foreground cursor-help" />
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 hidden group-hover/fee:block w-64 rounded-lg border border-border bg-popover p-3 text-[11px] text-popover-foreground shadow-lg leading-relaxed">
+                      <p className="font-semibold mb-1.5">¿Cómo se calcula la comisión?</p>
+                      <p className="mb-1">La comisión tiene dos partes:</p>
+                      <ul className="space-y-1 mb-2">
+                        <li><span className="font-mono font-bold">α × peso</span> — tarifa por tamaño de la transacción (en kilobytes). Una tx típica pesa ~0.14 kB.</li>
+                        <li><span className="font-mono font-bold">β × valor</span> — tarifa proporcional al importe enviado. Incentiva la seguridad de transacciones grandes.</li>
+                      </ul>
+                      <p className="text-muted-foreground">Ejemplo: enviar 5 ADO → α×0.141 + β×5 ≈ 0.0000251 ADO de comisión.</p>
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-border" />
+                    </div>
+                  </div>
+                </div>
                 <span className="font-mono">α={model.alpha} · β={model.beta}</span>
               </div>
               <div className="flex items-center gap-2 pt-0.5">
