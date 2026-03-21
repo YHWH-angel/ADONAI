@@ -12,9 +12,11 @@ import { Input } from '@/components/ui/input';
 import { formatAdo } from '@/lib/utils';
 import { Send, Loader2, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useT } from '@/hooks/useLocale';
 
 export default function LightSendPage() {
   const router = useRouter();
+  const t = useT();
   const store = useLightWalletStore();
 
   const [address, setAddress] = useState('');
@@ -67,7 +69,7 @@ export default function LightSendPage() {
         total += u.amountAdo;
         if (total >= target) break;
       }
-      if (total < target) throw new Error('Fondos insuficientes');
+      if (total < target) throw new Error(t.light.insufficientFunds);
 
       // Derive change address
       const changeKey = deriveKeyAtIndex(store.mnemonic, store.changeIndex, true);
@@ -84,7 +86,7 @@ export default function LightSendPage() {
       const result = await api.lightBroadcast(hex);
       setTxid(result.txid);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al enviar');
+      setError(err instanceof Error ? err.message : t.common.error);
     } finally {
       setSending(false);
     }
@@ -94,13 +96,13 @@ export default function LightSendPage() {
     return (
       <div className="flex flex-col items-center gap-4 py-16 text-center max-w-md mx-auto">
         <CheckCircle2 className="h-14 w-14 text-green-400" />
-        <h2 className="text-xl font-bold">Transacción enviada</h2>
+        <h2 className="text-xl font-bold">{t.light.success}</h2>
         <p className="text-xs text-muted-foreground font-mono break-all px-4">{txid}</p>
         <div className="flex gap-3">
           <Button variant="outline" asChild>
             <Link href="/light/wallet">
               <ArrowLeft size={14} />
-              Volver
+              {t.light.back}
             </Link>
           </Button>
         </div>
@@ -112,14 +114,14 @@ export default function LightSendPage() {
     <div className="space-y-4 py-4 max-w-md mx-auto">
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/light/wallet"><ArrowLeft size={14} /> Volver</Link>
+          <Link href="/light/wallet"><ArrowLeft size={14} /> {t.light.back}</Link>
         </Button>
       </div>
 
       {/* Balance */}
       <Card className="border-primary/20">
         <CardContent className="py-3 px-5">
-          <p className="text-xs text-muted-foreground">Saldo disponible</p>
+          <p className="text-xs text-muted-foreground">{t.light.availableBalance}</p>
           <p className="text-2xl font-bold text-primary">{formatAdo(balance)}</p>
         </CardContent>
       </Card>
@@ -128,13 +130,13 @@ export default function LightSendPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Send size={16} />
-            Enviar ADO
+            {t.send.title}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Address */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Dirección destino</label>
+            <label className="text-sm font-medium">{t.light.destination}</label>
             <Input
               placeholder="ad1q..."
               value={address}
@@ -142,19 +144,19 @@ export default function LightSendPage() {
               className={address.length > 10 ? (isValidAddress ? 'border-green-500/50' : 'border-destructive/50') : ''}
             />
             {address.length > 10 && !isValidAddress && (
-              <p className="text-xs text-destructive">Dirección no válida</p>
+              <p className="text-xs text-destructive">{t.light.invalidAddress}</p>
             )}
           </div>
 
           {/* Amount */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Cantidad (ADO)</label>
+              <label className="text-sm font-medium">{t.light.amountLabel}</label>
               <button
                 className="text-xs text-primary"
                 onClick={() => setAmount(Math.max(0, balance - estimatedFee).toFixed(8))}
               >
-                Máximo
+                {t.light.max}
               </button>
             </div>
             <Input
@@ -165,23 +167,23 @@ export default function LightSendPage() {
               className={amount && !isValidAmount ? 'border-destructive/50' : ''}
             />
             {amount && !isNaN(amountNum) && amountNum > balance && (
-              <p className="text-xs text-destructive">Saldo insuficiente</p>
+              <p className="text-xs text-destructive">{t.light.insufficientFunds}</p>
             )}
           </div>
 
           {/* Fee */}
           <div className="rounded-lg bg-secondary/50 p-3 text-xs text-muted-foreground space-y-1">
             <div className="flex justify-between">
-              <span>Comisión estimada</span>
+              <span>{t.light.estimatedFee}</span>
               <span className="font-mono text-foreground">~{estimatedFee.toFixed(8)} ADO</span>
             </div>
             <div className="flex justify-between text-[10px]">
-              <span>UTXOs seleccionados</span>
-              <span className="font-mono">{store.utxos.length} disponibles</span>
+              <span>{t.light.utxosSelected}</span>
+              <span className="font-mono">{store.utxos.length} {t.light.available}</span>
             </div>
             <div className="flex justify-between text-[10px]">
-              <span>Firma</span>
-              <span className="font-mono text-green-400">Local · P2WPKH</span>
+              <span>{t.light.sign}</span>
+              <span className="font-mono text-green-400">{t.light.localSign}</span>
             </div>
           </div>
 
@@ -194,7 +196,7 @@ export default function LightSendPage() {
 
           <Button className="w-full" disabled={!canSend} onClick={handleSend} size="lg">
             {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-            {sending ? 'Firmando y enviando...' : 'Confirmar envío'}
+            {sending ? t.light.signingAndSending : t.light.confirm}
           </Button>
         </CardContent>
       </Card>

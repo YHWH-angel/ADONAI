@@ -9,6 +9,7 @@ import {
   deriveAddress,
 } from '@/lib/wallet-core';
 import { useWalletStore } from '@/store/wallet';
+import { useT } from '@/hooks/useLocale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +29,7 @@ type Step = 'choose' | 'generate' | 'backup' | 'verify' | 'password' | 'done';
 
 export default function CreateWalletPage() {
   const router = useRouter();
+  const t = useT();
   const { setEncryptedMnemonic, setMnemonic, addAddress, setActiveWallet, setWalletMode } =
     useWalletStore();
 
@@ -81,7 +83,7 @@ export default function CreateWalletPage() {
       setStep('done');
     } catch (e) {
       console.error(e);
-      setError(e instanceof Error ? e.message : 'Error al crear la wallet. Inténtalo de nuevo.');
+      setError(e instanceof Error ? e.message : t.wallet.createError);
     } finally {
       setIsLoading(false);
     }
@@ -93,12 +95,12 @@ export default function CreateWalletPage() {
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20">
           <ShieldCheck className="h-8 w-8 text-green-400" />
         </div>
-        <h2 className="text-xl font-bold">Wallet creada</h2>
+        <h2 className="text-xl font-bold">{t.wallet.doneTitle}</h2>
         <p className="text-sm text-muted-foreground">
-          Tu wallet HD está lista. Las claves se guardan cifradas en tu dispositivo.
+          {t.wallet.doneDesc}
         </p>
         <Button size="lg" onClick={() => router.push('/')}>
-          Ir al inicio <ChevronRight size={16} />
+          {t.wallet.goHome} <ChevronRight size={16} />
         </Button>
       </div>
     );
@@ -109,9 +111,9 @@ export default function CreateWalletPage() {
       {/* Step: choose */}
       {step === 'choose' && (
         <div className="space-y-3">
-          <h2 className="text-lg font-bold">Configurar wallet</h2>
+          <h2 className="text-lg font-bold">{t.wallet.title}</h2>
           <p className="text-sm text-muted-foreground">
-            Las claves se generan y almacenan en tu dispositivo. El servidor nunca las ve.
+            {t.wallet.titleDesc}
           </p>
           <Card
             className="cursor-pointer border-primary/30 hover:border-primary/60 transition-colors"
@@ -122,9 +124,9 @@ export default function CreateWalletPage() {
                 <ShieldCheck size={18} className="text-primary" />
               </div>
               <div className="flex-1">
-                <p className="font-semibold">Crear nueva wallet</p>
+                <p className="font-semibold">{t.wallet.createNew}</p>
                 <p className="text-xs text-muted-foreground">
-                  Genera una frase mnemónica de 24 palabras
+                  {t.wallet.createNewDesc}
                 </p>
               </div>
               <ChevronRight size={16} className="text-muted-foreground" />
@@ -139,9 +141,9 @@ export default function CreateWalletPage() {
                 <RefreshCw size={18} className="text-muted-foreground" />
               </div>
               <div className="flex-1">
-                <p className="font-semibold">Importar wallet existente</p>
+                <p className="font-semibold">{t.wallet.importExisting}</p>
                 <p className="text-xs text-muted-foreground">
-                  Introduce tu frase de recuperación
+                  {t.wallet.importExistingDesc}
                 </p>
               </div>
               <ChevronRight size={16} className="text-muted-foreground" />
@@ -156,12 +158,12 @@ export default function CreateWalletPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <AlertTriangle size={16} className="text-yellow-400" />
-              Guarda tu frase de recuperación
+              {t.wallet.backupTitle}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Estas 24 palabras son la única forma de recuperar tu wallet. Guárdalas en un lugar seguro y nunca las compartas.
+              {t.wallet.backupDesc}
             </p>
 
             <div className="relative rounded-xl bg-secondary p-4">
@@ -172,7 +174,7 @@ export default function CreateWalletPage() {
                     size="sm"
                     onClick={() => setShowMnemonic(true)}
                   >
-                    <Eye size={14} /> Mostrar frase
+                    <Eye size={14} /> {t.wallet.showPhrase}
                   </Button>
                 </div>
               )}
@@ -199,7 +201,7 @@ export default function CreateWalletPage() {
                 onClick={handleCopy}
               >
                 {copied ? <CheckCheck size={14} /> : <Copy size={14} />}
-                {copied ? 'Copiada' : 'Copiar'}
+                {copied ? t.wallet.copied : t.wallet.copy}
               </Button>
               <Button
                 variant="outline"
@@ -215,7 +217,7 @@ export default function CreateWalletPage() {
               disabled={!showMnemonic}
               onClick={() => setStep('verify')}
             >
-              He guardado la frase <ChevronRight size={14} />
+              {t.wallet.savedPhrase} <ChevronRight size={14} />
             </Button>
           </CardContent>
         </Card>
@@ -225,25 +227,25 @@ export default function CreateWalletPage() {
       {step === 'backup' && mode === 'import' && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Importar frase de recuperación</CardTitle>
+            <CardTitle className="text-base">{t.wallet.importTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <textarea
               className="w-full rounded-lg border border-input bg-secondary p-3 font-mono text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               rows={4}
-              placeholder="palabra1 palabra2 palabra3 ... (12 o 24 palabras)"
+              placeholder={t.wallet.importPlaceholder}
               value={importMnemonic}
               onChange={(e) => setImportMnemonic(e.target.value)}
             />
             {importMnemonic && !validateMnemonic(importMnemonic) && (
-              <p className="text-xs text-destructive">Frase mnemónica no válida</p>
+              <p className="text-xs text-destructive">{t.wallet.invalidMnemonic}</p>
             )}
             <Button
               className="w-full"
               disabled={!validateMnemonic(importMnemonic)}
               onClick={() => setStep('password')}
             >
-              Continuar <ChevronRight size={14} />
+              {t.wallet.continue} <ChevronRight size={14} />
             </Button>
           </CardContent>
         </Card>
@@ -253,19 +255,19 @@ export default function CreateWalletPage() {
       {step === 'verify' && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Verificar copia de seguridad</CardTitle>
+            <CardTitle className="text-base">{t.wallet.verifyTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Introduce las palabras solicitadas para confirmar que las guardaste correctamente.
+              {t.wallet.verifyDesc}
             </p>
             {verifyIndices.map((wordIndex, i) => (
               <div key={i} className="space-y-1">
                 <label className="text-sm">
-                  Palabra #{wordIndex + 1}
+                  {t.wallet.wordLabel}{wordIndex + 1}
                 </label>
                 <Input
-                  placeholder={`Palabra ${wordIndex + 1}`}
+                  placeholder={`${t.wallet.wordPlaceholder} ${wordIndex + 1}`}
                   value={verifyWords[i]}
                   onChange={(e) => {
                     const next = [...verifyWords];
@@ -287,7 +289,7 @@ export default function CreateWalletPage() {
               disabled={!isVerifyCorrect}
               onClick={() => setStep('password')}
             >
-              Verificado <ChevronRight size={14} />
+              {t.wallet.verified} <ChevronRight size={14} />
             </Button>
           </CardContent>
         </Card>
@@ -297,14 +299,14 @@ export default function CreateWalletPage() {
       {step === 'password' && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Contraseña de cifrado</CardTitle>
+            <CardTitle className="text-base">{t.wallet.passwordTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Tu frase se cifra con AES-256-GCM antes de guardarse. Sin esta contraseña no podrás operar.
+              {t.wallet.passwordDesc}
             </p>
             <div className="space-y-1.5">
-              <label className="text-sm">Contraseña (mínimo 8 caracteres)</label>
+              <label className="text-sm">{t.wallet.passwordLabel}</label>
               <Input
                 type="password"
                 placeholder="••••••••"
@@ -313,7 +315,7 @@ export default function CreateWalletPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm">Confirmar contraseña</label>
+              <label className="text-sm">{t.wallet.passwordConfirm}</label>
               <Input
                 type="password"
                 placeholder="••••••••"
@@ -337,7 +339,7 @@ export default function CreateWalletPage() {
               onClick={handleFinish}
               size="lg"
             >
-              {isLoading ? 'Creando...' : 'Crear wallet'}
+              {isLoading ? t.wallet.creating : t.wallet.createBtn}
             </Button>
           </CardContent>
         </Card>

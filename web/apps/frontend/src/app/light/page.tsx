@@ -25,6 +25,7 @@ import {
   Lock,
   Unlock,
 } from 'lucide-react';
+import { useT } from '@/hooks/useLocale';
 import type { LightUTXO } from '@/lib/wallet-core';
 import type { ScannedUTXO } from '@adonai/rpc-client';
 
@@ -60,6 +61,7 @@ function clearSession() {
 
 export default function LightConnectPage() {
   const router = useRouter();
+  const t = useT();
   const { setWallet, setScanResult, setWalletId } = useLightWalletStore();
 
   // ── Tabs ──────────────────────────────────────────────────────────────────
@@ -140,7 +142,7 @@ export default function LightConnectPage() {
 
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al conectar');
+      setError(err instanceof Error ? err.message : t.common.error);
       return false;
     } finally {
       setScanning(false);
@@ -155,7 +157,7 @@ export default function LightConnectPage() {
       return;
     }
     if (savePassword !== savePasswordConfirm) {
-      setError('Las contraseñas no coinciden');
+      setError(t.light.passwordMismatch ?? 'Las contraseñas no coinciden');
       return;
     }
     setError('');
@@ -198,7 +200,7 @@ export default function LightConnectPage() {
       const ok = await connectWithMnemonic(mnemonic);
       if (ok) router.push('/light/wallet');
     } catch {
-      setUnlockError('Contraseña incorrecta');
+      setUnlockError(t.light.wrongPassword ?? 'Contraseña incorrecta');
     } finally {
       setUnlocking(false);
     }
@@ -227,10 +229,9 @@ export default function LightConnectPage() {
         <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 mx-auto">
           <Wallet size={28} className="text-primary" />
         </div>
-        <h1 className="text-2xl font-bold">Wallet ligera</h1>
+        <h1 className="text-2xl font-bold">{t.light.lightWallet}</h1>
         <p className="text-sm text-muted-foreground">
-          Accede a tu wallet sin necesidad de un nodo propio.
-          Las claves privadas <strong>nunca salen del navegador</strong>.
+          {t.light.connectFirst}
         </p>
       </div>
 
@@ -238,10 +239,7 @@ export default function LightConnectPage() {
       <Card className="border-primary/20 bg-primary/5">
         <CardContent className="py-3 px-4 flex gap-3 items-start text-xs text-muted-foreground">
           <ShieldCheck size={16} className="text-primary shrink-0 mt-0.5" />
-          <p>
-            Las palabras semilla se usan solo para derivar las claves en tu dispositivo.
-            No se envían al servidor.
-          </p>
+          <p>{t.light.securityNote}</p>
         </CardContent>
       </Card>
 
@@ -251,17 +249,17 @@ export default function LightConnectPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
               <Lock size={15} className="text-amber-500" />
-              Sesión guardada encontrada
+              {t.light.savedSession}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-xs text-muted-foreground">
-              Introduce tu contraseña para desbloquear la sesión cifrada.
+              {t.light.unlockDesc}
             </p>
             <div className="relative">
               <Input
                 type={showUnlockPassword ? 'text' : 'password'}
-                placeholder="Contraseña"
+                placeholder={t.light.passwordPlaceholder}
                 value={unlockPassword}
                 onChange={(e) => setUnlockPassword(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
@@ -293,13 +291,13 @@ export default function LightConnectPage() {
                 disabled={!unlockPassword || unlocking || scanning}
               >
                 {unlocking || scanning ? (
-                  <><Loader2 size={14} className="animate-spin" /> Desbloqueando...</>
+                  <><Loader2 size={14} className="animate-spin" /> {t.light.unlocking}</>
                 ) : (
-                  <><Unlock size={14} /> Desbloquear</>
+                  <><Unlock size={14} /> {t.light.unlock}</>
                 )}
               </Button>
               <Button variant="outline" size="sm" onClick={handleForgetSession}>
-                Olvidar sesión
+                {t.light.forgetSession}
               </Button>
             </div>
           </CardContent>
@@ -312,18 +310,17 @@ export default function LightConnectPage() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Lock size={16} />
-              Guardar sesión cifrada (opcional)
+              {t.light.saveSessionTitle}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Puedes guardar tu wallet cifrada en este dispositivo para no tener que
-              introducir las palabras cada vez. Se cifra con AES-256-GCM antes de guardarse.
+              {t.light.saveSessionDesc}
             </p>
             <div className="relative">
               <Input
                 type={showSavePassword ? 'text' : 'password'}
-                placeholder="Contraseña para cifrar (dejar vacío para omitir)"
+                placeholder={t.light.savePasswordPlaceholder}
                 value={savePassword}
                 onChange={(e) => setSavePassword(e.target.value)}
                 autoComplete="new-password"
@@ -340,7 +337,7 @@ export default function LightConnectPage() {
             {savePassword && (
               <Input
                 type={showSavePassword ? 'text' : 'password'}
-                placeholder="Confirmar contraseña"
+                placeholder={t.light.confirmPasswordPlaceholder}
                 value={savePasswordConfirm}
                 onChange={(e) => setSavePasswordConfirm(e.target.value)}
                 autoComplete="new-password"
@@ -358,11 +355,11 @@ export default function LightConnectPage() {
                 disabled={savingSession || (!!savePassword && savePassword !== savePasswordConfirm)}
               >
                 {savingSession ? (
-                  <><Loader2 size={14} className="animate-spin" /> Guardando...</>
+                  <><Loader2 size={14} className="animate-spin" /> {t.light.saving}</>
                 ) : savePassword ? (
-                  <><Lock size={14} /> Guardar y continuar</>
+                  <><Lock size={14} /> {t.light.saveAndContinue}</>
                 ) : (
-                  <><Unlock size={14} /> Continuar sin guardar</>
+                  <><Unlock size={14} /> {t.light.continueWithout}</>
                 )}
               </Button>
             </div>
@@ -385,7 +382,7 @@ export default function LightConnectPage() {
               onClick={() => { setTab('import'); setError(''); }}
             >
               <Eye size={14} />
-              Importar wallet
+              {t.light.import}
             </button>
             <button
               type="button"
@@ -397,7 +394,7 @@ export default function LightConnectPage() {
               onClick={() => { setTab('create'); setError(''); }}
             >
               <Plus size={14} />
-              Crear nueva wallet
+              {t.light.create}
             </button>
           </div>
 
@@ -407,7 +404,7 @@ export default function LightConnectPage() {
               <>
                 <textarea
                   className="w-full min-h-[120px] rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground"
-                  placeholder="palabra1 palabra2 palabra3 ... (12 o 24 palabras)"
+                  placeholder={t.light.wordsPlaceholder}
                   value={importMnemonic}
                   onChange={(e) => setImportMnemonic(e.target.value)}
                   spellCheck={false}
@@ -416,10 +413,10 @@ export default function LightConnectPage() {
                   autoCapitalize="none"
                 />
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{importWords.length} palabras</span>
+                  <span>{importWords.length} {t.light.words}</span>
                   {importWords.length >= 12 && (
                     <span className={importIsValid ? 'text-green-400' : 'text-destructive'}>
-                      {importIsValid ? '✓ Válida' : '✗ No válida'}
+                      {importIsValid ? t.light.valid : t.light.invalid}
                     </span>
                   )}
                 </div>
@@ -433,9 +430,9 @@ export default function LightConnectPage() {
                   size="lg"
                 >
                   {scanning ? (
-                    <><Loader2 size={16} className="animate-spin" /> Escaneando UTXO...</>
+                    <><Loader2 size={16} className="animate-spin" /> {t.light.scanning}</>
                   ) : (
-                    <><Wallet size={16} /> Conectar wallet</>
+                    <><Wallet size={16} /> {t.light.connectBtn}</>
                   )}
                 </Button>
               </>
@@ -445,8 +442,7 @@ export default function LightConnectPage() {
             {tab === 'create' && (
               <>
                 <p className="text-xs text-muted-foreground">
-                  Se ha generado una nueva wallet. Anota estas 24 palabras en un lugar seguro
-                  — son la <strong>única forma</strong> de recuperar tus fondos.
+                  {t.light.newWalletDesc}
                 </p>
 
                 {/* Mnemonic grid */}
@@ -473,7 +469,7 @@ export default function LightConnectPage() {
                     checked={savedChecked}
                     onChange={(e) => setSavedChecked(e.target.checked)}
                   />
-                  <span>He guardado mis palabras en un lugar seguro</span>
+                  <span>{t.light.savedWords}</span>
                 </label>
 
                 {error && (
@@ -487,9 +483,9 @@ export default function LightConnectPage() {
                   size="lg"
                 >
                   {scanning ? (
-                    <><Loader2 size={16} className="animate-spin" /> Escaneando UTXO...</>
+                    <><Loader2 size={16} className="animate-spin" /> {t.light.scanning}</>
                   ) : (
-                    <><Wallet size={16} /> Continuar</>
+                    <><Wallet size={16} /> {t.light.continueBtn}</>
                   )}
                 </Button>
               </>

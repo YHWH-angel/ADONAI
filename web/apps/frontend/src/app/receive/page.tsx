@@ -5,6 +5,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { QRCodeSVG } from 'qrcode.react';
 import { api } from '@/lib/api';
 import { useActiveWallet } from '@/hooks/useActiveWallet';
+import { useT } from '@/hooks/useLocale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,7 @@ import Link from 'next/link';
 
 export default function ReceivePage() {
   const activeWallet = useActiveWallet();
+  const t = useT();
   const [label, setLabel] = useState('');
   const [copied, setCopied] = useState(false);
   const [currentAddress, setCurrentAddress] = useState<string | null>(null);
@@ -54,9 +56,9 @@ export default function ReceivePage() {
     return (
       <div className="flex flex-col items-center gap-4 py-16 text-center">
         <AlertCircle className="h-10 w-10 text-muted-foreground" />
-        <p className="text-muted-foreground">Necesitas una wallet activa para recibir.</p>
+        <p className="text-muted-foreground">{t.receive.needWallet}</p>
         <Button asChild>
-          <Link href="/wallet/create">Crear wallet</Link>
+          <Link href="/wallet/create">{t.common.createWallet}</Link>
         </Button>
       </div>
     );
@@ -68,7 +70,7 @@ export default function ReceivePage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Download size={16} />
-            Recibir ADO
+            {t.receive.title}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
@@ -94,7 +96,7 @@ export default function ReceivePage() {
           {address && (
             <div className="space-y-2">
               <p className="text-center text-xs text-muted-foreground">
-                Tu dirección ADONAI
+                {t.receive.yourAddress}
               </p>
               <div className="flex items-center gap-2 rounded-lg bg-secondary p-3">
                 <span className="min-w-0 flex-1 break-all font-mono text-xs">
@@ -115,7 +117,7 @@ export default function ReceivePage() {
               </div>
               {copied && (
                 <p className="text-center text-xs text-green-400">
-                  Copiado al portapapeles
+                  {t.receive.copiedToClipboard}
                 </p>
               )}
             </div>
@@ -123,10 +125,10 @@ export default function ReceivePage() {
 
           {/* Label + generate new */}
           <div className="space-y-2 border-t border-border pt-4">
-            <p className="text-sm font-medium">Generar nueva dirección</p>
+            <p className="text-sm font-medium">{t.receive.newAddress}</p>
             <div className="flex gap-2">
               <Input
-                placeholder="Etiqueta (opcional)"
+                placeholder={t.receive.labelPlaceholder}
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 className="flex-1"
@@ -144,7 +146,7 @@ export default function ReceivePage() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Cada transacción debería usar una dirección nueva para mayor privacidad.
+              {t.receive.privacyNote}
             </p>
           </div>
         </CardContent>

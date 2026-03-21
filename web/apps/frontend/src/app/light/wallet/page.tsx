@@ -15,11 +15,13 @@ import {
   LogOut, Loader2, Coins, Copy, CheckCheck, Pickaxe, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useT } from '@/hooks/useLocale';
 import type { LightUTXO } from '@/lib/wallet-core';
 import type { ScannedUTXO, WalletTransaction } from '@adonai/rpc-client';
 
 export default function LightWalletPage() {
   const router = useRouter();
+  const t = useT();
   const store = useLightWalletStore();
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'utxos' | 'history'>('utxos');
@@ -92,7 +94,7 @@ export default function LightWalletPage() {
             <Wallet size={16} className="text-primary" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Wallet ligera</p>
+            <p className="text-xs text-muted-foreground">{t.light.lightWallet}</p>
             <p className="text-xs font-mono text-muted-foreground">{shortenHash(store.xpub ?? '', 8)}</p>
           </div>
         </div>
@@ -101,14 +103,14 @@ export default function LightWalletPage() {
             onClick={() => refetch()}
             disabled={isFetching}
             className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-            title="Actualizar"
+            title={t.light.refresh}
           >
             <RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} />
           </button>
           <button
             onClick={() => { store.clear(); router.push('/light'); }}
             className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-            title="Desconectar"
+            title={t.light.disconnect}
           >
             <LogOut size={14} />
           </button>
@@ -118,12 +120,12 @@ export default function LightWalletPage() {
       {/* Balance card */}
       <Card className="border-primary/20">
         <CardContent className="py-5 px-5 text-center">
-          <p className="text-xs text-muted-foreground mb-1">Saldo disponible</p>
+          <p className="text-xs text-muted-foreground mb-1">{t.light.availableBalance}</p>
           <p className="text-3xl font-bold text-primary font-mono">
             {formatAdo(store.balance)}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            {store.utxos.length} UTXO{store.utxos.length !== 1 ? 's' : ''} · bloque {store.blockHeight.toLocaleString()}
+            {store.utxos.length} UTXO{store.utxos.length !== 1 ? 's' : ''} · {t.light.blockLabel} {store.blockHeight.toLocaleString()}
           </p>
         </CardContent>
       </Card>
@@ -133,13 +135,13 @@ export default function LightWalletPage() {
         <Button asChild size="lg" className="w-full">
           <Link href="/light/send">
             <Send size={16} />
-            Enviar
+            {t.common.send}
           </Link>
         </Button>
         <Button asChild variant="outline" size="lg" className="w-full">
           <Link href="/light/receive">
             <Download size={16} />
-            Recibir
+            {t.common.receive}
           </Link>
         </Button>
       </div>
@@ -148,7 +150,7 @@ export default function LightWalletPage() {
       {receiveAddress && (
         <Card>
           <CardContent className="py-3 px-4">
-            <p className="text-xs text-muted-foreground mb-1.5">Tu dirección de recepción</p>
+            <p className="text-xs text-muted-foreground mb-1.5">{t.light.receiveAddress}</p>
             <div className="flex items-center gap-2">
               <span className="font-mono text-[11px] break-all flex-1">{receiveAddress}</span>
               <button
@@ -186,7 +188,7 @@ export default function LightWalletPage() {
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >
-          Historial
+          {t.light.historyLabel}
         </button>
       </div>
 
@@ -205,7 +207,7 @@ export default function LightWalletPage() {
                       <p className="font-mono text-[11px] text-muted-foreground truncate">
                         {shortenHash(u.txid, 6)}:{u.vout}
                         <span className="ml-1.5 text-[10px] text-muted-foreground/60">
-                          {u.isChange ? 'cambio' : `recibido`} #{u.index}
+                          {u.isChange ? t.light.change : t.light.received} #{u.index}
                         </span>
                       </p>
                     </div>
@@ -219,8 +221,8 @@ export default function LightWalletPage() {
           ) : (
             <div className="py-10 text-center">
               <ArrowUpRight className="mx-auto h-10 w-10 text-muted-foreground/30 mb-3" />
-              <p className="text-sm text-muted-foreground">No hay fondos en esta wallet</p>
-              <p className="text-xs text-muted-foreground mt-1">Las 200 primeras direcciones han sido escaneadas</p>
+              <p className="text-sm text-muted-foreground">{t.light.noFunds}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t.light.scanned}</p>
             </div>
           )}
         </>
@@ -232,8 +234,8 @@ export default function LightWalletPage() {
           {!store.walletId ? (
             <div className="py-8 text-center">
               <Loader2 className="mx-auto h-8 w-8 text-muted-foreground/40 animate-spin mb-3" />
-              <p className="text-sm text-muted-foreground">Cargando historial...</p>
-              <p className="text-xs text-muted-foreground mt-1">El nodo está indexando las transacciones</p>
+              <p className="text-sm text-muted-foreground">{t.light.loadingHistory}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t.light.historyIndexing}</p>
             </div>
           ) : txLoading ? (
             <div className="flex justify-center py-12">
@@ -241,9 +243,9 @@ export default function LightWalletPage() {
             </div>
           ) : !txData || txData.transactions.length === 0 ? (
             <div className="py-10 text-center">
-              <p className="text-sm text-muted-foreground">No hay transacciones en el historial</p>
+              <p className="text-sm text-muted-foreground">{t.light.noHistory}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                El nodo puede estar rescaneando la cadena. Esto puede tardar unos minutos.
+                {t.light.historyRescan}
               </p>
             </div>
           ) : (
@@ -262,6 +264,7 @@ export default function LightWalletPage() {
 function LightTxCard({ tx }: { tx: WalletTransaction }) {
   const [expanded, setExpanded] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const t = useT();
 
   const isReceive = tx.amount > 0;
   const isMining = tx.category === 'generate' || tx.category === 'immature';
@@ -275,10 +278,10 @@ function LightTxCard({ tx }: { tx: WalletTransaction }) {
     : <ArrowUpRight size={14} className="text-red-400" />;
 
   const label = isMining
-    ? 'Recompensa minería'
+    ? t.light.miningReward
     : isReceive
-    ? 'Recibido'
-    : 'Enviado';
+    ? t.transactions.receive
+    : t.transactions.send;
 
   async function handleCopy(text: string, field: string) {
     await copyToClipboard(text);
@@ -313,7 +316,7 @@ function LightTxCard({ tx }: { tx: WalletTransaction }) {
               onClick={() => setExpanded((v) => !v)}
               className="flex items-center gap-0.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
             >
-              {expanded ? 'Ocultar' : 'Detalles'}
+              {expanded ? t.transactions.hideDetails : t.transactions.details}
               {expanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
             </button>
           </div>
@@ -332,7 +335,7 @@ function LightTxCard({ tx }: { tx: WalletTransaction }) {
             {/* Address */}
             {tx.address && (
               <LightDetailRow
-                label="Dirección"
+                label={t.common.address}
                 value={tx.address}
                 onCopy={() => handleCopy(tx.address!, 'address')}
                 copied={copiedField === 'address'}
@@ -341,19 +344,19 @@ function LightTxCard({ tx }: { tx: WalletTransaction }) {
             {/* Block height */}
             {tx.blockheight && (
               <div className="flex items-start justify-between gap-2 text-xs">
-                <span className="text-muted-foreground shrink-0">Bloque</span>
+                <span className="text-muted-foreground shrink-0">{t.common.block}</span>
                 <span className="font-mono text-right">#{tx.blockheight.toLocaleString()}</span>
               </div>
             )}
             {/* Confirmations */}
             <div className="flex items-start justify-between gap-2 text-xs">
-              <span className="text-muted-foreground shrink-0">Confirmaciones</span>
+              <span className="text-muted-foreground shrink-0">{t.common.confirmations}</span>
               <span className="font-mono text-right">{tx.confirmations}</span>
             </div>
             {/* Fee */}
             {tx.fee !== undefined && tx.fee !== 0 && (
               <div className="flex items-start justify-between gap-2 text-xs">
-                <span className="text-muted-foreground shrink-0">Comisión</span>
+                <span className="text-muted-foreground shrink-0">{t.common.fee}</span>
                 <span className="font-mono text-right text-red-400">{formatAdo(Math.abs(tx.fee))}</span>
               </div>
             )}
@@ -372,6 +375,7 @@ function LightDetailRow({
   onCopy: () => void;
   copied: boolean;
 }) {
+  const t = useT();
   return (
     <div className="flex items-start justify-between gap-2 text-xs">
       <span className="text-muted-foreground shrink-0">{label}</span>
@@ -380,7 +384,7 @@ function LightDetailRow({
         <button
           onClick={onCopy}
           className="shrink-0 rounded p-0.5 hover:bg-secondary transition-colors"
-          title="Copiar"
+          title={t.common.copy}
         >
           {copied
             ? <CheckCheck size={12} className="text-green-400" />

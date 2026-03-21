@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { useActiveWallet } from '@/hooks/useActiveWallet';
+import { useT } from '@/hooks/useLocale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,7 @@ import Link from 'next/link';
 export default function SendPage() {
   const activeWallet = useActiveWallet();
   const queryClient = useQueryClient();
+  const t = useT();
 
   const [address, setAddress] = useState('');
   const [amount, setAmount] = useState('');
@@ -50,9 +52,9 @@ export default function SendPage() {
     return (
       <div className="flex flex-col items-center gap-4 py-16 text-center">
         <AlertCircle className="h-10 w-10 text-muted-foreground" />
-        <p className="text-muted-foreground">Necesitas una wallet activa para enviar.</p>
+        <p className="text-muted-foreground">{t.send.needWallet}</p>
         <Button asChild>
-          <Link href="/wallet/create">Crear wallet</Link>
+          <Link href="/wallet/create">{t.common.createWallet}</Link>
         </Button>
       </div>
     );
@@ -75,7 +77,7 @@ export default function SendPage() {
     return (
       <div className="flex flex-col items-center gap-4 py-16 text-center">
         <CheckCircle2 className="h-14 w-14 text-green-400" />
-        <h2 className="text-xl font-bold">Transacción enviada</h2>
+        <h2 className="text-xl font-bold">{t.send.success}</h2>
         <p className="font-mono text-xs text-muted-foreground break-all px-4">
           {sendMutation.data.txid}
         </p>
@@ -88,10 +90,10 @@ export default function SendPage() {
               setAmount('');
             }}
           >
-            Nueva transacción
+            {t.send.newTx}
           </Button>
           <Button asChild>
-            <Link href="/">Volver al inicio</Link>
+            <Link href="/">{t.send.backHome}</Link>
           </Button>
         </div>
       </div>
@@ -103,7 +105,7 @@ export default function SendPage() {
       {/* Balance disponible */}
       <Card className="border-primary/20">
         <CardContent className="py-3 px-5">
-          <p className="text-xs text-muted-foreground">Saldo disponible</p>
+          <p className="text-xs text-muted-foreground">{t.send.availableBalance}</p>
           <p className="text-2xl font-bold text-primary">
             {formatAdo(balance)}
           </p>
@@ -115,15 +117,15 @@ export default function SendPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Send size={16} />
-            Enviar ADO
+            {t.send.title}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Dirección */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Dirección destino</label>
+            <label className="text-sm font-medium">{t.send.destination}</label>
             <Input
-              placeholder="ad1q... o A..."
+              placeholder={t.send.destinationPlaceholder}
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               className={
@@ -135,19 +137,19 @@ export default function SendPage() {
               }
             />
             {address.length > 10 && !isValidAddress && (
-              <p className="text-xs text-destructive">Dirección no válida</p>
+              <p className="text-xs text-destructive">{t.send.invalidAddress}</p>
             )}
           </div>
 
           {/* Cantidad */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Cantidad (ADO)</label>
+              <label className="text-sm font-medium">{t.send.amountLabel}</label>
               <button
                 className="text-xs text-primary"
                 onClick={() => setAmount(balance.toString())}
               >
-                Máximo
+                {t.send.max}
               </button>
             </div>
             <Input
@@ -162,7 +164,7 @@ export default function SendPage() {
               }
             />
             {amount && !isNaN(amountNum) && amountNum > balance && (
-              <p className="text-xs text-destructive">Saldo insuficiente</p>
+              <p className="text-xs text-destructive">{t.send.insufficientFunds}</p>
             )}
           </div>
 
@@ -170,19 +172,19 @@ export default function SendPage() {
           {model && (
             <div className="rounded-lg bg-secondary/50 p-3 text-xs text-muted-foreground space-y-1.5">
               <div className="flex justify-between">
-                <span>Comisión estimada</span>
+                <span>{t.send.estimatedFee}</span>
                 <span className="font-mono text-foreground">
                   ~{estimatedFee?.toFixed(8) ?? '—'} ADO
                 </span>
               </div>
               <div className="flex justify-between items-center text-[10px]">
                 <div className="flex items-center gap-1">
-                  <span>Modelo: α×peso + β×valor</span>
+                  <span>{t.send.feeModel}</span>
                   <button
                     type="button"
                     onClick={() => setShowFeeInfo((v) => !v)}
                     className="rounded-full p-0.5 text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label="Explicación del modelo de comisión"
+                    aria-label={t.send.feeExplainTitle}
                   >
                     <HelpCircle size={13} />
                   </button>
@@ -191,13 +193,13 @@ export default function SendPage() {
               </div>
               {showFeeInfo && (
                 <div className="mt-1 rounded-lg border border-border bg-card p-3 text-xs text-foreground space-y-1.5">
-                  <p className="font-semibold text-primary">¿Cómo se calcula la comisión?</p>
-                  <p>La comisión tiene dos partes:</p>
+                  <p className="font-semibold text-primary">{t.send.feeExplainTitle}</p>
+                  <p>{t.send.feeExplainBody}</p>
                   <div className="space-y-1">
-                    <p><span className="font-mono font-bold text-yellow-400">α × peso</span> — tarifa por el tamaño de la transacción. Una transacción típica pesa ~0.14 kB.</p>
-                    <p><span className="font-mono font-bold text-yellow-400">β × valor</span> — tarifa proporcional al importe enviado. Incentiva la seguridad en envíos grandes.</p>
+                    <p><span className="font-mono font-bold text-yellow-400">α × peso</span> — {t.send.feeExplainAlpha}</p>
+                    <p><span className="font-mono font-bold text-yellow-400">β × valor</span> — {t.send.feeExplainBeta}</p>
                   </div>
-                  <p className="text-muted-foreground border-t border-border pt-1.5">Ejemplo: enviar 5 ADO → α×0.141 + β×5 ≈ 0.0000251 ADO de comisión.</p>
+                  <p className="text-muted-foreground border-t border-border pt-1.5">{t.send.feeExplainExample}</p>
                 </div>
               )}
               <div className="flex items-center gap-2 pt-0.5">
@@ -209,7 +211,7 @@ export default function SendPage() {
                   className="accent-primary"
                 />
                 <label htmlFor="subtract-fee">
-                  Descontar comisión del importe enviado
+                  {t.send.subtractFee}
                 </label>
               </div>
             </div>
@@ -219,7 +221,7 @@ export default function SendPage() {
           {sendMutation.isError && (
             <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
               <AlertCircle size={14} />
-              {sendMutation.error?.message ?? 'Error al enviar'}
+              {sendMutation.error?.message ?? t.send.sendError}
             </div>
           )}
 
@@ -234,7 +236,7 @@ export default function SendPage() {
             ) : (
               <Send size={16} />
             )}
-            {sendMutation.isPending ? 'Enviando...' : 'Confirmar envío'}
+            {sendMutation.isPending ? t.send.sending : t.send.confirm}
           </Button>
         </CardContent>
       </Card>

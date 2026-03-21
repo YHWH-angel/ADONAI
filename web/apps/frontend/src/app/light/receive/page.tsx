@@ -9,9 +9,11 @@ import { Button } from '@/components/ui/button';
 import { QRCodeSVG } from 'qrcode.react';
 import { Copy, CheckCheck, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import { useT } from '@/hooks/useLocale';
 
 export default function LightReceivePage() {
   const router = useRouter();
+  const t = useT();
   const store = useLightWalletStore();
   const [index, setIndex] = useState(store.receiveIndex);
   const [copied, setCopied] = useState(false);
@@ -33,11 +35,11 @@ export default function LightReceivePage() {
     <div className="space-y-4 py-4 max-w-sm mx-auto">
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/light/wallet"><ArrowLeft size={14} /> Volver</Link>
+          <Link href="/light/wallet"><ArrowLeft size={14} /> {t.light.back}</Link>
         </Button>
       </div>
 
-      <h1 className="text-xl font-bold">Recibir ADO</h1>
+      <h1 className="text-xl font-bold">{t.receive.title}</h1>
 
       <Card>
         <CardContent className="py-5 flex flex-col items-center gap-4">
@@ -46,7 +48,7 @@ export default function LightReceivePage() {
           </div>
 
           <div className="w-full space-y-1.5">
-            <p className="text-xs text-muted-foreground text-center">Dirección #{index}</p>
+            <p className="text-xs text-muted-foreground text-center">{t.light.addressIndex}{index}</p>
             <div className="flex items-center gap-2 rounded-lg bg-secondary/50 p-2.5">
               <span className="font-mono text-[11px] break-all flex-1">{address}</span>
               <button
@@ -67,19 +69,19 @@ export default function LightReceivePage() {
               disabled={index === 0}
               onClick={() => setIndex((i) => i - 1)}
             >
-              <ChevronLeft size={14} /> Anterior
+              <ChevronLeft size={14} /> {t.transactions.prev}
             </Button>
             <span className="text-xs text-muted-foreground">#{index}</span>
             <Button
               variant="outline" size="sm"
               onClick={() => setIndex((i) => i + 1)}
             >
-              Siguiente <ChevronRight size={14} />
+              {t.transactions.next} <ChevronRight size={14} />
             </Button>
           </div>
 
           <p className="text-xs text-muted-foreground text-center">
-            Cada transacción debería usar una dirección distinta para mayor privacidad.
+            {t.light.privacyNote}
           </p>
         </CardContent>
       </Card>
