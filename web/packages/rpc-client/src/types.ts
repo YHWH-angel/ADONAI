@@ -280,3 +280,24 @@ export interface LoadWalletResult {
   name: string;
   warning?: string;
 }
+
+// ─── Light Wallet / scantxoutset ─────────────────────────────────────────────
+
+export interface ScannedUTXO {
+  txid: string;
+  vout: number;
+  scriptPubKey: string;
+  desc: string;       // e.g. "wpkh(xpub.../0/5)#checksum"
+  amount: number;     // ADO
+  coinbase: boolean;
+  height: number;
+}
+
+export interface ScantxoutsetResult {
+  success: boolean;
+  txouts: number;
+  height: number;
+  bestblock: string;
+  unspents: ScannedUTXO[];
+  total_amount: number;
+}

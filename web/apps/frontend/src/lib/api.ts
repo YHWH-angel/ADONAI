@@ -41,6 +41,7 @@ export const api = {
       info: import('@adonai/rpc-client').WalletInfo;
       balance: number;
       unconfirmed: number;
+      resolvedWallet?: string;
     }>(`/wallet/${encodeURIComponent(walletName)}/info`),
 
   newAddress: (walletName: string, label?: string) =>
@@ -120,4 +121,22 @@ export const api = {
 
   getPeers: () =>
     apiFetch<{ peers: import('@adonai/rpc-client').PeerInfo[]; count: number }>('/network/peers'),
+
+  // Light wallet
+  lightScan: (xpub: string) =>
+    apiFetch<{
+      balance: number;
+      utxos: import('@adonai/rpc-client').ScannedUTXO[];
+      height: number;
+      bestblock: string;
+    }>('/light/scan', {
+      method: 'POST',
+      body: JSON.stringify({ xpub }),
+    }),
+
+  lightBroadcast: (hex: string) =>
+    apiFetch<{ txid: string }>('/light/broadcast', {
+      method: 'POST',
+      body: JSON.stringify({ hex }),
+    }),
 };

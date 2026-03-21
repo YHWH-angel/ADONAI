@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Send, Download, List, Pickaxe, HelpCircle } from 'lucide-react';
+import { Home, Send, Download, List, Pickaxe, HelpCircle, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useT } from '@/hooks/useLocale';
 import { LangSwitcher } from './LangSwitcher';
@@ -17,6 +17,7 @@ export function MobileNav() {
     { href: '/receive', icon: Download, label: t.nav.receive },
     { href: '/transactions', icon: List, label: t.nav.transactions },
     { href: '/mining', icon: Pickaxe, label: t.nav.mining },
+    { href: '/light', icon: Zap, label: t.nav.lightWallet },
     { href: '/help', icon: HelpCircle, label: t.nav.help },
   ];
 
@@ -28,7 +29,7 @@ export function MobileNav() {
       </div>
       <div className="flex">
         {items.map(({ href, icon: Icon, label }) => {
-          const active = pathname === href;
+          const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
           return (
             <Link
               key={href}

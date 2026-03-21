@@ -19,4 +19,6 @@ export type {
   SendToAddressOptions,
   CreateWalletResult,
   LoadWalletResult,
+  ScannedUTXO,
+  ScantxoutsetResult,
 } from './types';

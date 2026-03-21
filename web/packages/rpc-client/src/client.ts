@@ -18,6 +18,7 @@ import type {
   SendToAddressOptions,
   CreateWalletResult,
   LoadWalletResult,
+  ScantxoutsetResult,
 } from './types';
 
 export class AdonaiRpcClient {
@@ -288,6 +289,15 @@ export class AdonaiRpcClient {
 
   estimateSmartFee(confTarget: number): Promise<FeeEstimate> {
     return this.call('estimatesmartfee', [confTarget]);
+  }
+
+  // ─── Light Wallet ────────────────────────────────────────────────────────────
+
+  scantxoutset(
+    action: 'start' | 'abort' | 'status',
+    scanobjects: Array<{ desc: string; range?: number | [number, number] }>
+  ): Promise<ScantxoutsetResult> {
+    return this.call('scantxoutset', [action, scanobjects]);
   }
 
   // ─── Utility ─────────────────────────────────────────────────────────────────

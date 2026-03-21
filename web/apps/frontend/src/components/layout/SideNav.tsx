@@ -11,7 +11,7 @@ import { cn, formatAdo } from '@/lib/utils';
 import { LangSwitcher } from './LangSwitcher';
 import {
   Home, Send, Download, List, Pickaxe, Settings,
-  Wifi, WifiOff, Loader2, Wallet, ChevronRight, HelpCircle,
+  Wifi, WifiOff, Loader2, Wallet, ChevronRight, HelpCircle, Zap,
 } from 'lucide-react';
 
 export function SideNav() {
@@ -26,6 +26,7 @@ export function SideNav() {
     { href: '/receive', icon: Download, label: t.nav.receive },
     { href: '/transactions', icon: List, label: t.nav.transactions },
     { href: '/mining', icon: Pickaxe, label: t.nav.mining },
+    { href: '/light', icon: Zap, label: t.nav.lightWallet },
     { href: '/help', icon: HelpCircle, label: t.nav.help },
     { href: '/settings', icon: Settings, label: t.nav.settings },
   ];
@@ -91,7 +92,7 @@ export function SideNav() {
       {/* Navigation */}
       <nav className="flex-1 space-y-0.5 px-3 pt-4 overflow-y-auto">
         {navItems.map(({ href, icon: Icon, label }) => {
-          const active = pathname === href;
+          const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
           return (
             <Link
               key={href}
