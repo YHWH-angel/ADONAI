@@ -10,14 +10,7 @@ import { walletRoutes } from './routes/wallet.js';
 import { networkRoutes } from './routes/network.js';
 import { setupWebSocket } from './websocket.js';
 
-const fastify = Fastify({
-  logger: {
-    transport: {
-      target: 'pino-pretty',
-      options: { colorize: true },
-    },
-  },
-});
+const fastify = Fastify({ logger: true });
 
 const rpc = new AdonaiRpcClient(config.rpc);
 
