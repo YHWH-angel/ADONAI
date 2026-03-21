@@ -97,7 +97,9 @@ include(CMakeDependentOption)
 # When adding a new option, end the <help_text> with a full stop for consistency.
 option(BUILD_ADONAI_BIN "Build adonai executable." ON)
 option(BUILD_DAEMON "Build adonaid executable." ON)
-option(BUILD_GUI "Build adonai-qt executable." OFF)
+# Qt GUI is deprecated. ADONAI ships a web application instead (see web/).
+# See web/apps/frontend for the Next.js PWA and web/apps/api for the Fastify bridge.
+option(BUILD_GUI "Build adonai-qt executable (deprecated, use web app)." OFF)
 option(BUILD_CLI "Build adonai-cli executable." ON)
 
 option(BUILD_TESTS "Build test_adonai and other unit test executables." ON)
