@@ -179,15 +179,14 @@ export default function SendPage() {
                   <span>Modelo: α×peso + β×valor</span>
                   <div className="relative group/fee">
                     <HelpCircle size={11} className="text-muted-foreground cursor-help" />
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 hidden group-hover/fee:block w-64 rounded-lg border border-border bg-popover p-3 text-[11px] text-popover-foreground shadow-lg leading-relaxed">
+                    <div className="absolute bottom-full left-0 mb-2 z-50 hidden group-hover/fee:block w-64 rounded-lg border border-border bg-popover p-3 text-[11px] text-popover-foreground shadow-xl leading-relaxed">
                       <p className="font-semibold mb-1.5">¿Cómo se calcula la comisión?</p>
                       <p className="mb-1">La comisión tiene dos partes:</p>
-                      <ul className="space-y-1 mb-2">
+                      <ul className="space-y-1 mb-2 list-disc pl-3">
                         <li><span className="font-mono font-bold">α × peso</span> — tarifa por tamaño de la transacción (en kilobytes). Una tx típica pesa ~0.14 kB.</li>
                         <li><span className="font-mono font-bold">β × valor</span> — tarifa proporcional al importe enviado. Incentiva la seguridad de transacciones grandes.</li>
                       </ul>
-                      <p className="text-muted-foreground">Ejemplo: enviar 5 ADO → α×0.141 + β×5 ≈ 0.0000251 ADO de comisión.</p>
-                      <div className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-border" />
+                      <p className="text-popover-foreground/70">Ejemplo: enviar 5 ADO → α×0.141 + β×5 ≈ 0.0000251 ADO de comisión.</p>
                     </div>
                   </div>
                 </div>

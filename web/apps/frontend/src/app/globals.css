@@ -21,6 +21,8 @@
     --border: 222 30% 20%;
     --input: 222 30% 18%;
     --ring: 38 95% 55%;
+    --popover: 222 47% 12%;
+    --popover-foreground: 210 40% 90%;
     --radius: 0.75rem;
     --font-sans: 'Inter', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', 'Fira Code', monospace;

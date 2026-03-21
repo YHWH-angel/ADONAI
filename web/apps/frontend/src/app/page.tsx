@@ -353,7 +353,7 @@ function StatCard({
   }[color];
 
   return (
-    <Card className="overflow-hidden">
+    <Card>
       <CardContent className="p-4">
         <div className={`inline-flex rounded-lg p-2 mb-3 ${bg}`}>
           {icon}
@@ -363,7 +363,7 @@ function StatCard({
           {tooltip && (
             <div className="relative group/tip">
               <span className="cursor-help text-muted-foreground/50 hover:text-muted-foreground transition-colors text-[10px] leading-none">?</span>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/tip:block w-48 rounded-lg bg-popover border border-border text-xs p-2 text-muted-foreground z-10 shadow-lg">
+              <div className="absolute bottom-full left-0 mb-1 hidden group-hover/tip:block w-52 rounded-lg bg-popover border border-border text-xs p-2.5 text-popover-foreground z-50 shadow-xl">
                 {tooltip}
               </div>
             </div>
