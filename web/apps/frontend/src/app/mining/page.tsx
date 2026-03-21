@@ -1,17 +1,20 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { useWalletStore } from '@/store/wallet';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatAdo, formatDate, formatRelativeTime } from '@/lib/utils';
-import { Pickaxe, TrendingUp, Clock, Coins, AlertCircle } from 'lucide-react';
+import { Pickaxe, TrendingUp, Clock, Coins, AlertCircle, Play, Square, Zap } from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function MiningPage() {
   const { activeWallet } = useWalletStore();
+  const queryClient = useQueryClient();
+  const [mineError, setMineError] = useState<string | null>(null);
 
   const { data: rewards, isLoading } = useQuery({
     queryKey: ['mining-rewards', activeWallet],
@@ -24,6 +27,44 @@ export default function MiningPage() {
     queryKey: ['blockchain-stats'],
     queryFn: api.getStats,
     refetchInterval: 30_000,
+  });
+
+  const { data: minerStatus, refetch: refetchStatus } = useQuery({
+    queryKey: ['miner-status'],
+    queryFn: api.getMiningStatus,
+    refetchInterval: 3_000,
+  });
+
+  const startMutation = useMutation({
+    mutationFn: () => api.startMining(activeWallet!),
+    onSuccess: () => {
+      setMineError(null);
+      refetchStatus();
+    },
+    onError: (e: Error) => setMineError(e.message),
+  });
+
+  const stopMutation = useMutation({
+    mutationFn: api.stopMining,
+    onSuccess: () => {
+      refetchStatus();
+      queryClient.invalidateQueries({ queryKey: ['mining-rewards', activeWallet] });
+      queryClient.invalidateQueries({ queryKey: ['blockchain-stats'] });
+    },
+  });
+
+  const mineOneMutation = useMutation({
+    mutationFn: () => api.mineBlocks(activeWallet!, 1),
+    onSuccess: (data) => {
+      setMineError(null);
+      if (data.hashes.length === 0) {
+        setMineError('No se encontró bloque con los intentos disponibles. Intenta de nuevo.');
+      }
+      queryClient.invalidateQueries({ queryKey: ['mining-rewards', activeWallet] });
+      queryClient.invalidateQueries({ queryKey: ['blockchain-stats'] });
+      refetchStatus();
+    },
+    onError: (e: Error) => setMineError(e.message),
   });
 
   const miningInfo = stats?.mining;
@@ -46,9 +87,79 @@ export default function MiningPage() {
     rewards?.rewards.filter((r) => r.category === 'immature') ?? [];
   const immatureTotal = immatureRewards.reduce((s, r) => s + r.amount, 0);
   const confirmedTotal = confirmedRewards.reduce((s, r) => s + r.amount, 0);
+  const isMining = minerStatus?.active ?? false;
 
   return (
     <div className="space-y-4 py-4">
+      {/* Mining Control */}
+      <Card className={isMining ? 'border-green-500/40 bg-gradient-to-br from-card to-green-500/5' : ''}>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <Pickaxe size={14} className={isMining ? 'text-green-400 animate-pulse' : ''} />
+            Control de Minado
+            {isMining && (
+              <Badge variant="success" className="text-[9px]">ACTIVO</Badge>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {isMining && minerStatus && (
+            <div className="rounded-lg bg-green-500/10 p-3 text-xs space-y-1">
+              <p className="text-green-400 font-medium">Minando en progreso...</p>
+              <p className="text-muted-foreground truncate">Dirección: {minerStatus.address}</p>
+              <p className="text-muted-foreground">
+                Bloques encontrados: <span className="text-green-400 font-bold">{minerStatus.blocksFound}</span>
+              </p>
+              {minerStatus.startedAt && (
+                <p className="text-muted-foreground">
+                  Iniciado: {formatRelativeTime(Math.floor(minerStatus.startedAt / 1000))}
+                </p>
+              )}
+            </div>
+          )}
+
+          {mineError && (
+            <p className="rounded-lg bg-destructive/10 p-2 text-xs text-destructive">{mineError}</p>
+          )}
+
+          <div className="flex gap-2">
+            {!isMining ? (
+              <Button
+                className="flex-1 gap-2"
+                onClick={() => startMutation.mutate()}
+                disabled={startMutation.isPending}
+              >
+                <Play size={14} />
+                {startMutation.isPending ? 'Iniciando...' : 'Iniciar Minado Continuo'}
+              </Button>
+            ) : (
+              <Button
+                variant="destructive"
+                className="flex-1 gap-2"
+                onClick={() => stopMutation.mutate()}
+                disabled={stopMutation.isPending}
+              >
+                <Square size={14} />
+                {stopMutation.isPending ? 'Deteniendo...' : 'Detener Minado'}
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={() => mineOneMutation.mutate()}
+              disabled={mineOneMutation.isPending || isMining}
+              title="Minar un bloque (puede tardar varios minutos)"
+            >
+              <Zap size={14} />
+              {mineOneMutation.isPending ? 'Minando...' : '1 Bloque'}
+            </Button>
+          </div>
+          <p className="text-[10px] text-muted-foreground text-center">
+            El minado CPU puede tardar varios minutos por bloque
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Network Mining Stats */}
       {miningInfo && (
         <Card>
@@ -91,7 +202,7 @@ export default function MiningPage() {
       <Card className="border-yellow-500/20 bg-gradient-to-br from-card to-yellow-500/5">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-sm">
-            <Pickaxe size={14} className="text-yellow-400" />
+            <Coins size={14} className="text-yellow-400" />
             Mis recompensas
           </CardTitle>
         </CardHeader>

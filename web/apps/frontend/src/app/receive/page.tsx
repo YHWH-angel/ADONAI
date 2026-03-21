@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { QRCodeSVG } from 'qrcode.react';
 import { api } from '@/lib/api';
-import { useWalletStore } from '@/store/wallet';
+import { useActiveWallet } from '@/hooks/useActiveWallet';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,7 @@ import { Copy, RefreshCw, CheckCheck, Download, AlertCircle } from 'lucide-react
 import Link from 'next/link';
 
 export default function ReceivePage() {
-  const { activeWallet } = useWalletStore();
+  const activeWallet = useActiveWallet();
   const [label, setLabel] = useState('');
   const [copied, setCopied] = useState(false);
   const [currentAddress, setCurrentAddress] = useState<string | null>(null);

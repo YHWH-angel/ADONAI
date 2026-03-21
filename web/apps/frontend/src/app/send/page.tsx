@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { useWalletStore } from '@/store/wallet';
+import { useActiveWallet } from '@/hooks/useActiveWallet';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,7 @@ import { Send, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SendPage() {
-  const { activeWallet } = useWalletStore();
+  const activeWallet = useActiveWallet();
   const queryClient = useQueryClient();
 
   const [address, setAddress] = useState('');
@@ -63,6 +63,12 @@ export default function SendPage() {
   const isValidAmount =
     !isNaN(amountNum) && amountNum > 0 && amountNum <= balance;
   const canSend = isValidAddress && isValidAmount && !sendMutation.isPending;
+
+  // Estimate fee using hybrid model: α×weight + β×value (typical tx ~141 vB = 0.141 kvB)
+  const model = feeData?.model;
+  const estimatedFee = model
+    ? Math.max(model.min, model.alpha * 0.141 + model.beta * (isNaN(amountNum) ? 0 : amountNum))
+    : null;
 
   if (sendMutation.isSuccess) {
     return (
@@ -160,15 +166,19 @@ export default function SendPage() {
           </div>
 
           {/* Comisión estimada */}
-          {feeData && (
-            <div className="rounded-lg bg-secondary/50 p-3 text-xs text-muted-foreground">
+          {model && (
+            <div className="rounded-lg bg-secondary/50 p-3 text-xs text-muted-foreground space-y-1.5">
               <div className="flex justify-between">
                 <span>Comisión estimada</span>
-                <span className="font-mono">
-                  ~{feeData.estimate.feerate?.toFixed(8) ?? '—'} ADO/kvB
+                <span className="font-mono text-foreground">
+                  ~{estimatedFee?.toFixed(8) ?? '—'} ADO
                 </span>
               </div>
-              <div className="mt-1 flex items-center gap-2">
+              <div className="flex justify-between text-[10px]">
+                <span>Modelo: α×peso + β×valor</span>
+                <span className="font-mono">α={model.alpha} · β={model.beta}</span>
+              </div>
+              <div className="flex items-center gap-2 pt-0.5">
                 <input
                   type="checkbox"
                   id="subtract-fee"

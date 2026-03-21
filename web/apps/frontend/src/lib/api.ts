@@ -86,6 +86,34 @@ export const api = {
       model: import('@adonai/rpc-client').FeeModel;
     }>(`/wallet/fee-estimate?blocks=${blocks}`),
 
+  // Mining control
+  getMiningStatus: () =>
+    apiFetch<{
+      active: boolean;
+      address: string | null;
+      startedAt: number | null;
+      blocksFound: number;
+      lastBlock: string | null;
+    }>('/mining/status'),
+
+  startMining: (walletName: string, address?: string) =>
+    apiFetch<{ started: boolean; address: string }>('/mining/start', {
+      method: 'POST',
+      body: JSON.stringify({ walletName, address }),
+    }),
+
+  stopMining: () =>
+    apiFetch<{ stopped: boolean; blocksFound: number }>('/mining/stop', {
+      method: 'POST',
+      body: '{}',
+    }),
+
+  mineBlocks: (walletName: string, blocks = 1) =>
+    apiFetch<{ hashes: string[]; address: string; blocksRequested: number }>('/mining/mine-blocks', {
+      method: 'POST',
+      body: JSON.stringify({ walletName, blocks }),
+    }),
+
   // Network
   getNetworkInfo: () =>
     apiFetch<import('@adonai/rpc-client').NetworkInfo>('/network/info'),

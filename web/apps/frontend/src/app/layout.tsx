@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Providers } from '@/components/layout/Providers';
-import { TopBar } from '@/components/layout/TopBar';
-import { BottomNav } from '@/components/layout/BottomNav';
+import { SideNav } from '@/components/layout/SideNav';
 
 export const metadata: Metadata = {
   title: 'ADONAI Wallet',
@@ -31,11 +30,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen antialiased">
         <Providers>
-          <TopBar />
-          <main className="mx-auto max-w-lg px-4 pb-24 pt-16">
-            {children}
+          <SideNav />
+          <main className="ml-56 min-h-screen p-6">
+            <div className="mx-auto max-w-3xl">
+              {children}
+            </div>
           </main>
-          <BottomNav />
         </Providers>
       </body>
     </html>

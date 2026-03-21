@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { useWalletStore } from '@/store/wallet';
+import { useActiveWallet } from '@/hooks/useActiveWallet';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,7 @@ import Link from 'next/link';
 const PAGE_SIZE = 20;
 
 export default function TransactionsPage() {
-  const { activeWallet } = useWalletStore();
+  const activeWallet = useActiveWallet();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [filter, setFilter] = useState<'all' | 'send' | 'receive' | 'generate'>('all');
