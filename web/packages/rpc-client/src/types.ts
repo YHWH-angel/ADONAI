@@ -38,7 +38,7 @@ export interface BlockchainInfo {
   verificationprogress: number;
   chainwork: string;
   pruned: boolean;
-  warnings: string;
+  warnings: string | string[];
 }
 
 export interface Block {
@@ -119,9 +119,6 @@ export interface WalletInfo {
   walletname: string;
   walletversion: number;
   format: string;
-  balance: number;
-  unconfirmed_balance: number;
-  immature_balance: number;
   txcount: number;
   keypoolsize: number;
   keypoolsize_hd_internal: number;
@@ -133,6 +130,8 @@ export interface WalletInfo {
   scanning: boolean | { duration: number; progress: number };
   descriptors: boolean;
   external_signer: boolean;
+  blank?: boolean;
+  birthtime?: number;
 }
 
 export interface WalletTransaction {
@@ -200,13 +199,16 @@ export interface UnspentOutput {
 
 export interface MiningInfo {
   blocks: number;
-  currentblockweight: number;
-  currentblocktx: number;
+  currentblockweight?: number;
+  currentblocktx?: number;
+  bits?: string;
+  target?: string;
   difficulty: number;
   networkhashps: number;
   pooledtx: number;
   chain: string;
-  warnings: string;
+  next?: { height: number; bits: string; difficulty: number; target: string };
+  warnings: string | string[];
 }
 
 // ─── Network Types ────────────────────────────────────────────────────────────
@@ -225,7 +227,7 @@ export interface NetworkInfo {
   connections_out: number;
   relayfee: number;
   incrementalfee: number;
-  warnings: string;
+  warnings: string | string[];
 }
 
 export interface PeerInfo {
@@ -248,13 +250,12 @@ export interface PeerInfo {
 export interface FeeModel {
   alpha: number;
   beta: number;
-  minFee: number;
-  maxFee: number;
-  consolidationDiscount: number;
+  min: number;
+  max: number;
 }
 
 export interface FeeEstimate {
-  feerate: number;
+  feerate?: number;
   errors?: string[];
   blocks: number;
 }
