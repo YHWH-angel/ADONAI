@@ -23,11 +23,11 @@ const ADONAI_HRP = 'ad';
 
 export function generateMnemonic(wordCount: 12 | 24 = 24): string {
   const strength = wordCount === 12 ? 128 : 256;
-  return scureGenerate(strength, undefined, wordlist);
+  return scureGenerate(wordlist, strength);
 }
 
 export function validateMnemonic(mnemonic: string): boolean {
-  return scureValidate(mnemonic.trim().toLowerCase(), wordlist);
+  return scureValidate(mnemonic.trim(), wordlist);
 }
 
 // ─── Address Derivation ───────────────────────────────────────────────────────
