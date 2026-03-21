@@ -130,8 +130,16 @@ export class AdonaiRpcClient {
     return this.call('getbalance', ['*', minConfirmations]);
   }
 
+  getBalances(): Promise<{
+    mine: { trusted: number; untrusted_pending: number; immature: number };
+  }> {
+    return this.call('getbalances');
+  }
+
   getUnconfirmedBalance(): Promise<number> {
-    return this.call('getunconfirmedbalance');
+    return this.getBalances().then(
+      (b) => b.mine.untrusted_pending + b.mine.immature
+    );
   }
 
   getNewAddress(label = '', addressType = 'bech32'): Promise<string> {
