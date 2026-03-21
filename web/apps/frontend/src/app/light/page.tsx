@@ -60,7 +60,7 @@ function clearSession() {
 
 export default function LightConnectPage() {
   const router = useRouter();
-  const { setWallet, setScanResult } = useLightWalletStore();
+  const { setWallet, setScanResult, setWalletId } = useLightWalletStore();
 
   // ── Tabs ──────────────────────────────────────────────────────────────────
   const [tab, setTab] = useState<ActiveTab>('import');
@@ -134,6 +134,9 @@ export default function LightConnectPage() {
 
       setWallet(mnemonic.trim(), xpub);
       setScanResult(scanResult.balance, utxos, scanResult.height, receiveIndex, changeIndex);
+
+      // Fire-and-forget: create watch-only descriptor wallet on the node for tx history
+      api.lightImport(xpub).then((res) => setWalletId(res.walletId)).catch(() => { /* non-fatal */ });
 
       return true;
     } catch (err) {

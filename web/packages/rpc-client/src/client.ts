@@ -246,6 +246,7 @@ export class AdonaiRpcClient {
       desc: string;
       active?: boolean;
       timestamp: number | 'now';
+      range?: number | [number, number];
       internal?: boolean;
       label?: string;
     }>

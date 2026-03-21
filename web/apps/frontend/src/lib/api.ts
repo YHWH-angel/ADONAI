@@ -139,4 +139,15 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ hex }),
     }),
+
+  lightImport: (xpub: string) =>
+    apiFetch<{ walletId: string; created: boolean; scanning: boolean }>('/light/import', {
+      method: 'POST',
+      body: JSON.stringify({ xpub }),
+    }),
+
+  lightTransactions: (walletId: string, count = 50, skip = 0) =>
+    apiFetch<{ transactions: import('@adonai/rpc-client').WalletTransaction[] }>(
+      `/light/${walletId}/transactions?count=${count}&skip=${skip}`
+    ),
 };
