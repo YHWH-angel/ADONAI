@@ -41,6 +41,7 @@ export default function CreateWalletPage() {
   const [showMnemonic, setShowMnemonic] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [mode, setMode] = useState<'create' | 'import'>('create');
 
   const handleGenerate = () => {
@@ -66,19 +67,21 @@ export default function CreateWalletPage() {
 
   const handleFinish = async () => {
     setIsLoading(true);
+    setError('');
     try {
       const finalMnemonic = mode === 'import' ? importMnemonic.trim() : mnemonic;
       const encrypted = await encryptMnemonic(finalMnemonic, password);
-      const { address } = await deriveAddress(finalMnemonic, 0);
+      const { address } = deriveAddress(finalMnemonic, 0);
 
       setEncryptedMnemonic(encrypted);
-      setMnemonic(finalMnemonic); // in-memory only (for signing)
+      setMnemonic(finalMnemonic);
       addAddress(address);
       setWalletMode('hd');
       setActiveWallet('HD Wallet');
       setStep('done');
     } catch (e) {
       console.error(e);
+      setError(e instanceof Error ? e.message : 'Error al crear la wallet. Inténtalo de nuevo.');
     } finally {
       setIsLoading(false);
     }
@@ -323,6 +326,11 @@ export default function CreateWalletPage() {
                 }
               />
             </div>
+            {error && (
+              <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {error}
+              </p>
+            )}
             <Button
               className="w-full"
               disabled={!isPasswordValid || isLoading}
