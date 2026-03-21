@@ -18,7 +18,7 @@ import type {
   SendToAddressOptions,
   CreateWalletResult,
   LoadWalletResult,
-} from './types.js';
+} from './types';
 
 export class AdonaiRpcClient {
   private config: RpcConfig;
