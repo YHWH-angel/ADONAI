@@ -1,6 +1,16 @@
 import type { FastifyInstance } from 'fastify';
 import { AdonaiRpcClient } from '@adonai/rpc-client';
 
+// Resolve the actual node wallet to use for a given requested wallet name.
+// If walletName exists as a loaded wallet → use it.
+// Otherwise fall back to the first loaded wallet (usually "wallet1" / "wallet2").
+async function resolveWallet(rpc: AdonaiRpcClient, walletName: string): Promise<string> {
+  const loaded = await rpc.listWallets();
+  if (loaded.includes(walletName)) return walletName;
+  if (loaded.length > 0) return loaded[0];
+  return walletName; // fallback, will error on actual call
+}
+
 export async function walletRoutes(
   fastify: FastifyInstance,
   rpc: AdonaiRpcClient
@@ -12,70 +22,103 @@ export async function walletRoutes(
   });
 
   // Get wallet balance and info
-  fastify.get('/wallet/:walletName/info', async (request) => {
+  fastify.get('/wallet/:walletName/info', async (request, reply) => {
     const { walletName } = request.params as { walletName: string };
-    const walletRpc = rpc.withWallet(walletName);
-    const [info, balance, unconfirmed] = await Promise.all([
-      walletRpc.getWalletInfo(),
-      walletRpc.getBalance(),
-      walletRpc.getUnconfirmedBalance(),
-    ]);
-    return { info, balance, unconfirmed };
+    try {
+      const resolved = await resolveWallet(rpc, walletName);
+      const walletRpc = rpc.withWallet(resolved);
+      const [info, balance, unconfirmed] = await Promise.all([
+        walletRpc.getWalletInfo(),
+        walletRpc.getBalance(0),   // 0 = include unconfirmed change
+        walletRpc.getUnconfirmedBalance(),
+      ]);
+      return { info, balance, unconfirmed, resolvedWallet: resolved };
+    } catch (err: unknown) {
+      reply.code(503);
+      return { error: 'Wallet not available', detail: String(err) };
+    }
   });
 
   // Generate a new receive address
-  fastify.post('/wallet/:walletName/address', async (request) => {
+  fastify.post('/wallet/:walletName/address', async (request, reply) => {
     const { walletName } = request.params as { walletName: string };
     const { label = '' } = request.body as { label?: string };
-    const walletRpc = rpc.withWallet(walletName);
-    const address = await walletRpc.getNewAddress(label);
-    return { address };
+    try {
+      const resolved = await resolveWallet(rpc, walletName);
+      const walletRpc = rpc.withWallet(resolved);
+      const address = await walletRpc.getNewAddress(label);
+      return { address };
+    } catch (err: unknown) {
+      reply.code(503);
+      return { error: 'Cannot generate address', detail: String(err) };
+    }
   });
 
   // List transactions
-  fastify.get('/wallet/:walletName/transactions', async (request) => {
+  fastify.get('/wallet/:walletName/transactions', async (request, reply) => {
     const { walletName } = request.params as { walletName: string };
     const { count = '20', skip = '0' } = request.query as {
       count?: string;
       skip?: string;
     };
-    const walletRpc = rpc.withWallet(walletName);
-    const transactions = await walletRpc.listTransactions(
-      '*',
-      parseInt(count),
-      parseInt(skip)
-    );
-    return { transactions };
+    try {
+      const resolved = await resolveWallet(rpc, walletName);
+      const walletRpc = rpc.withWallet(resolved);
+      const transactions = await walletRpc.listTransactions(
+        '*',
+        parseInt(count),
+        parseInt(skip)
+      );
+      return { transactions };
+    } catch {
+      return { transactions: [] };
+    }
   });
 
   // List UTXOs
-  fastify.get('/wallet/:walletName/utxos', async (request) => {
+  fastify.get('/wallet/:walletName/utxos', async (request, reply) => {
     const { walletName } = request.params as { walletName: string };
-    const walletRpc = rpc.withWallet(walletName);
-    const utxos = await walletRpc.listUnspent();
-    return { utxos };
+    try {
+      const resolved = await resolveWallet(rpc, walletName);
+      const walletRpc = rpc.withWallet(resolved);
+      const utxos = await walletRpc.listUnspent();
+      return { utxos };
+    } catch {
+      return { utxos: [] };
+    }
   });
 
   // Send to address
-  fastify.post('/wallet/:walletName/send', async (request) => {
+  fastify.post('/wallet/:walletName/send', async (request, reply) => {
     const { walletName } = request.params as { walletName: string };
     const { address, amount, subtractFee = false } = request.body as {
       address: string;
       amount: number;
       subtractFee?: boolean;
     };
-    const walletRpc = rpc.withWallet(walletName);
-    const txid = await walletRpc.sendToAddress(address, amount, {
-      subtractFeeFromAmount: subtractFee,
-    });
-    return { txid };
+    try {
+      const resolved = await resolveWallet(rpc, walletName);
+      const walletRpc = rpc.withWallet(resolved);
+      const txid = await walletRpc.sendToAddress(address, amount, {
+        subtractFeeFromAmount: subtractFee,
+      });
+      return { txid };
+    } catch (err: unknown) {
+      reply.code(400);
+      return { error: String(err) };
+    }
   });
 
   // Broadcast a raw signed transaction (for client-side signing)
-  fastify.post('/wallet/broadcast', async (request) => {
+  fastify.post('/wallet/broadcast', async (request, reply) => {
     const { hex } = request.body as { hex: string };
-    const txid = await rpc.sendRawTransaction(hex);
-    return { txid };
+    try {
+      const txid = await rpc.sendRawTransaction(hex);
+      return { txid };
+    } catch (err: unknown) {
+      reply.code(400);
+      return { error: String(err) };
+    }
   });
 
   // Validate address
@@ -84,17 +127,22 @@ export async function walletRoutes(
     return rpc.validateAddress(address);
   });
 
-  // Get mining rewards for an address (filter generate category)
+  // Get mining rewards for a wallet
   fastify.get('/wallet/:walletName/mining-rewards', async (request) => {
     const { walletName } = request.params as { walletName: string };
     const { count = '100' } = request.query as { count?: string };
-    const walletRpc = rpc.withWallet(walletName);
-    const transactions = await walletRpc.listTransactions('*', parseInt(count), 0);
-    const rewards = transactions.filter(
-      (tx) => tx.category === 'generate' || tx.category === 'immature'
-    );
-    const totalRewards = rewards.reduce((sum, tx) => sum + tx.amount, 0);
-    return { rewards, totalRewards };
+    try {
+      const resolved = await resolveWallet(rpc, walletName);
+      const walletRpc = rpc.withWallet(resolved);
+      const transactions = await walletRpc.listTransactions('*', parseInt(count), 0);
+      const rewards = transactions.filter(
+        (tx) => tx.category === 'generate' || tx.category === 'immature'
+      );
+      const totalRewards = rewards.reduce((sum, tx) => sum + tx.amount, 0);
+      return { rewards, totalRewards };
+    } catch {
+      return { rewards: [], totalRewards: 0 };
+    }
   });
 
   // Fee estimate

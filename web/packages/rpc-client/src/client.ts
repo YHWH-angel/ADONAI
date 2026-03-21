@@ -172,6 +172,21 @@ export class AdonaiRpcClient {
     amount: number,
     options: SendToAddressOptions = {}
   ): Promise<string> {
+    if (options.feeRate !== undefined) {
+      // Use explicit fee_rate — cannot pass confTarget at the same time
+      return this.call('sendtoaddress', [
+        address,
+        amount,
+        options.comment ?? '',
+        options.commentTo ?? '',
+        options.subtractFeeFromAmount ?? false,
+        options.replaceable ?? true,
+        null,        // conf_target (null = no estimation)
+        'unset',     // estimate_mode
+        false,       // avoid_reuse
+        options.feeRate,
+      ]);
+    }
     return this.call('sendtoaddress', [
       address,
       amount,
@@ -245,6 +260,10 @@ export class AdonaiRpcClient {
 
   getNetworkHashPs(nBlocks = 120): Promise<number> {
     return this.call('getnetworkhashps', [nBlocks]);
+  }
+
+  generateToAddress(nBlocks: number, address: string, maxTries = 1000000): Promise<string[]> {
+    return this.call('generatetoaddress', [nBlocks, address, maxTries]);
   }
 
   // ─── Network ─────────────────────────────────────────────────────────────────

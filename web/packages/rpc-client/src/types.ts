@@ -268,6 +268,7 @@ export interface SendToAddressOptions {
   subtractFeeFromAmount?: boolean;
   replaceable?: boolean;
   confTarget?: number;
+  feeRate?: number; // ADO/kvB — when set, overrides confTarget
 }
 
 export interface CreateWalletResult {

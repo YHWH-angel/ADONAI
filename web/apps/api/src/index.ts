@@ -8,6 +8,7 @@ import { config } from './config.js';
 import { blockchainRoutes } from './routes/blockchain.js';
 import { walletRoutes } from './routes/wallet.js';
 import { networkRoutes } from './routes/network.js';
+import { miningRoutes } from './routes/mining.js';
 import { setupWebSocket } from './websocket.js';
 
 const fastify = Fastify({ logger: true });
@@ -42,6 +43,7 @@ await fastify.register(
     await blockchainRoutes(app, rpc);
     await walletRoutes(app, rpc);
     await networkRoutes(app, rpc);
+    await miningRoutes(app, rpc);
   },
   { prefix: '/api/v1' }
 );
