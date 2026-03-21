@@ -253,7 +253,7 @@ if(ENABLE_WALLET)
 endif()
 
 
-# P2P and RPC server functionality used by `adonaid` and `adonai-qt` executables.
+# P2P and RPC server functionality used by `adonaid` executable.
 add_library(adonai_node STATIC EXCLUDE_FROM_ALL
   addrdb.cpp
   addrman.cpp
@@ -476,11 +476,6 @@ if(BUILD_UTIL)
     adonai_util
   )
   install_binary_component(adonai-util HAS_MANPAGE)
-endif()
-
-
-if(BUILD_GUI)
-  add_subdirectory(qt)
 endif()
 
 

@@ -24,7 +24,7 @@ function(add_maintenance_targets)
     return()
   endif()
 
-  foreach(target IN ITEMS adonai adonaid adonai-qt adonai-cli adonai-tx adonai-util adonai-wallet test_adonai bench_adonai)
+  foreach(target IN ITEMS adonai adonaid adonai-cli adonai-tx adonai-util adonai-wallet test_adonai bench_adonai)
     if(TARGET ${target})
       list(APPEND executables $<TARGET_FILE:${target}>)
     endif()
@@ -44,7 +44,7 @@ function(add_maintenance_targets)
 endfunction()
 
 function(add_windows_deploy_target)
-  if(MINGW AND TARGET adonai AND TARGET adonai-qt AND TARGET adonaid AND TARGET adonai-cli AND TARGET adonai-tx AND TARGET adonai-wallet AND TARGET adonai-util AND TARGET test_adonai)
+  if(MINGW AND TARGET adonai AND TARGET adonaid AND TARGET adonai-cli AND TARGET adonai-tx AND TARGET adonai-wallet AND TARGET adonai-util AND TARGET test_adonai)
     find_program(MAKENSIS_EXECUTABLE makensis)
     if(NOT MAKENSIS_EXECUTABLE)
       add_custom_target(deploy
@@ -53,15 +53,12 @@ function(add_windows_deploy_target)
       return()
     endif()
 
-    # TODO: Consider replacing this code with the CPack NSIS Generator.
-    #       See https://cmake.org/cmake/help/latest/cpack_gen/nsis.html
     include(GenerateSetupNsi)
     generate_setup_nsi()
     add_custom_command(
       OUTPUT ${PROJECT_BINARY_DIR}/adonai-win64-setup.exe
       COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/release
       COMMAND ${CMAKE_STRIP} $<TARGET_FILE:adonai> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:adonai>
-      COMMAND ${CMAKE_STRIP} $<TARGET_FILE:adonai-qt> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:adonai-qt>
       COMMAND ${CMAKE_STRIP} $<TARGET_FILE:adonaid> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:adonaid>
       COMMAND ${CMAKE_STRIP} $<TARGET_FILE:adonai-cli> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:adonai-cli>
       COMMAND ${CMAKE_STRIP} $<TARGET_FILE:adonai-tx> -o ${PROJECT_BINARY_DIR}/release/$<TARGET_FILE_NAME:adonai-tx>
@@ -76,70 +73,5 @@ function(add_windows_deploy_target)
 endfunction()
 
 function(add_macos_deploy_target)
-  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND TARGET adonai-qt)
-    set(macos_app "Adonai-Qt.app")
-    # Populate Contents subdirectory.
-    configure_file(${PROJECT_SOURCE_DIR}/share/qt/Info.plist.in ${macos_app}/Contents/Info.plist NO_SOURCE_PERMISSIONS)
-    file(CONFIGURE OUTPUT ${macos_app}/Contents/PkgInfo CONTENT "APPL????")
-    # Populate Contents/Resources subdirectory.
-    file(CONFIGURE OUTPUT ${macos_app}/Contents/Resources/empty.lproj CONTENT "")
-    configure_file(${PROJECT_SOURCE_DIR}/src/qt/res/icons/bitcoin.icns ${macos_app}/Contents/Resources/adonai.icns NO_SOURCE_PERMISSIONS COPYONLY)
-    file(CONFIGURE OUTPUT ${macos_app}/Contents/Resources/Base.lproj/InfoPlist.strings
-      CONTENT "{ CFBundleDisplayName = \"@CLIENT_NAME@\"; CFBundleName = \"@CLIENT_NAME@\"; }"
-    )
-
-    add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/Adonai-Qt
-      COMMAND ${CMAKE_COMMAND} --install ${PROJECT_BINARY_DIR} --config $<CONFIG> --component adonai-qt --prefix ${macos_app}/Contents/MacOS --strip
-      COMMAND ${CMAKE_COMMAND} -E rename ${macos_app}/Contents/MacOS/bin/$<TARGET_FILE_NAME:adonai-qt> ${macos_app}/Contents/MacOS/Adonai-Qt
-      COMMAND ${CMAKE_COMMAND} -E rm -rf ${macos_app}/Contents/MacOS/bin
-      COMMAND ${CMAKE_COMMAND} -E rm -rf ${macos_app}/Contents/MacOS/share
-      VERBATIM
-    )
-
-    string(REPLACE " " "-" osx_volname ${CLIENT_NAME})
-    if(CMAKE_HOST_APPLE)
-      add_custom_command(
-        OUTPUT ${PROJECT_BINARY_DIR}/${osx_volname}.zip
-        COMMAND Python3::Interpreter ${PROJECT_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus ${macos_app} ${osx_volname} -translations-dir=${QT_TRANSLATIONS_DIR} -zip
-        DEPENDS ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/Adonai-Qt
-        VERBATIM
-      )
-      add_custom_target(deploydir
-        DEPENDS ${PROJECT_BINARY_DIR}/${osx_volname}.zip
-      )
-      add_custom_target(deploy
-        DEPENDS ${PROJECT_BINARY_DIR}/${osx_volname}.zip
-      )
-    else()
-      add_custom_command(
-        OUTPUT ${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/Adonai-Qt
-        COMMAND ${CMAKE_COMMAND} -E env OBJDUMP=${CMAKE_OBJDUMP} $<TARGET_FILE:Python3::Interpreter> ${PROJECT_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus ${macos_app} ${osx_volname} -translations-dir=${QT_TRANSLATIONS_DIR}
-        DEPENDS ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/Adonai-Qt
-        VERBATIM
-      )
-      add_custom_target(deploydir
-        DEPENDS ${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/Adonai-Qt
-      )
-
-      find_program(ZIP_EXECUTABLE zip)
-      if(NOT ZIP_EXECUTABLE)
-        add_custom_target(deploy
-          COMMAND ${CMAKE_COMMAND} -E echo "Error: ZIP not found"
-        )
-      else()
-        add_custom_command(
-          OUTPUT ${PROJECT_BINARY_DIR}/dist/${osx_volname}.zip
-          WORKING_DIRECTORY dist
-          COMMAND ${PROJECT_SOURCE_DIR}/cmake/script/macos_zip.sh ${ZIP_EXECUTABLE} ${osx_volname}.zip
-          VERBATIM
-        )
-        add_custom_target(deploy
-          DEPENDS ${PROJECT_BINARY_DIR}/dist/${osx_volname}.zip
-        )
-      endif()
-    endif()
-    add_dependencies(deploydir adonai-qt)
-    add_dependencies(deploy deploydir)
-  endif()
+  # macOS deploy target removed (Qt GUI removed; use web app instead)
 endfunction()
