@@ -1,4 +1,4 @@
-export { AdonaiRpcClient } from './client.js';
+export { AdonaiRpcClient } from './client';
 export type {
   RpcConfig,
   BlockchainInfo,
@@ -19,4 +19,4 @@ export type {
   SendToAddressOptions,
   CreateWalletResult,
   LoadWalletResult,
-} from './types.js';
+} from './types';
