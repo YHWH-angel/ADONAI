@@ -135,9 +135,9 @@ export async function walletRoutes(
       const resolved = await resolveWallet(rpc, walletName);
       const walletRpc = rpc.withWallet(resolved);
       const transactions = await walletRpc.listTransactions('*', parseInt(count), 0);
-      const rewards = transactions.filter(
-        (tx) => tx.category === 'generate' || tx.category === 'immature'
-      );
+      const rewards = transactions
+        .filter((tx) => tx.category === 'generate' || tx.category === 'immature')
+        .reverse(); // newest first
       const totalRewards = rewards.reduce((sum, tx) => sum + tx.amount, 0);
       return { rewards, totalRewards };
     } catch {

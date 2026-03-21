@@ -2,7 +2,8 @@ export const config = {
   port: parseInt(process.env.PORT ?? '3001'),
   host: process.env.HOST ?? '0.0.0.0',
   jwtSecret: process.env.JWT_SECRET ?? 'change-this-secret-in-production',
-  corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
+  corsOrigin: (process.env.CORS_ORIGIN ?? 'http://localhost:3000')
+    .split(',').map((s) => s.trim()),
 
   rpc: {
     url: process.env.RPC_URL ?? 'http://127.0.0.1:18443',

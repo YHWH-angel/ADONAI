@@ -6,36 +6,29 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { useWalletStore } from '@/store/wallet';
 import { useActiveWallet } from '@/hooks/useActiveWallet';
-import { cn } from '@/lib/utils';
-import { formatAdo } from '@/lib/utils';
+import { useT } from '@/hooks/useLocale';
+import { cn, formatAdo } from '@/lib/utils';
+import { LangSwitcher } from './LangSwitcher';
 import {
-  Home,
-  Send,
-  Download,
-  List,
-  Pickaxe,
-  Settings,
-  Wifi,
-  WifiOff,
-  Loader2,
-  Wallet,
-  ChevronRight,
+  Home, Send, Download, List, Pickaxe, Settings,
+  Wifi, WifiOff, Loader2, Wallet, ChevronRight, HelpCircle,
 } from 'lucide-react';
-
-const navItems = [
-  { href: '/', icon: Home, label: 'Inicio' },
-  { href: '/send', icon: Send, label: 'Enviar' },
-  { href: '/receive', icon: Download, label: 'Recibir' },
-  { href: '/transactions', icon: List, label: 'Historial' },
-  { href: '/mining', icon: Pickaxe, label: 'Minado' },
-  { href: '/settings', icon: Settings, label: 'Ajustes' },
-];
 
 export function SideNav() {
   const pathname = usePathname();
-
+  const t = useT();
   const { activeWallet } = useWalletStore();
   const effectiveWallet = useActiveWallet();
+
+  const navItems = [
+    { href: '/', icon: Home, label: t.nav.home },
+    { href: '/send', icon: Send, label: t.nav.send },
+    { href: '/receive', icon: Download, label: t.nav.receive },
+    { href: '/transactions', icon: List, label: t.nav.transactions },
+    { href: '/mining', icon: Pickaxe, label: t.nav.mining },
+    { href: '/help', icon: HelpCircle, label: t.nav.help },
+    { href: '/settings', icon: Settings, label: t.nav.settings },
+  ];
 
   const { data: stats, isError, isLoading: statsLoading } = useQuery({
     queryKey: ['blockchain-stats'],
@@ -52,12 +45,11 @@ export function SideNav() {
     refetchInterval: 15_000,
   });
 
-  // Only show "disconnected" after a confirmed error (not during initial load)
   const isConnected = !isError && !!stats;
   const isConnecting = statsLoading && !stats;
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 z-50 flex w-56 flex-col border-r border-border bg-card">
+    <aside className="fixed left-0 top-0 bottom-0 z-50 hidden lg:flex w-56 flex-col border-r border-border bg-card">
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 py-5 border-b border-border">
         <span className="text-2xl text-primary">⬡</span>
@@ -68,18 +60,18 @@ export function SideNav() {
       </div>
 
       {/* Wallet Balance */}
-      {activeWallet ? (
+      {effectiveWallet ? (
         <div className="mx-3 mt-3 rounded-xl bg-primary/10 border border-primary/20 px-4 py-3">
           <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-1">
             <Wallet size={10} />
-            <span className="truncate">{activeWallet}</span>
+            <span className="truncate">{walletData?.resolvedWallet ?? effectiveWallet}</span>
           </div>
           <div className="text-xl font-bold text-primary leading-tight">
             {walletData ? formatAdo(walletData.balance) : '— ADO'}
           </div>
           {walletData && walletData.unconfirmed > 0 && (
             <p className="text-[10px] text-muted-foreground mt-0.5">
-              +{formatAdo(walletData.unconfirmed)} pendiente
+              +{formatAdo(walletData.unconfirmed)} {t.common.unconfirmed}
             </p>
           )}
         </div>
@@ -90,14 +82,14 @@ export function SideNav() {
         >
           <div className="flex items-center gap-2 text-muted-foreground">
             <Wallet size={14} />
-            <span className="text-xs">Conectar wallet</span>
+            <span className="text-xs">{t.common.connectWallet}</span>
           </div>
           <ChevronRight size={14} className="text-muted-foreground" />
         </Link>
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-0.5 px-3 pt-4">
+      <nav className="flex-1 space-y-0.5 px-3 pt-4 overflow-y-auto">
         {navItems.map(({ href, icon: Icon, label }) => {
           const active = pathname === href;
           return (
@@ -119,28 +111,27 @@ export function SideNav() {
         })}
       </nav>
 
-      {/* Node Status */}
-      <div className="border-t border-border px-4 py-3">
+      {/* Language + Node Status */}
+      <div className="border-t border-border px-4 py-3 space-y-2.5">
+        <LangSwitcher />
         <div className="flex items-center gap-2 text-xs">
           {isConnecting ? (
             <>
               <Loader2 size={12} className="text-muted-foreground shrink-0 animate-spin" />
-              <span className="text-muted-foreground">Conectando...</span>
+              <span className="text-muted-foreground">{t.common.connecting}</span>
             </>
           ) : isConnected ? (
             <>
               <Wifi size={12} className="text-green-400 shrink-0" />
-              <div className="min-w-0">
-                <span className="text-green-400 font-medium">Conectado</span>
-                <span className="text-muted-foreground ml-1">
-                  #{stats.blockchain.blocks.toLocaleString()}
-                </span>
-              </div>
+              <span className="text-green-400 font-medium">{t.common.connected}</span>
+              <span className="text-muted-foreground ml-1">
+                #{stats.blockchain.blocks.toLocaleString()}
+              </span>
             </>
           ) : (
             <>
               <WifiOff size={12} className="text-destructive shrink-0" />
-              <span className="text-destructive">Sin conexión</span>
+              <span className="text-destructive">{t.common.noConnection}</span>
             </>
           )}
         </div>

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Providers } from '@/components/layout/Providers';
 import { SideNav } from '@/components/layout/SideNav';
+import { MobileNav } from '@/components/layout/MobileNav';
 
 export const metadata: Metadata = {
   title: 'ADONAI Wallet',
@@ -31,7 +32,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen antialiased">
         <Providers>
           <SideNav />
-          <main className="ml-56 min-h-screen p-6">
+          <MobileNav />
+          {/* lg:ml-56 = sidebar offset on desktop; pb-24 = space for bottom nav on mobile */}
+          <main className="min-h-screen p-4 pb-24 lg:ml-56 lg:p-6 lg:pb-6">
             <div className="mx-auto max-w-3xl">
               {children}
             </div>
