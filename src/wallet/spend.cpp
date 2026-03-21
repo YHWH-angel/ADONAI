@@ -1289,6 +1289,20 @@ static util::Result<CreatedTransactionResult> CreateTransactionInternal(
         }
     }
 
+    // Hybrid fee model: the β·value component may cause fee_needed > current_fee
+    // even when the feerate is correct. Absorb the gap from the change output.
+    if (!coin_selection_params.m_subtract_fee_outputs && change_pos && fee_needed > current_fee) {
+        auto& change = txNew.vout.at(*change_pos);
+        CAmount gap = fee_needed - current_fee;
+        if (change.nValue > gap + 294 /* dust threshold ~294 sat for P2WPKH */) {
+            change.nValue -= gap;
+            current_fee = result.GetSelectedValue() - CalculateOutputValue(txNew);
+            // Recompute fee_needed with updated output_value
+            const CAmount new_output_value = CalculateOutputValue(txNew);
+            fee_needed = CalculateFee(model, nBytes, new_output_value) + result.GetTotalBumpFees();
+        }
+    }
+
     // Reduce output values for subtractFeeFromAmount
     if (coin_selection_params.m_subtract_fee_outputs) {
         CAmount to_reduce = fee_needed - current_fee;
