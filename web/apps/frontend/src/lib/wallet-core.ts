@@ -1,180 +1,66 @@
 'use client';
 
 /**
- * ADONAI HD Wallet Core
+ * ADONAI HD Wallet Core — pure TypeScript, no WebAssembly
  *
- * Client-side key management using BIP39 mnemonics and BIP32 HD derivation.
+ * BIP39 mnemonics + BIP32 HD derivation using @scure libraries.
  * Private keys NEVER leave the browser.
  *
  * Derivation path: m/84'/0'/0'/0/index  (P2WPKH — native segwit)
- * Note: ADONAI uses bech32 addresses with HRP "ad" (like Bitcoin's "bc")
+ * ADONAI bech32 HRP: "ad"
  */
 
-import * as bip39 from 'bip39';
-import * as bitcoin from 'bitcoinjs-lib';
-import * as ecc from 'tiny-secp256k1';
-import { BIP32Factory } from 'bip32';
+import { generateMnemonic as scureGenerate, validateMnemonic as scureValidate, mnemonicToSeedSync } from '@scure/bip39';
+import { wordlist } from '@scure/bip39/wordlists/english';
+import { HDKey } from '@scure/bip32';
+import { sha256 } from '@noble/hashes/sha256';
+import { ripemd160 } from '@noble/hashes/ripemd160';
+import { bech32 } from '@scure/base';
 
-// ADONAI network definition
-export const ADONAI_NETWORK: bitcoin.Network = {
-  messagePrefix: '\x18ADONAI Signed Message:\n',
-  bech32: 'ad',
-  bip32: {
-    public: 0x0488b21e,
-    private: 0x0488ade4,
-  },
-  pubKeyHash: 23,   // addresses start with 'A'
-  scriptHash: 83,
-  wif: 153,
-};
+const ADONAI_HRP = 'ad';
 
 // ─── Mnemonic ─────────────────────────────────────────────────────────────────
 
 export function generateMnemonic(wordCount: 12 | 24 = 24): string {
   const strength = wordCount === 12 ? 128 : 256;
-  return bip39.generateMnemonic(strength);
+  return scureGenerate(strength, undefined, wordlist);
 }
 
 export function validateMnemonic(mnemonic: string): boolean {
-  return bip39.validateMnemonic(mnemonic.trim().toLowerCase());
+  return scureValidate(mnemonic.trim().toLowerCase(), wordlist);
 }
 
-// ─── Key Derivation ───────────────────────────────────────────────────────────
+// ─── Address Derivation ───────────────────────────────────────────────────────
 
-export async function mnemonicToRoot(mnemonic: string, passphrase = '') {
-  bitcoin.initEccLib(ecc);
-  const bip32 = BIP32Factory(ecc);
-  const seed = await bip39.mnemonicToSeed(mnemonic.trim(), passphrase);
-  return bip32.fromSeed(seed, ADONAI_NETWORK);
+function hash160(data: Uint8Array): Uint8Array {
+  return ripemd160(sha256(data));
 }
 
-export async function deriveAddress(
+export function deriveAddress(
   mnemonic: string,
   index: number,
   passphrase = ''
-): Promise<{ address: string; publicKey: Buffer; path: string }> {
-  const root = await mnemonicToRoot(mnemonic, passphrase);
+): { address: string; publicKey: Uint8Array; path: string } {
+  const seed = mnemonicToSeedSync(mnemonic.trim(), passphrase);
+  const root = HDKey.fromMasterSeed(seed);
   const path = `m/84'/0'/0'/0/${index}`;
-  const child = root.derivePath(path);
+  const child = root.derive(path);
 
-  const { address } = bitcoin.payments.p2wpkh({
-    pubkey: Buffer.from(child.publicKey),
-    network: ADONAI_NETWORK,
-  });
+  if (!child.publicKey) throw new Error('Failed to derive public key');
 
-  if (!address) throw new Error('Failed to derive address');
+  // P2WPKH: bech32( HRP, [witnessVersion=0, ...toWords(hash160(pubkey))] )
+  const pubKeyHash = hash160(child.publicKey);
+  const words = bech32.toWords(pubKeyHash);
+  const address = bech32.encode(ADONAI_HRP, [0, ...words]);
 
-  return { address, publicKey: Buffer.from(child.publicKey), path };
+  return { address, publicKey: child.publicKey, path };
 }
 
-export async function deriveKeyPair(
-  mnemonic: string,
-  index: number,
-  passphrase = ''
-): Promise<{ address: string; privateKey: Buffer; publicKey: Buffer; path: string }> {
-  const root = await mnemonicToRoot(mnemonic, passphrase);
-  const path = `m/84'/0'/0'/0/${index}`;
-  const child = root.derivePath(path);
-
-  if (!child.privateKey) throw new Error('Failed to derive private key');
-
-  const { address } = bitcoin.payments.p2wpkh({
-    pubkey: Buffer.from(child.publicKey),
-    network: ADONAI_NETWORK,
-  });
-
-  if (!address) throw new Error('Failed to derive address');
-
-  return {
-    address,
-    privateKey: Buffer.from(child.privateKey),
-    publicKey: Buffer.from(child.publicKey),
-    path,
-  };
-}
-
-// ─── Transaction Signing ──────────────────────────────────────────────────────
-
-export interface Utxo {
-  txid: string;
-  vout: number;
-  value: number; // in satoshis
-  address: string;
-  derivationIndex: number;
-}
-
-export interface BuildTxParams {
-  mnemonic: string;
-  passphrase?: string;
-  utxos: Utxo[];
-  recipientAddress: string;
-  amountSats: number;
-  feeSats: number;
-  changeAddress: string;
-}
-
-export async function buildAndSignTx(params: BuildTxParams): Promise<string> {
-  bitcoin.initEccLib(ecc);
-  const {
-    mnemonic,
-    passphrase = '',
-    utxos,
-    recipientAddress,
-    amountSats,
-    feeSats,
-    changeAddress,
-  } = params;
-
-  const psbt = new bitcoin.Psbt({ network: ADONAI_NETWORK });
-
-  // Add inputs
-  for (const utxo of utxos) {
-    const keyPair = await deriveKeyPair(mnemonic, utxo.derivationIndex, passphrase);
-
-    const payment = bitcoin.payments.p2wpkh({
-      pubkey: keyPair.publicKey,
-      network: ADONAI_NETWORK,
-    });
-
-    psbt.addInput({
-      hash: utxo.txid,
-      index: utxo.vout,
-      witnessUtxo: {
-        script: payment.output!,
-        value: utxo.value,
-      },
-    });
-  }
-
-  // Add recipient output
-  psbt.addOutput({
-    address: recipientAddress,
-    value: amountSats,
-  });
-
-  // Add change output if needed
-  const totalIn = utxos.reduce((s, u) => s + u.value, 0);
-  const change = totalIn - amountSats - feeSats;
-  if (change > 546) {
-    // above dust threshold
-    psbt.addOutput({ address: changeAddress, value: change });
-  }
-
-  // Sign all inputs
-  for (let i = 0; i < utxos.length; i++) {
-    const utxo = utxos[i];
-    const keyPair = await deriveKeyPair(mnemonic, utxo.derivationIndex, passphrase);
-
-    const signer = {
-      publicKey: keyPair.publicKey,
-      sign: (hash: Buffer) => Buffer.from(ecc.sign(hash, keyPair.privateKey)),
-    };
-
-    psbt.signInput(i, signer);
-  }
-
-  psbt.finalizeAllInputs();
-  return psbt.extractTransaction().toHex();
+export function getXpub(mnemonic: string, passphrase = ''): string {
+  const seed = mnemonicToSeedSync(mnemonic.trim(), passphrase);
+  const root = HDKey.fromMasterSeed(seed);
+  const account = root.derive("m/84'/0'/0'");
+  return account.publicExtendedKey;
 }
 
 // ─── Encryption (AES-GCM via Web Crypto) ─────────────────────────────────────
@@ -202,14 +88,12 @@ export async function encryptMnemonic(mnemonic: string, password: string): Promi
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const key = await deriveKey(password, salt);
 
-  const enc = new TextEncoder();
   const ciphertext = await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv },
     key,
-    enc.encode(mnemonic)
+    new TextEncoder().encode(mnemonic)
   );
 
-  // Pack: salt(16) + iv(12) + ciphertext
   const result = new Uint8Array(16 + 12 + ciphertext.byteLength);
   result.set(salt, 0);
   result.set(iv, 16);
@@ -225,29 +109,6 @@ export async function decryptMnemonic(encrypted: string, password: string): Prom
   const ciphertext = data.slice(28);
 
   const key = await deriveKey(password, salt);
-
-  const plaintext = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv },
-    key,
-    ciphertext
-  );
-
+  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
   return new TextDecoder().decode(plaintext);
-}
-
-// ─── Address to descriptor (for node import) ─────────────────────────────────
-
-export async function getDescriptorForRange(
-  mnemonic: string,
-  startIndex: number,
-  endIndex: number,
-  passphrase = ''
-): Promise<string> {
-  bitcoin.initEccLib(ecc);
-  const bip32 = BIP32Factory(ecc);
-  const seed = await bip39.mnemonicToSeed(mnemonic.trim(), passphrase);
-  const root = bip32.fromSeed(seed, ADONAI_NETWORK);
-  const account = root.derivePath("m/84'/0'/0'");
-  const xpub = account.neutered().toBase58();
-  return `wpkh([${root.fingerprint.toString('hex')}/84'/0'/0']${xpub}/0/*)`;
 }

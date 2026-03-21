@@ -37,7 +37,7 @@ export class AdonaiRpcClient {
 
   private async call<T>(method: string, params: unknown[] = []): Promise<T> {
     const body: RpcRequest = {
-      jsonrpc: '1.1',
+      jsonrpc: '1.0',
       id: ++this.requestId,
       method,
       params,
