@@ -8,7 +8,7 @@ export interface RpcConfig {
 }
 
 export interface RpcRequest {
-  jsonrpc: '1.1' | '2.0';
+  jsonrpc: '1.0';
   id: string | number;
   method: string;
   params: unknown[];
