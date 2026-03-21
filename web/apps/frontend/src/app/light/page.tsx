@@ -24,6 +24,8 @@ import {
   Plus,
   Lock,
   Unlock,
+  Copy,
+  CheckCheck,
 } from 'lucide-react';
 import { useT } from '@/hooks/useLocale';
 import type { LightUTXO } from '@/lib/wallet-core';
@@ -90,6 +92,7 @@ export default function LightConnectPage() {
   const [savePasswordConfirm, setSavePasswordConfirm] = useState('');
   const [showSavePassword, setShowSavePassword] = useState(false);
   const [savingSession, setSavingSession] = useState(false);
+  const [copiedMnemonic, setCopiedMnemonic] = useState(false);
 
   // ── Stored session unlock ─────────────────────────────────────────────────
   const [storedSession, setStoredSession] = useState<string | null>(null);
@@ -447,19 +450,34 @@ export default function LightConnectPage() {
 
                 {/* Mnemonic grid */}
                 {newMnemonic && (
-                  <div className="grid grid-cols-3 gap-1.5 select-none">
-                    {newMnemonic.split(' ').map((word, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center gap-1 rounded-md border border-border bg-muted/50 px-2 py-1.5 text-xs font-mono"
-                      >
-                        <span className="text-muted-foreground w-4 shrink-0 text-right">
-                          {i + 1}.
-                        </span>
-                        <span className="font-medium">{word}</span>
-                      </div>
-                    ))}
-                  </div>
+                  <>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {newMnemonic.split(' ').map((word, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center gap-1 rounded-md border border-border bg-muted/50 px-2 py-1.5 text-xs font-mono"
+                        >
+                          <span className="text-muted-foreground w-4 shrink-0 text-right">
+                            {i + 1}.
+                          </span>
+                          <span className="font-medium select-all">{word}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mx-auto"
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(newMnemonic);
+                        setCopiedMnemonic(true);
+                        setTimeout(() => setCopiedMnemonic(false), 2000);
+                      }}
+                    >
+                      {copiedMnemonic
+                        ? <><CheckCheck size={13} className="text-green-400" /> {t.common.copied}</>
+                        : <><Copy size={13} /> {t.common.copy}</>}
+                    </button>
+                  </>
                 )}
 
                 <label className="flex items-start gap-2 cursor-pointer text-sm">
