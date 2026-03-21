@@ -18,6 +18,7 @@ export default function SendPage() {
   const [address, setAddress] = useState('');
   const [amount, setAmount] = useState('');
   const [subtractFee, setSubtractFee] = useState(false);
+  const [showFeeInfo, setShowFeeInfo] = useState(false);
 
   const { data: walletData } = useQuery({
     queryKey: ['wallet-info', activeWallet],
@@ -177,21 +178,28 @@ export default function SendPage() {
               <div className="flex justify-between items-center text-[10px]">
                 <div className="flex items-center gap-1">
                   <span>Modelo: α×peso + β×valor</span>
-                  <div className="relative group/fee">
-                    <HelpCircle size={11} className="text-muted-foreground cursor-help" />
-                    <div className="absolute bottom-full left-0 mb-2 z-50 hidden group-hover/fee:block w-64 rounded-lg border border-border bg-popover p-3 text-[11px] text-popover-foreground shadow-xl leading-relaxed">
-                      <p className="font-semibold mb-1.5">¿Cómo se calcula la comisión?</p>
-                      <p className="mb-1">La comisión tiene dos partes:</p>
-                      <ul className="space-y-1 mb-2 list-disc pl-3">
-                        <li><span className="font-mono font-bold">α × peso</span> — tarifa por tamaño de la transacción (en kilobytes). Una tx típica pesa ~0.14 kB.</li>
-                        <li><span className="font-mono font-bold">β × valor</span> — tarifa proporcional al importe enviado. Incentiva la seguridad de transacciones grandes.</li>
-                      </ul>
-                      <p className="text-popover-foreground/70">Ejemplo: enviar 5 ADO → α×0.141 + β×5 ≈ 0.0000251 ADO de comisión.</p>
-                    </div>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowFeeInfo((v) => !v)}
+                    className="rounded-full p-0.5 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Explicación del modelo de comisión"
+                  >
+                    <HelpCircle size={13} />
+                  </button>
                 </div>
                 <span className="font-mono">α={model.alpha} · β={model.beta}</span>
               </div>
+              {showFeeInfo && (
+                <div className="mt-1 rounded-lg border border-border bg-card p-3 text-xs text-foreground space-y-1.5">
+                  <p className="font-semibold text-primary">¿Cómo se calcula la comisión?</p>
+                  <p>La comisión tiene dos partes:</p>
+                  <div className="space-y-1">
+                    <p><span className="font-mono font-bold text-yellow-400">α × peso</span> — tarifa por el tamaño de la transacción. Una transacción típica pesa ~0.14 kB.</p>
+                    <p><span className="font-mono font-bold text-yellow-400">β × valor</span> — tarifa proporcional al importe enviado. Incentiva la seguridad en envíos grandes.</p>
+                  </div>
+                  <p className="text-muted-foreground border-t border-border pt-1.5">Ejemplo: enviar 5 ADO → α×0.141 + β×5 ≈ 0.0000251 ADO de comisión.</p>
+                </div>
+              )}
               <div className="flex items-center gap-2 pt-0.5">
                 <input
                   type="checkbox"

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { useActiveWallet } from '@/hooks/useActiveWallet';
@@ -341,6 +342,7 @@ function StatCard({
   color: 'blue' | 'purple' | 'green' | 'orange' | 'cyan' | 'emerald' | 'sky' | 'yellow';
   tooltip?: string;
 }) {
+  const [open, setOpen] = useState(false);
   const bg = {
     blue: 'bg-blue-500/10',
     purple: 'bg-purple-500/10',
@@ -361,15 +363,22 @@ function StatCard({
         <div className="flex items-center gap-1">
           <p className="text-xs text-muted-foreground">{label}</p>
           {tooltip && (
-            <div className="relative group/tip">
-              <span className="cursor-help text-muted-foreground/50 hover:text-muted-foreground transition-colors text-[10px] leading-none">?</span>
-              <div className="absolute bottom-full left-0 mb-1 hidden group-hover/tip:block w-52 rounded-lg bg-popover border border-border text-xs p-2.5 text-popover-foreground z-50 shadow-xl">
-                {tooltip}
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              className="rounded-full p-0.5 text-muted-foreground/50 hover:text-muted-foreground transition-colors leading-none text-[11px] font-bold"
+              aria-label="Más información"
+            >
+              ?
+            </button>
           )}
         </div>
         <p className="font-mono text-sm font-bold mt-0.5">{value}</p>
+        {open && tooltip && (
+          <div className="mt-2 rounded-lg border border-border bg-card p-2 text-xs text-muted-foreground">
+            {tooltip}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
