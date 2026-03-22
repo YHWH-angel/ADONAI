@@ -128,6 +128,17 @@ describe('getXpub', () => {
     const other = generateMnemonic(24);
     expect(getXpub(TEST_MNEMONIC)).not.toBe(getXpub(other));
   });
+
+  it('produces BLAKE3 checksum (ADONAI-compatible, not SHA256d)', async () => {
+    const { blake3 } = await import('@noble/hashes/blake3');
+    const { base58 } = await import('@scure/base');
+    const xpub = getXpub(TEST_MNEMONIC);
+    const decoded = base58.decode(xpub);
+    const payload = decoded.slice(0, -4);
+    const checksum = decoded.slice(-4);
+    const expected = blake3(payload).slice(0, 4);
+    expect(checksum).toEqual(expected);
+  });
 });
 
 // ── Descriptors ───────────────────────────────────────────────────────────────

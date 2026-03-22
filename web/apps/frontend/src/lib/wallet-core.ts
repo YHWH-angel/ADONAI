@@ -15,10 +15,26 @@ import { wordlist } from '@scure/bip39/wordlists/english';
 import { HDKey } from '@scure/bip32';
 import { sha256 } from '@noble/hashes/sha256';
 import { ripemd160 } from '@noble/hashes/ripemd160';
-import { bech32 } from '@scure/base';
+import { blake3 } from '@noble/hashes/blake3';
+import { bech32, base58 } from '@scure/base';
 import { secp256k1 } from '@noble/curves/secp256k1.js';
 
 const ADONAI_HRP = 'ad';
+
+// ─── xpub re-encoding ─────────────────────────────────────────────────────────
+// ADONAI uses BLAKE3 (not SHA256d) for base58check checksums.
+// @scure/bip32 produces standard Bitcoin xpubs with SHA256d checksums.
+// This function re-encodes the xpub with a BLAKE3 checksum so the ADONAI
+// node accepts it.
+function reencodeXpubForAdonai(xpub: string): string {
+  const decoded = base58.decode(xpub);
+  const payload = decoded.slice(0, -4); // strip SHA256d checksum
+  const checksum = blake3(payload).slice(0, 4);
+  const result = new Uint8Array(payload.length + 4);
+  result.set(payload);
+  result.set(checksum, payload.length);
+  return base58.encode(result);
+}
 
 // ─── Mnemonic ─────────────────────────────────────────────────────────────────
 
@@ -61,7 +77,7 @@ export function getXpub(mnemonic: string, passphrase = ''): string {
   const seed = mnemonicToSeedSync(mnemonic.trim(), passphrase);
   const root = HDKey.fromMasterSeed(seed);
   const account = root.derive("m/84'/0'/0'");
-  return account.publicExtendedKey;
+  return reencodeXpubForAdonai(account.publicExtendedKey);
 }
 
 // ─── Encryption (AES-GCM via Web Crypto) ─────────────────────────────────────
