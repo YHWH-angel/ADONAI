@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatAdo, formatDate, shortenHash, copyToClipboard } from '@/lib/utils';
 import {
   Wallet, ArrowUpRight, ArrowDownLeft, Send, Download, RefreshCw,
-  LogOut, Loader2, Coins, Copy, CheckCheck, Pickaxe, ChevronDown, ChevronUp,
+  LogOut, Loader2, Copy, CheckCheck, Pickaxe, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useT } from '@/hooks/useLocale';
@@ -24,7 +24,6 @@ export default function LightWalletPage() {
   const t = useT();
   const store = useLightWalletStore();
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<'utxos' | 'history'>('utxos');
 
   // Redirect to connect page if no wallet in memory
   useEffect(() => {
@@ -68,7 +67,7 @@ export default function LightWalletPage() {
     staleTime: 30_000,
   });
 
-  // Fetch transaction history from watch-only descriptor wallet
+  // Fetch transaction history
   const { data: txData, isLoading: txLoading } = useQuery({
     queryKey: ['light-txs', store.walletId],
     queryFn: () => api.lightTransactions(store.walletId!),
@@ -166,156 +165,33 @@ export default function LightWalletPage() {
         </Card>
       )}
 
-      {/* Tab bar: Funds / History */}
-      <div className="flex border-b border-border">
-        <button
-          type="button"
-          onClick={() => setActiveTab('utxos')}
-          className={`flex-1 py-2 text-center transition-colors ${
-            activeTab === 'utxos'
-              ? 'text-primary border-b-2 border-primary'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <p className="text-xs font-medium">{t.light.fundsTab} ({store.utxos.length})</p>
-          <p className="text-[10px] text-muted-foreground">{t.light.fundsTabDesc}</p>
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('history')}
-          className={`flex-1 py-2 text-center transition-colors ${
-            activeTab === 'history'
-              ? 'text-primary border-b-2 border-primary'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <p className="text-xs font-medium">{t.light.historyLabel}</p>
-          <p className="text-[10px] text-muted-foreground">{t.light.historyTabDesc}</p>
-        </button>
-      </div>
-
-      {/* UTXOs tab */}
-      {activeTab === 'utxos' && (
-        <>
-          {store.utxos.length > 0 ? (
-            <div className="space-y-1.5">
-              {store.utxos.map((u) => (
-                <LightUtxoCard
-                  key={`${u.txid}:${u.vout}`}
-                  utxo={u}
-                  mnemonic={store.mnemonic!}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="py-10 text-center">
-              <ArrowUpRight className="mx-auto h-10 w-10 text-muted-foreground/30 mb-3" />
-              <p className="text-sm text-muted-foreground">{t.light.noFunds}</p>
-              <p className="text-xs text-muted-foreground mt-1">{t.light.scanned}</p>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* History tab */}
-      {activeTab === 'history' && (
-        <>
-          {!store.walletId ? (
-            <div className="py-8 text-center">
-              <Loader2 className="mx-auto h-8 w-8 text-muted-foreground/40 animate-spin mb-3" />
-              <p className="text-sm text-muted-foreground">{t.light.loadingHistory}</p>
-              <p className="text-xs text-muted-foreground mt-1">{t.light.historyIndexing}</p>
-            </div>
-          ) : txLoading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="animate-spin text-muted-foreground" />
-            </div>
-          ) : !txData || txData.transactions.length === 0 ? (
-            <div className="py-10 text-center">
-              <p className="text-sm text-muted-foreground">{t.light.noHistory}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {t.light.historyRescan}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {txData.transactions.map((tx) => (
-                <LightTxCard key={tx.txid + tx.category} tx={tx} />
-              ))}
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
-function LightUtxoCard({ utxo, mnemonic }: { utxo: LightUTXO; mnemonic: string }) {
-  const [expanded, setExpanded] = useState(false);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
-  const t = useT();
-
-  const address = deriveKeyAtIndex(mnemonic, utxo.index, utxo.isChange).address;
-
-  async function handleCopy(text: string, field: string) {
-    await copyToClipboard(text);
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 2000);
-  }
-
-  return (
-    <Card className="transition-colors hover:bg-secondary/20 overflow-hidden">
-      <CardContent className="p-3">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 shrink-0 rounded-full bg-yellow-500/10 flex items-center justify-center">
-            <Coins size={14} className="text-yellow-400" />
+      {/* Transaction history */}
+      <div>
+        <p className="text-xs font-medium text-muted-foreground mb-2 px-0.5">{t.light.historyLabel}</p>
+        {!store.walletId ? (
+          <div className="py-8 text-center">
+            <Loader2 className="mx-auto h-8 w-8 text-muted-foreground/40 animate-spin mb-3" />
+            <p className="text-sm text-muted-foreground">{t.light.loadingHistory}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t.light.historyIndexing}</p>
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-xs font-medium">
-                {utxo.isChange ? t.light.change : t.light.received} #{utxo.index}
-              </span>
-            </div>
-            <p className="font-mono text-[11px] text-muted-foreground mt-0.5 truncate">
-              {address}
-            </p>
+        ) : txLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="animate-spin text-muted-foreground" />
           </div>
-          <div className="flex flex-col items-end gap-1 shrink-0">
-            <p className="font-mono text-sm font-semibold text-green-400">
-              +{formatAdo(utxo.amountAdo)}
-            </p>
-            <button
-              onClick={() => setExpanded((v) => !v)}
-              className="flex items-center gap-0.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {expanded ? t.transactions.hideDetails : t.transactions.details}
-              {expanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-            </button>
+        ) : !txData || txData.transactions.length === 0 ? (
+          <div className="py-10 text-center">
+            <p className="text-sm text-muted-foreground">{t.light.noHistory}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t.light.historyRescan}</p>
           </div>
-        </div>
-
-        {expanded && (
-          <div className="mt-3 space-y-2 border-t border-border pt-3">
-            <LightDetailRow
-              label={t.light.utxoAddress}
-              value={address}
-              onCopy={() => handleCopy(address, 'addr')}
-              copied={copiedField === 'addr'}
-            />
-            <LightDetailRow
-              label={t.light.utxoTxid}
-              value={utxo.txid}
-              onCopy={() => handleCopy(utxo.txid, 'txid')}
-              copied={copiedField === 'txid'}
-            />
-            <div className="flex items-start justify-between gap-2 text-xs">
-              <span className="text-muted-foreground shrink-0">{t.light.utxoOutput}</span>
-              <span className="font-mono text-right">{utxo.txid.slice(0, 8)}…:{utxo.vout}</span>
-            </div>
+        ) : (
+          <div className="space-y-2">
+            {txData.transactions.map((tx) => (
+              <LightTxCard key={tx.txid + tx.category} tx={tx} />
+            ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -383,14 +259,12 @@ function LightTxCard({ tx }: { tx: WalletTransaction }) {
         {/* Expanded details */}
         {expanded && (
           <div className="mt-3 space-y-2 border-t border-border pt-3">
-            {/* TXID */}
             <LightDetailRow
               label="TXID"
               value={tx.txid}
               onCopy={() => handleCopy(tx.txid, 'txid')}
               copied={copiedField === 'txid'}
             />
-            {/* Address */}
             {tx.address && (
               <LightDetailRow
                 label={t.common.address}
@@ -399,19 +273,16 @@ function LightTxCard({ tx }: { tx: WalletTransaction }) {
                 copied={copiedField === 'address'}
               />
             )}
-            {/* Block height */}
             {tx.blockheight && (
               <div className="flex items-start justify-between gap-2 text-xs">
                 <span className="text-muted-foreground shrink-0">{t.common.block}</span>
                 <span className="font-mono text-right">#{tx.blockheight.toLocaleString()}</span>
               </div>
             )}
-            {/* Confirmations */}
             <div className="flex items-start justify-between gap-2 text-xs">
               <span className="text-muted-foreground shrink-0">{t.common.confirmations}</span>
               <span className="font-mono text-right">{tx.confirmations}</span>
             </div>
-            {/* Fee */}
             {tx.fee !== undefined && tx.fee !== 0 && (
               <div className="flex items-start justify-between gap-2 text-xs">
                 <span className="text-muted-foreground shrink-0">{t.common.fee}</span>
