@@ -106,10 +106,7 @@ export default function LightWalletPage() {
           <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
             <Wallet size={16} className="text-primary" />
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground">{t.light.lightWallet}</p>
-            <p className="text-xs font-mono text-muted-foreground">{shortenHash(store.xpub ?? '', 8)}</p>
-          </div>
+          <p className="text-sm font-medium">{t.light.lightWallet}</p>
         </div>
         <div className="flex gap-1.5">
           <button
