@@ -11,13 +11,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatAdo, formatDate, shortenHash, copyToClipboard } from '@/lib/utils';
 import {
-  Wallet, ArrowUpRight, ArrowDownLeft, Send, Download, RefreshCw,
-  LogOut, Loader2, Copy, CheckCheck, Pickaxe, ChevronDown, ChevronUp,
+  Wallet, ArrowDownLeft, Send, Download, RefreshCw,
+  LogOut, Loader2, Copy, CheckCheck, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useT } from '@/hooks/useLocale';
 import type { LightUTXO } from '@/lib/wallet-core';
-import type { ScannedUTXO, WalletTransaction } from '@adonai/rpc-client';
+import type { ScannedUTXO, Transaction } from '@adonai/rpc-client';
 
 export default function LightWalletPage() {
   const router = useRouter();
@@ -25,19 +25,17 @@ export default function LightWalletPage() {
   const store = useLightWalletStore();
   const [copied, setCopied] = useState(false);
 
-  // Redirect to connect page if no wallet in memory
   useEffect(() => {
     if (!store.mnemonic || !store.xpub) {
       router.replace('/light');
     }
   }, [store.mnemonic, store.xpub, router]);
 
-  // Derive receive address at current index
   const receiveAddress = store.mnemonic
     ? deriveKeyAtIndex(store.mnemonic, store.receiveIndex, false).address
     : null;
 
-  // Refresh scan
+  // Scan UTXOs
   const { isFetching, refetch } = useQuery({
     queryKey: ['light-scan', store.xpub],
     queryFn: async () => {
@@ -67,12 +65,20 @@ export default function LightWalletPage() {
     staleTime: 30_000,
   });
 
-  // Fetch transaction history
-  const { data: txData, isLoading: txLoading } = useQuery({
-    queryKey: ['light-txs', store.walletId],
-    queryFn: () => api.lightTransactions(store.walletId!),
-    enabled: !!store.walletId,
-    refetchInterval: 30_000,
+  // Build history from UTXOs: fetch tx details for each unique txid
+  const uniqueTxids = [...new Set(store.utxos.map((u) => u.txid))];
+  const { data: txDetails, isLoading: txLoading } = useQuery({
+    queryKey: ['light-tx-details', uniqueTxids],
+    queryFn: async () => {
+      const results = await Promise.all(
+        uniqueTxids.map((txid) => api.getTx(txid).catch(() => null))
+      );
+      return Object.fromEntries(
+        uniqueTxids.map((txid, i) => [txid, results[i]])
+      ) as Record<string, Transaction | null>;
+    },
+    enabled: uniqueTxids.length > 0,
+    staleTime: 60_000,
   });
 
   async function handleCopy() {
@@ -83,6 +89,14 @@ export default function LightWalletPage() {
   }
 
   if (!store.mnemonic) return null;
+
+  // Build history entries: one per unique txid, sum all UTXOs from that tx
+  const historyEntries = uniqueTxids.map((txid) => {
+    const utxosForTx = store.utxos.filter((u) => u.txid === txid);
+    const totalAdo = utxosForTx.reduce((s, u) => s + u.amountAdo, 0);
+    const tx = txDetails?.[txid] ?? null;
+    return { txid, totalAdo, utxos: utxosForTx, tx };
+  }).sort((a, b) => (b.tx?.blocktime ?? 0) - (a.tx?.blocktime ?? 0));
 
   return (
     <div className="space-y-4 py-4 max-w-lg mx-auto">
@@ -165,28 +179,35 @@ export default function LightWalletPage() {
         </Card>
       )}
 
-      {/* Transaction history */}
+      {/* History — built from UTXOs, no watch-only wallet needed */}
       <div>
         <p className="text-xs font-medium text-muted-foreground mb-2 px-0.5">{t.light.historyLabel}</p>
-        {!store.walletId ? (
-          <div className="py-8 text-center">
-            <Loader2 className="mx-auto h-8 w-8 text-muted-foreground/40 animate-spin mb-3" />
-            <p className="text-sm text-muted-foreground">{t.light.loadingHistory}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t.light.historyIndexing}</p>
-          </div>
-        ) : txLoading ? (
+
+        {isFetching && store.utxos.length === 0 ? (
           <div className="flex justify-center py-12">
             <Loader2 className="animate-spin text-muted-foreground" />
           </div>
-        ) : !txData || txData.transactions.length === 0 ? (
+        ) : historyEntries.length === 0 ? (
           <div className="py-10 text-center">
             <p className="text-sm text-muted-foreground">{t.light.noHistory}</p>
-            <p className="text-xs text-muted-foreground mt-1">{t.light.historyRescan}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t.light.scanned}</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {txData.transactions.map((tx) => (
-              <LightTxCard key={tx.txid + tx.category} tx={tx} />
+            {txLoading && (
+              <p className="text-[10px] text-muted-foreground text-center pb-1">
+                {t.light.scanning}
+              </p>
+            )}
+            {historyEntries.map((entry) => (
+              <HistoryEntry
+                key={entry.txid}
+                txid={entry.txid}
+                totalAdo={entry.totalAdo}
+                utxos={entry.utxos}
+                tx={entry.tx}
+                mnemonic={store.mnemonic!}
+              />
             ))}
           </div>
         )}
@@ -195,27 +216,18 @@ export default function LightWalletPage() {
   );
 }
 
-function LightTxCard({ tx }: { tx: WalletTransaction }) {
+function HistoryEntry({
+  txid, totalAdo, utxos, tx, mnemonic,
+}: {
+  txid: string;
+  totalAdo: number;
+  utxos: LightUTXO[];
+  tx: Transaction | null;
+  mnemonic: string;
+}) {
   const [expanded, setExpanded] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const t = useT();
-
-  const isReceive = tx.amount > 0;
-  const isMining = tx.category === 'generate' || tx.category === 'immature';
-
-  const iconBg = isMining ? 'bg-yellow-500/20' : isReceive ? 'bg-green-500/20' : 'bg-red-500/20';
-  const amountColor = isMining ? 'text-yellow-400' : isReceive ? 'text-green-400' : 'text-red-400';
-  const icon = isMining
-    ? <Pickaxe size={14} className="text-yellow-400" />
-    : isReceive
-    ? <ArrowDownLeft size={14} className="text-green-400" />
-    : <ArrowUpRight size={14} className="text-red-400" />;
-
-  const label = isMining
-    ? t.light.miningReward
-    : isReceive
-    ? t.transactions.receive
-    : t.transactions.send;
 
   async function handleCopy(text: string, field: string) {
     await copyToClipboard(text);
@@ -223,28 +235,33 @@ function LightTxCard({ tx }: { tx: WalletTransaction }) {
     setTimeout(() => setCopiedField(null), 2000);
   }
 
+  const confirmations = tx?.confirmations ?? 0;
+  const time = tx?.blocktime ?? tx?.time;
+
   return (
     <Card className="transition-colors hover:bg-secondary/20 overflow-hidden">
       <CardContent className="p-3">
         <div className="flex items-center gap-3">
-          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${iconBg}`}>
-            {icon}
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-500/20">
+            <ArrowDownLeft size={14} className="text-green-400" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-xs font-medium">{label}</span>
-              <Badge variant={tx.confirmations >= 6 ? 'success' : 'warning'} className="text-[9px]">
-                {tx.confirmations >= 6 ? '✓' : `${tx.confirmations} conf.`}
+              <span className="text-xs font-medium">{t.transactions.receive}</span>
+              <Badge variant={confirmations >= 6 ? 'success' : 'warning'} className="text-[9px]">
+                {confirmations >= 6 ? '✓' : tx ? `${confirmations} conf.` : '...'}
               </Badge>
             </div>
             <p className="font-mono text-[11px] text-muted-foreground mt-0.5">
-              {shortenHash(tx.txid, 6)}
+              {shortenHash(txid, 6)}
             </p>
-            <p className="text-[10px] text-muted-foreground">{formatDate(tx.time)}</p>
+            {time && (
+              <p className="text-[10px] text-muted-foreground">{formatDate(time)}</p>
+            )}
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0">
-            <p className={`font-mono text-sm font-semibold ${amountColor}`}>
-              {tx.amount > 0 ? '+' : ''}{formatAdo(tx.amount)}
+            <p className="font-mono text-sm font-semibold text-green-400">
+              +{formatAdo(totalAdo)}
             </p>
             <button
               onClick={() => setExpanded((v) => !v)}
@@ -256,37 +273,38 @@ function LightTxCard({ tx }: { tx: WalletTransaction }) {
           </div>
         </div>
 
-        {/* Expanded details */}
         {expanded && (
           <div className="mt-3 space-y-2 border-t border-border pt-3">
-            <LightDetailRow
+            <DetailRow
               label="TXID"
-              value={tx.txid}
-              onCopy={() => handleCopy(tx.txid, 'txid')}
+              value={txid}
+              onCopy={() => handleCopy(txid, 'txid')}
               copied={copiedField === 'txid'}
             />
-            {tx.address && (
-              <LightDetailRow
-                label={t.common.address}
-                value={tx.address}
-                onCopy={() => handleCopy(tx.address!, 'address')}
-                copied={copiedField === 'address'}
+            {utxos.map((u) => {
+              const address = deriveKeyAtIndex(mnemonic, u.index, u.isChange).address;
+              return (
+                <DetailRow
+                  key={`${u.txid}:${u.vout}`}
+                  label={`${t.common.address} (vout ${u.vout})`}
+                  value={address}
+                  onCopy={() => handleCopy(address, `addr-${u.vout}`)}
+                  copied={copiedField === `addr-${u.vout}`}
+                />
+              );
+            })}
+            {tx?.blockhash && (
+              <DetailRow
+                label={t.common.block}
+                value={tx.blockhash}
+                onCopy={() => handleCopy(tx.blockhash!, 'block')}
+                copied={copiedField === 'block'}
               />
             )}
-            {tx.blockheight && (
+            {confirmations > 0 && (
               <div className="flex items-start justify-between gap-2 text-xs">
-                <span className="text-muted-foreground shrink-0">{t.common.block}</span>
-                <span className="font-mono text-right">#{tx.blockheight.toLocaleString()}</span>
-              </div>
-            )}
-            <div className="flex items-start justify-between gap-2 text-xs">
-              <span className="text-muted-foreground shrink-0">{t.common.confirmations}</span>
-              <span className="font-mono text-right">{tx.confirmations}</span>
-            </div>
-            {tx.fee !== undefined && tx.fee !== 0 && (
-              <div className="flex items-start justify-between gap-2 text-xs">
-                <span className="text-muted-foreground shrink-0">{t.common.fee}</span>
-                <span className="font-mono text-right text-red-400">{formatAdo(Math.abs(tx.fee))}</span>
+                <span className="text-muted-foreground shrink-0">{t.common.confirmations}</span>
+                <span className="font-mono text-right">{confirmations}</span>
               </div>
             )}
           </div>
@@ -296,7 +314,7 @@ function LightTxCard({ tx }: { tx: WalletTransaction }) {
   );
 }
 
-function LightDetailRow({
+function DetailRow({
   label, value, onCopy, copied,
 }: {
   label: string;
