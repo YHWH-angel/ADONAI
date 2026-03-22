@@ -166,29 +166,31 @@ export default function LightWalletPage() {
         </Card>
       )}
 
-      {/* Tab bar: UTXOs / History */}
+      {/* Tab bar: Funds / History */}
       <div className="flex border-b border-border">
         <button
           type="button"
           onClick={() => setActiveTab('utxos')}
-          className={`flex-1 py-2 text-xs font-medium transition-colors ${
+          className={`flex-1 py-2 text-center transition-colors ${
             activeTab === 'utxos'
               ? 'text-primary border-b-2 border-primary'
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >
-          UTXOs ({store.utxos.length})
+          <p className="text-xs font-medium">{t.light.fundsTab} ({store.utxos.length})</p>
+          <p className="text-[10px] text-muted-foreground">{t.light.fundsTabDesc}</p>
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('history')}
-          className={`flex-1 py-2 text-xs font-medium transition-colors ${
+          className={`flex-1 py-2 text-center transition-colors ${
             activeTab === 'history'
               ? 'text-primary border-b-2 border-primary'
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >
-          {t.light.historyLabel}
+          <p className="text-xs font-medium">{t.light.historyLabel}</p>
+          <p className="text-[10px] text-muted-foreground">{t.light.historyTabDesc}</p>
         </button>
       </div>
 
@@ -196,26 +198,13 @@ export default function LightWalletPage() {
       {activeTab === 'utxos' && (
         <>
           {store.utxos.length > 0 ? (
-            <div className="space-y-1.5 max-h-64 overflow-y-auto">
+            <div className="space-y-1.5">
               {store.utxos.map((u) => (
-                <Card key={`${u.txid}:${u.vout}`}>
-                  <CardContent className="py-2 px-3 flex items-center gap-3">
-                    <div className="h-7 w-7 shrink-0 rounded-full bg-yellow-500/10 flex items-center justify-center">
-                      <Coins size={12} className="text-yellow-400" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-mono text-[11px] text-muted-foreground truncate">
-                        {shortenHash(u.txid, 6)}:{u.vout}
-                        <span className="ml-1.5 text-[10px] text-muted-foreground/60">
-                          {u.isChange ? t.light.change : t.light.received} #{u.index}
-                        </span>
-                      </p>
-                    </div>
-                    <p className="font-mono text-sm font-semibold text-green-400 shrink-0">
-                      +{formatAdo(u.amountAdo)}
-                    </p>
-                  </CardContent>
-                </Card>
+                <LightUtxoCard
+                  key={`${u.txid}:${u.vout}`}
+                  utxo={u}
+                  mnemonic={store.mnemonic!}
+                />
               ))}
             </div>
           ) : (
@@ -258,6 +247,75 @@ export default function LightWalletPage() {
         </>
       )}
     </div>
+  );
+}
+
+function LightUtxoCard({ utxo, mnemonic }: { utxo: LightUTXO; mnemonic: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const t = useT();
+
+  const address = deriveKeyAtIndex(mnemonic, utxo.index, utxo.isChange).address;
+
+  async function handleCopy(text: string, field: string) {
+    await copyToClipboard(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  }
+
+  return (
+    <Card className="transition-colors hover:bg-secondary/20 overflow-hidden">
+      <CardContent className="p-3">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 shrink-0 rounded-full bg-yellow-500/10 flex items-center justify-center">
+            <Coins size={14} className="text-yellow-400" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-xs font-medium">
+                {utxo.isChange ? t.light.change : t.light.received} #{utxo.index}
+              </span>
+            </div>
+            <p className="font-mono text-[11px] text-muted-foreground mt-0.5 truncate">
+              {address}
+            </p>
+          </div>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <p className="font-mono text-sm font-semibold text-green-400">
+              +{formatAdo(utxo.amountAdo)}
+            </p>
+            <button
+              onClick={() => setExpanded((v) => !v)}
+              className="flex items-center gap-0.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {expanded ? t.transactions.hideDetails : t.transactions.details}
+              {expanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+            </button>
+          </div>
+        </div>
+
+        {expanded && (
+          <div className="mt-3 space-y-2 border-t border-border pt-3">
+            <LightDetailRow
+              label={t.light.utxoAddress}
+              value={address}
+              onCopy={() => handleCopy(address, 'addr')}
+              copied={copiedField === 'addr'}
+            />
+            <LightDetailRow
+              label={t.light.utxoTxid}
+              value={utxo.txid}
+              onCopy={() => handleCopy(utxo.txid, 'txid')}
+              copied={copiedField === 'txid'}
+            />
+            <div className="flex items-start justify-between gap-2 text-xs">
+              <span className="text-muted-foreground shrink-0">{t.light.utxoOutput}</span>
+              <span className="font-mono text-right">{utxo.txid.slice(0, 8)}…:{utxo.vout}</span>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
